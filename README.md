@@ -6,4 +6,4 @@ pip3 install \<path to draobpilc root dir\>
 
 
 ###Screenshots
-![Draobpilc](/screenshots/1.jpg)
+![Draobpilc](/screenshots/1.png)
