@@ -1,0 +1,55 @@
+#MainWindow {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+#HistoryItemBox {
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+#HistoryItemBox:insensitive {
+    background-color: rgba(52, 101, 164, 0.7);
+    border: 1px solid #0D4CA3;
+    color: white;
+    /*font-weight: bold;*/
+}
+
+#HistoryItemLabel {
+    padding: 10px;
+}
+
+#ItemsViewBox {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#ItemsViewList {
+
+}
+
+#HistoryItemKindIndicator.file {
+    background-color: red;
+}
+
+#HistoryItemKindIndicator.image {
+    background-color: yellow;
+}
+
+#HistoryItemKindIndicator.text {
+    background-color: grey;
+}
+
+#HistoryItemKindIndicator.link {
+    background-color: green;
+}
+
+#EditorBox {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+#EditorTextView {
+    padding: 20px;
+}
+
+#AppNameLink, #LinksButton {
+    font-size: x-small;
+    font-weight: bold;
+}

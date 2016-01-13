@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+    <schema path="/org/Draobpilc/" id="org.Draobpilc">
+
+        <key type="i" name="width-percents">
+            <range min="10" max="100"/>
+            <default>40</default>
+        </key>
+
+        <key type="i" name="height-percents">
+            <range min="10" max="100"/>
+            <default>100</default>
+        </key>
+
+        <key type="i" name="editor-width-percents">
+            <range min="50" max="90"/>
+            <default>85</default>
+        </key>
+
+        <key type="i" name="editor-height-percents">
+            <range min="50" max="90"/>
+            <default>85</default>
+        </key>
+
+        <key type="i" name="item-max-lines">
+            <range min="1" max="10"/>
+            <default>3</default>
+        </key>
+
+        <key type="i" name="item-max-height">
+            <default>80</default>
+        </key>
+
+        <key type="i" name="item-preview-margin">
+            <default>5</default>
+        </key>
+
+        <key type="i" name="kind-indicator-width">
+            <range min="1" max="50"/>
+            <default>3</default>
+        </key>
+
+        <key type="i" name="edit-timeout-ms">
+            <range min="300" max="2000"/>
+            <default>500</default>
+        </key>
+
+        <key type="b" name="show-indexes">
+            <default>true</default>
+        </key>
+
+        <key type="i" name="search-timeout">
+            <range min="100" max="1000"/>
+            <default>200</default>
+        </key>
+
+        <key type="i" name="fuzzy-search-max-distance">
+            <range min="1" max="100"/>
+            <default>15</default>
+        </key>
+
+        <key type="b" name="startup-notification">
+            <default>true</default>
+        </key>
+
+    </schema>
+</schemalist>
