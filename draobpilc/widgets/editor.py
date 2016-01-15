@@ -34,6 +34,11 @@ TRANSITION_DURATION = 500
 
 class Editor(Gtk.Revealer):
 
+    __gsignals__ = {
+        'enter-notify': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        'leave-notify': (GObject.SIGNAL_RUN_FIRST, None, (object,))
+    }
+
     timeout_ms = GObject.property(
         type=int,
         default=common.SETTINGS[common.EDIT_TIMEOUT_MS]
@@ -79,6 +84,8 @@ class Editor(Gtk.Revealer):
         self._textview.props.buffer.connect('changed', self._on_text_changed)
 
         self._scrolled_window = Gtk.ScrolledWindow()
+        self._scrolled_window.connect('enter-notify-event', self._on_enter)
+        self._scrolled_window.connect('leave-notify-event', self._on_leave)
         self._scrolled_window.set_margin_bottom(MARGIN)
         self._scrolled_window.set_margin_left(MARGIN)
         self._scrolled_window.set_margin_right(MARGIN)
@@ -87,6 +94,10 @@ class Editor(Gtk.Revealer):
         self._scrolled_window.hide()
 
         self._thumb = ItemThumb()
+        self._thumb.set_vexpand(True)
+        self._thumb.set_hexpand(True)
+        self._thumb.set_valign(Gtk.Align.CENTER)
+        self._thumb.set_halign(Gtk.Align.CENTER)
         self._thumb.props.margin = MARGIN
         self._thumb.set_no_show_all(True)
         self._thumb.hide()
@@ -97,6 +108,12 @@ class Editor(Gtk.Revealer):
 
         self.add(self._box)
         self.show_all()
+
+    def _on_enter(self, sender, event):
+        self.emit('enter-notify', event)
+
+    def _on_leave(self, sender, event):
+        self.emit('leave-notify', event)
 
     def _on_text_changed(self, buffer):
         if self._timeout_id:

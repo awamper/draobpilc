@@ -66,12 +66,18 @@ class Application(Gtk.Application):
 
         self._window = None
         self._editor = Editor()
+        self._editor.connect('enter-notify', self._on_editor_enter)
+        self._editor.connect('leave-notify', self._on_editor_leave)
         self._history_items = HistoryItems()
         self._items_view = ItemsView()
         self._items_view.connect('item-activated', self._on_item_activated)
         self._items_view.connect('item-selected', self._on_item_selected)
-        self._items_view.connect('item-entered', self._on_item_entered)
-        self._items_view.connect('item-left', self._on_item_left)
+        self._items_view.connect('item-entered',
+            lambda view, item: self._show_editor(item)
+        )
+        self._items_view.connect('item-left',
+            lambda view, item: self._hide_editor()
+        )
         self._items_view.bind(self._history_items)
 
         gpaste_client.connect('ShowHistory', self.toggle)
@@ -123,43 +129,57 @@ class Application(Gtk.Application):
         self._editor.set_size_request(editor_width, editor_height)
 
     def _on_item_selected(self, items_view, history_item):
-        self._editor.set_item(history_item)
+        # self._editor.set_item(history_item)
+        if self._editor.is_visible():
+            self._hide_editor()
+
+        self._show_editor(history_item)
 
     def _on_item_activated(self, items_view, history_item):
         gpaste_client.select(history_item.index)
         self._items_view.search_box.entry.set_text('')
         self.hide()
 
-    def _on_item_entered(self, items_view, history_item):
-        pass
-        # def on_timeout():
-        #     CONNECTION_IDS['SHOW_EDITOR'] = 0
-        #     self._editor.set_item(history_item)
-        #     self._editor.show()
+    def _show_editor(self, history_item):
+        def on_timeout():
+            CONNECTION_IDS['SHOW_EDITOR'] = 0
+            self._editor.set_item(history_item)
+            self._editor.show()
 
-        # if CONNECTION_IDS['SHOW_EDITOR']:
-        #     GLib.source_remove(CONNECTION_IDS['SHOW_EDITOR'])
-        #     CONNECTION_IDS['SHOW_EDITOR'] = 0
+        if CONNECTION_IDS['HIDE_EDITOR']:
+            GLib.source_remove(CONNECTION_IDS['HIDE_EDITOR'])
+            CONNECTION_IDS['HIDE_EDITOR'] = 0
 
-        # CONNECTION_IDS['SHOW_EDITOR'] = GLib.timeout_add(
-        #     SHOW_EDITOR_TIMEOUT,
-        #     on_timeout
-        # )
+        if CONNECTION_IDS['SHOW_EDITOR']:
+            GLib.source_remove(CONNECTION_IDS['SHOW_EDITOR'])
+            CONNECTION_IDS['SHOW_EDITOR'] = 0
 
-    def _on_item_left(self, items_view, history_item):
-        pass
-        # def on_timeout():
-        #     CONNECTION_IDS['HIDE_EDITOR'] = 0
-        #     self._editor.hide(clear_after_transition=True)
+        CONNECTION_IDS['SHOW_EDITOR'] = GLib.timeout_add(
+            SHOW_EDITOR_TIMEOUT,
+            on_timeout
+        )
 
-        # if CONNECTION_IDS['HIDE_EDITOR']:
-        #     GLib.source_remove(CONNECTION_IDS['HIDE_EDITOR'])
-        #     CONNECTION_IDS['HIDE_EDITOR'] = 0
+    def _hide_editor(self):
+        def on_timeout():
+            CONNECTION_IDS['HIDE_EDITOR'] = 0
+            self._editor.hide(clear_after_transition=True)
 
-        # CONNECTION_IDS['HIDE_EDITOR'] = GLib.timeout_add(
-        #     HIDE_EDITOR_TIMEOUT,
-        #     on_timeout
-        # )
+        if CONNECTION_IDS['HIDE_EDITOR']:
+            GLib.source_remove(CONNECTION_IDS['HIDE_EDITOR'])
+            CONNECTION_IDS['HIDE_EDITOR'] = 0
+
+        CONNECTION_IDS['HIDE_EDITOR'] = GLib.timeout_add(
+            HIDE_EDITOR_TIMEOUT,
+            on_timeout
+        )
+
+    def _on_editor_enter(self, editor, event):
+        if CONNECTION_IDS['HIDE_EDITOR']:
+            GLib.source_remove(CONNECTION_IDS['HIDE_EDITOR'])
+            CONNECTION_IDS['HIDE_EDITOR'] = 0
+
+    def _on_editor_leave(self, editor, event):
+        self._hide_editor()
 
     def _on_delete_action(self, action, param):
         selected_items = self._items_view.get_selected()
