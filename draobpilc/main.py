@@ -34,21 +34,6 @@ DESKTOP_FILE_PATH = os.path.join(
 )
 
 
-def install_excepthook():
-    """ Make sure we exit when an unhandled exception occurs. """
-    old_hook = sys.excepthook
-
-    def new_hook(etype, evalue, etb):
-        old_hook(etype, evalue, etb)
-
-        while Gtk.main_level():
-            Gtk.main_quit()
-
-        sys.exit()
-
-    sys.excepthook = new_hook
-
-
 def install_desktop_file():
     desktop_tpl = get_data_path('desktop_file.tpl')
 
@@ -80,8 +65,6 @@ def uninstall_desktop_file():
 
 
 def run():
-    install_excepthook()
-
     parser = argparse.ArgumentParser(description='GPaste GUI')
     parser.add_argument('-d', '--debug',
         action='store_true',
