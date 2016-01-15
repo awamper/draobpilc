@@ -159,7 +159,6 @@ class Editor(Gtk.Revealer):
             self._scrolled_window.hide()
             self._thumb.show()
         else:
-            self._label.set_markup(EDITOR_LABEL)
             self._thumb.hide()
             self._scrolled_window.show()
 
@@ -169,8 +168,10 @@ class Editor(Gtk.Revealer):
             self.item.kind != gpaste_client.Kind.TEXT and
             self.item.kind != gpaste_client.Kind.LINK
         ):
+            self._label.set_markup(PREVIEW_LABEL)
             self._textview.set_editable(False)
         else:
+            self._label.set_markup(EDITOR_LABEL)
             self._textview.set_editable(True)
 
     def clear(self):
