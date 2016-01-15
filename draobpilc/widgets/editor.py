@@ -162,7 +162,7 @@ class Editor(Gtk.Revealer):
             self._label.set_markup(EDITOR_LABEL)
             self._thumb.hide()
             self._scrolled_window.show()
-        
+
         self._textview.props.buffer.set_text(self.item.raw)
 
         if (
