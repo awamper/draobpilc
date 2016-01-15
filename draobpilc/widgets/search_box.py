@@ -15,17 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import re
+
 from gi.repository import Gtk
 from gi.repository import GLib
 from gi.repository import GObject
 
 from draobpilc import common
 
+SEARCH_INDEX_RE = re.compile('^#([0-9]+)$')
+
 
 class SearchBox(Gtk.Box):
 
     __gsignals__ = {
-        'search-changed': (GObject.SIGNAL_RUN_FIRST, None, ())
+        'search-changed': (GObject.SIGNAL_RUN_FIRST, None, ()),
+        'search-index': (GObject.SIGNAL_RUN_FIRST, None, (int,))
     }
 
     def __init__(self):
@@ -61,7 +66,14 @@ class SearchBox(Gtk.Box):
     def _on_text_changed(self, buffer, *a, **kw):
         def on_timeout():
             self._timeout_id = 0
-            self.emit('search-changed')
+            text = self.entry.get_text()
+            match = SEARCH_INDEX_RE.findall(text)
+
+            if match:
+                self.emit('search-index', int(match[0]))
+            else:
+                self.emit('search-changed')
+
             return GLib.SOURCE_REMOVE
 
         if self._timeout_id != 0:

@@ -59,11 +59,13 @@ class ItemsView(Gtk.Box):
         self._last_selected_index = None
         self._last_search_string = ''
         self._filter_mode = False
+        self._show_index = None
 
         self._history_switcher = HistorySwitcher()
         self._items_counter = ItemsCounter()
         self.search_box = SearchBox()
         self.search_box.connect('search-changed', self.filter)
+        self.search_box.connect('search-index', self.search_index)
         self.search_box.entry.connect('activate', self._on_entry_activated)
 
         placeholder = Gtk.Label()
@@ -223,6 +225,10 @@ class ItemsView(Gtk.Box):
         search_string = self.search_box.entry.get_text()
         history_item = row.get_child().item
 
+        if self._show_index:
+            if history_item.index == self._show_index: return True
+            else: return False
+
         if self._filter_mode and not row.get_mapped():
             return False
 
@@ -319,7 +325,12 @@ class ItemsView(Gtk.Box):
         text = clipboard.wait_for_text()
         on_clipboard(clipboard, text)
 
+    def search_index(self, search_box, index):
+        self._show_index = index
+        self._listbox.invalidate_filter()
+
     def filter(self, search_box):
+        self._show_index = None
         search_string = self.search_box.entry.get_text().strip()
 
         if len(search_string) > len(self._last_search_string):
