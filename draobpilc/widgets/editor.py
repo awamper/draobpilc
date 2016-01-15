@@ -165,6 +165,14 @@ class Editor(Gtk.Revealer):
         
         self._textview.props.buffer.set_text(self.item.raw)
 
+        if (
+            self.item.kind != gpaste_client.Kind.TEXT and
+            self.item.kind != gpaste_client.Kind.LINK
+        ):
+            self._textview.set_editable(False)
+        else:
+            self._textview.set_editable(True)
+
     def clear(self):
         self.set_item(None)
 
