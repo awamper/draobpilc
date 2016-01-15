@@ -129,7 +129,6 @@ class Application(Gtk.Application):
         self._editor.set_size_request(editor_width, editor_height)
 
     def _on_item_selected(self, items_view, history_item):
-        # self._editor.set_item(history_item)
         if self._editor.is_visible():
             self._hide_editor()
 
