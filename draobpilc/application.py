@@ -155,7 +155,7 @@ class Application(Gtk.Application):
         if not selected: return
 
         if len(selected) == 1:
-            self._merger.hide()
+            self._merger.reveal(False)
 
             if self._editor.is_visible():
                 self._hide_editor()
@@ -163,7 +163,7 @@ class Application(Gtk.Application):
             self._show_editor(selected[0])
         elif not selected:
             self._hide_editor()
-            self._merger.hide()
+            self._merger.reveal(False)
         else:
             if CONNECTION_IDS['SHOW_EDITOR']:
                 GLib.source_remove(CONNECTION_IDS['SHOW_EDITOR'])
@@ -172,7 +172,7 @@ class Application(Gtk.Application):
             self._editor.reveal(False)
 
             self._merger.set_items(selected)
-            self._merger.show()
+            self._merger.reveal(True)
 
     def _on_item_activated(self, items_view, history_item):
         gpaste_client.select(history_item.index)
@@ -255,7 +255,7 @@ class Application(Gtk.Application):
         gpaste_client.add(merged_text)
         self._items_view.halt_updates = False
         self.hide()
-        self._merger.hide()
+        self._merger.reveal(False)
 
     def do_activate(self):
         self._check_version()

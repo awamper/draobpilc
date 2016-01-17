@@ -175,11 +175,8 @@ class Merger(Gtk.Revealer):
         self._history_items.clear()
         self.update()
 
-    def show(self):
-        self.set_reveal_child(True)
-
-    def hide(self, clear_after_transition=False):
-        self.set_reveal_child(False)
+    def reveal(self, reveal):
+        self.set_reveal_child(reveal)
 
     @property
     def buffer(self):
