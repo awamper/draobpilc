@@ -50,6 +50,8 @@ class Merger(Gtk.Revealer):
         self.set_transition_duration(TRANSITION_DURATION)
         self.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
 
+        self._history_items = []
+
         self._label = Gtk.Label()
         self._label.set_margin_top(MARGIN)
         self._label.set_margin_bottom(MARGIN)
@@ -69,23 +71,31 @@ class Merger(Gtk.Revealer):
         self._decorator_label.props.margin = MARGIN
         self._decorator_label.set_label(_('Decorator'))
 
-        decorators = json.loads(common.SETTINGS[common.MERGE_DECORATORS])
         self._decorator_combo = Gtk.ComboBoxText.new_with_entry()
         self._decorator_combo.connect('changed', lambda c: self.update())
         self._decorator_combo.props.margin = MARGIN
+
+        decorators = json.loads(common.SETTINGS[common.MERGE_DECORATORS])
         for decorator in decorators:
             self._decorator_combo.append(decorator[1], decorator[0])
+
+        default_decorator = common.SETTINGS[common.MERGE_DEFAULT_DECORATOR]
+        self._decorator_combo.set_active_id(default_decorator)
 
         self._separator_label = Gtk.Label()
         self._separator_label.props.margin = MARGIN
         self._separator_label.set_label(_('Separator'))
 
-        separators = json.loads(common.SETTINGS[common.MERGE_SEPARATORS])
         self._separator_combo = Gtk.ComboBoxText.new_with_entry()
         self._separator_combo.connect('changed', lambda c: self.update())
         self._separator_combo.props.margin = MARGIN
+
+        separators = json.loads(common.SETTINGS[common.MERGE_SEPARATORS])
         for separator in separators:
             self._separator_combo.append(separator[1], separator[0])
+
+        default_separator = common.SETTINGS[common.MERGE_DEFAULT_SEPARATOR]
+        self._separator_combo.set_active_id(default_separator)
 
         self._textview = Gtk.TextView()
         self._textview.set_name('MergerTextView')
@@ -124,8 +134,6 @@ class Merger(Gtk.Revealer):
         self.add(self._grid)
         self.show_all()
 
-        self._history_items = []
-
     def _get_merged_text(self):
         result = ''
 
@@ -143,6 +151,8 @@ class Merger(Gtk.Revealer):
         return result
 
     def update(self):
+        if not self._history_items: return
+
         self._counter_label.set_markup(
             COUNTER_LABEL_TPL % len(self._history_items)
         )

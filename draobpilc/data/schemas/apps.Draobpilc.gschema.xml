@@ -84,5 +84,13 @@
             </default>
         </key>
 
+        <key type="s" name="merge-default-decorator">
+            <default>''</default>
+        </key>
+
+        <key type="s" name="merge-default-separator">
+            <default>'\n'</default>
+        </key>
+
     </schema>
 </schemalist>
