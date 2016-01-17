@@ -36,8 +36,6 @@ COUNTER_LABEL_TPL = (
 class Merger(Gtk.Revealer):
 
     __gsignals__ = {
-        'enter-notify': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        'leave-notify': (GObject.SIGNAL_RUN_FIRST, None, (object,))
     }
 
     def __init__(self):
@@ -124,12 +122,6 @@ class Merger(Gtk.Revealer):
         self.show_all()
 
         self._history_items = []
-
-    def _on_enter(self, sender, event):
-        self.emit('enter-notify', event)
-
-    def _on_leave(self, sender, event):
-        self.emit('leave-notify', event)
 
     def _get_merged_text(self):
         result = ''
