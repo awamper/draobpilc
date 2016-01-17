@@ -26,8 +26,8 @@ from draobpilc import common
 from draobpilc.lib import gpaste_client
 from draobpilc.widgets.item_thumb import ItemThumb
 
-PREVIEW_LABEL = '<span fgcolor="grey" size="xx-large"><b>Preview</b></span>'
-EDITOR_LABEL = '<span fgcolor="grey" size="xx-large"><b>Editor</b></span>'
+PREVIEW_LABEL = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>' % _('Preview')
+EDITOR_LABEL = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>' % _('Editor')
 MARGIN = 10
 TRANSITION_DURATION = 300
 
