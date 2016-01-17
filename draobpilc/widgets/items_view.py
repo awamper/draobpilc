@@ -76,6 +76,8 @@ class ItemsView(Gtk.Box):
 
         self._listbox = Gtk.ListBox()
         self._listbox.set_name('ItemsViewList')
+        self._listbox.set_selection_mode(Gtk.SelectionMode.MULTIPLE)
+        self._listbox.set_activate_on_single_click(False)
         self._listbox.set_placeholder(placeholder)
         self._listbox.set_sort_func(self._sort_rows)
         self._listbox.set_filter_func(self._filter_row)
@@ -383,4 +385,12 @@ class ItemsView(Gtk.Box):
     @property
     def history_switcher(self):
         return self._history_switcher
-    
+
+    @property
+    def listbox(self):
+        return self._listbox
+
+    @property
+    def n_selected(self):
+        selected = self.get_selected()
+        return len(selected)

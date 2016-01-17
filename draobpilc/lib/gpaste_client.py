@@ -64,6 +64,10 @@ def connect(name, callback):
 	return _client.connect_to_signal(name, callback)
 
 
+def add(text):
+    return _client.Add(text)
+
+
 def get_history():
     return _client.GetHistory()
 

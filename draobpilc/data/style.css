@@ -41,11 +41,11 @@
     background-color: green;
 }
 
-#EditorBox {
+#EditorBox, #MergerBox {
     background-color: rgba(0, 0, 0, 0.5);
 }
 
-#EditorTextView {
+#EditorTextView, #MergerTextView {
     padding: 20px;
 }
 

@@ -32,6 +32,7 @@ from draobpilc.history_item import HistoryItem
 from draobpilc.history_items import HistoryItems
 from draobpilc.widgets.window import Window
 from draobpilc.widgets.editor import Editor
+from draobpilc.widgets.merger import Merger
 from draobpilc.widgets.items_view import ItemsView
 from draobpilc.widgets.about_dialog import AboutDialog
 
@@ -68,15 +69,22 @@ class Application(Gtk.Application):
         self._editor = Editor()
         self._editor.connect('enter-notify', self._on_editor_enter)
         self._editor.connect('leave-notify', self._on_editor_leave)
+        self._merger = Merger()
         self._history_items = HistoryItems()
+
         self._items_view = ItemsView()
         self._items_view.connect('item-activated', self._on_item_activated)
-        self._items_view.connect('item-selected', self._on_item_selected)
         self._items_view.connect('item-entered',
-            lambda view, item: self._show_editor(item)
+            lambda view, item: (
+                self._show_editor(item) if view.n_selected == 1 else None
+            )
         )
         self._items_view.connect('item-left',
             lambda view, item: self._hide_editor()
+        )
+        self._items_view.listbox.connect(
+            'selected-rows-changed',
+            self._on_selection_changed
         )
         self._items_view.bind(self._history_items)
 
@@ -127,12 +135,31 @@ class Application(Gtk.Application):
 
         self._items_view.set_size_request(list_width, -1)
         self._editor.set_size_request(editor_width, editor_height)
+        self._merger.set_size_request(editor_width, editor_height)
 
-    def _on_item_selected(self, items_view, history_item):
-        if self._editor.is_visible():
+    def _on_selection_changed(self, listbox):
+        selected = self._items_view.get_selected()
+        if not selected: return
+
+        if len(selected) == 1:
+            self._merger.hide()
+
+            if self._editor.is_visible():
+                self._hide_editor()
+
+            self._show_editor(selected[0])
+        elif not selected:
             self._hide_editor()
+            self._merger.hide()
+        else:
+            if CONNECTION_IDS['SHOW_EDITOR']:
+                GLib.source_remove(CONNECTION_IDS['SHOW_EDITOR'])
+                CONNECTION_IDS['SHOW_EDITOR'] = 0
 
-        self._show_editor(history_item)
+            self._editor.hide()
+
+            self._merger.set_items(selected)
+            self._merger.show()
 
     def _on_item_activated(self, items_view, history_item):
         gpaste_client.select(history_item.index)
@@ -153,10 +180,11 @@ class Application(Gtk.Application):
             GLib.source_remove(CONNECTION_IDS['SHOW_EDITOR'])
             CONNECTION_IDS['SHOW_EDITOR'] = 0
 
-        CONNECTION_IDS['SHOW_EDITOR'] = GLib.timeout_add(
-            SHOW_EDITOR_TIMEOUT,
-            on_timeout
-        )
+        if not self._merger.get_reveal_child():
+            CONNECTION_IDS['SHOW_EDITOR'] = GLib.timeout_add(
+                SHOW_EDITOR_TIMEOUT,
+                on_timeout
+            )
 
     def _hide_editor(self):
         def on_timeout():
@@ -195,6 +223,11 @@ class Application(Gtk.Application):
             utils.is_pointer_inside_widget(self._editor)
         ):
             pass
+        elif (
+            self._merger.get_reveal_child() and
+            utils.is_pointer_inside_widget(self._merger)
+        ):
+            pass
         elif utils.is_pointer_inside_widget(self._items_view):
             pass
         else:
@@ -209,7 +242,10 @@ class Application(Gtk.Application):
         self._window = Window(self)
         self._window.connect('configure-event', self._resize)
         self._window.connect('button-release-event', self._hide_on_click)
-        self._window.box.add(self._editor)
+        overlay = Gtk.Overlay()
+        overlay.add(self._editor)
+        overlay.add_overlay(self._merger)
+        self._window.box.add(overlay)
         self._window.box.add(self._items_view)
         self._window.hide()
 
@@ -280,9 +316,9 @@ class Application(Gtk.Application):
 
     def show(self):
         self._window.show_all()
-        self._window.present_with_time(Gdk.CURRENT_TIME)
-        self._window.get_window().focus(Gdk.CURRENT_TIME)
         self._window.maximize()
+        self._window.get_window().focus(Gdk.CURRENT_TIME)
+        self._window.present_with_time(Gdk.CURRENT_TIME)
         self._items_view.select_first()
 
     def hide(self):

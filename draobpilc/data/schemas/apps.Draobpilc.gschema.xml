@@ -63,5 +63,26 @@
             <default>true</default>
         </key>
 
+        <key type="s" name="merge-decorators">
+            <default>
+                '[
+                    ["Space", " "],
+                    ["Single quote", "\'"],
+                    ["Double quote", "\\""],
+                    ["Backslash", "\\\\"]
+                ]'
+            </default>
+        </key>
+
+        <key type="s" name="merge-separators">
+            <default>
+                '[
+                    ["Newline", "\\n"],
+                    ["Space", " "],
+                    ["-", "-"]
+                ]'
+            </default>
+        </key>
+
     </schema>
 </schemalist>
