@@ -113,5 +113,9 @@
             <default>'org.gnome.GPaste1'</default>
         </key>
 
+        <key type="b" name="show-text-info">
+            <default>false</default>
+        </key>
+
     </schema>
 </schemalist>

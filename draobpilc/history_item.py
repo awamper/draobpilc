@@ -165,13 +165,21 @@ class HistoryItem(Emitter):
         return result
 
     def _get_info(self):
+        result = ''
+
         if (
             self.kind != gpaste_client.Kind.FILE and
             self.kind != gpaste_client.Kind.IMAGE and
             not self.content_type
-        ): return ''
+        ):
+            if (
+                self.kind != gpaste_client.Kind.LINK and
+                common.SETTINGS[common.SHOW_TEXT_INFO]
+            ):
+                result = '%i chars, %i lines' % (len(self.raw), self.n_lines)
 
-        result = ''
+            return result
+
 
         if self.n_lines > 1:
             result += _('%s items') % self.n_lines
