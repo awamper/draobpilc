@@ -101,7 +101,8 @@ def delete(index):
 
 
 def list_histories():
-    return _client.ListHistories()
+    histories = _client.ListHistories()
+    return sorted(histories)
 
 
 def get_history_size(name):
