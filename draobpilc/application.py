@@ -69,7 +69,10 @@ class Application(Gtk.Application):
         self._editor = Editor()
         self._editor.connect('enter-notify', self._on_editor_enter)
         self._editor.connect('leave-notify', self._on_editor_leave)
+
         self._merger = Merger()
+        self._merger.connect('merge', self.merge_items)
+
         self._history_items = HistoryItems()
 
         self._items_view = ItemsView()
@@ -232,6 +235,15 @@ class Application(Gtk.Application):
             pass
         else:
             self.hide()
+
+    def merge_items(self, merger, items):
+        merged_text = self._merger.buffer.props.text
+        if not merged_text: return
+
+        gpaste_client.add(merged_text)
+        self._items_view.halt_updates = False
+        self.hide()
+        self._merger.hide()
 
     def do_activate(self):
         self._check_version()

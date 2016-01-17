@@ -36,6 +36,7 @@ COUNTER_LABEL_TPL = (
 class Merger(Gtk.Revealer):
 
     __gsignals__ = {
+        'merge': (GObject.SIGNAL_RUN_FIRST, None, (object,))
     }
 
     def __init__(self):
@@ -99,7 +100,9 @@ class Merger(Gtk.Revealer):
         self._merge_btn.set_label(_('Merge'))
         self._merge_btn.set_hexpand(True)
         self._merge_btn.props.margin = MARGIN
-        self._merge_btn.connect('clicked', lambda b: self._merge())
+        self._merge_btn.connect('clicked',
+            lambda b: self.emit('merge', self._history_items)
+        )
 
         self._grid = Gtk.Grid()
         self._grid.set_name('MergerBox')
@@ -139,14 +142,6 @@ class Merger(Gtk.Revealer):
 
         return result
 
-    def _merge(self):
-        merged_text = self._textview.props.buffer.props.text
-        if not merged_text: return
-
-        gpaste_client.add(merged_text)
-        common.APPLICATION.hide()
-        self.hide()
-
     def update(self):
         self._counter_label.set_markup(
             COUNTER_LABEL_TPL % len(self._history_items)
@@ -159,7 +154,7 @@ class Merger(Gtk.Revealer):
         self._merge_btn.set_sensitive(True)
 
         preview = self._get_merged_text()
-        self._textview.props.buffer.set_text(preview)
+        self.buffer.set_text(preview)
 
     def set_items(self, history_items):
         self.clear()
@@ -175,3 +170,7 @@ class Merger(Gtk.Revealer):
 
     def hide(self, clear_after_transition=False):
         self.set_reveal_child(False)
+
+    @property
+    def buffer(self):
+        return self._textview.props.buffer
