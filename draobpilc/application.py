@@ -247,7 +247,6 @@ class Application(Gtk.Application):
         overlay.add_overlay(self._merger)
         self._window.box.add(overlay)
         self._window.box.add(self._items_view)
-        self._window.hide()
 
     def do_startup(self):
         Gtk.Application.do_startup(self)

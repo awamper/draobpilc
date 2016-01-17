@@ -54,4 +54,3 @@ class Window(Gtk.ApplicationWindow):
         self.box.set_hexpand(True)
 
         self.add(self.box)
-        self.show_all()
