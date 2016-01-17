@@ -41,8 +41,6 @@ CONNECTION_IDS = {
     'SHOW_EDITOR': 0,
     'HIDE_EDITOR': 0
 }
-SHOW_EDITOR_TIMEOUT = 500 # ms
-HIDE_EDITOR_TIMEOUT = 1000 # ms
 
 
 class Application(Gtk.Application):
@@ -197,7 +195,7 @@ class Application(Gtk.Application):
 
         if not self._merger.get_reveal_child():
             CONNECTION_IDS['SHOW_EDITOR'] = GLib.timeout_add(
-                SHOW_EDITOR_TIMEOUT,
+                common.SETTINGS[common.SHOW_EDITOR_TIMEOUT],
                 on_timeout
             )
 
@@ -211,7 +209,7 @@ class Application(Gtk.Application):
             CONNECTION_IDS['HIDE_EDITOR'] = 0
 
         CONNECTION_IDS['HIDE_EDITOR'] = GLib.timeout_add(
-            HIDE_EDITOR_TIMEOUT,
+            common.SETTINGS[common.HIDE_EDITOR_TIMEOUT],
             on_timeout
         )
 
