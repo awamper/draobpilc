@@ -237,6 +237,7 @@ class Application(Gtk.Application):
         self._check_version()
 
         if self._window:
+            self.show()
             return None
 
         self._window = Window(self)
