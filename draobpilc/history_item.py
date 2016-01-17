@@ -72,7 +72,7 @@ class HistoryItem(Emitter):
 
         self._n_lines = len(self.raw.split('\n'))
         self._links = self._get_links()
-        self._thumb_path = self._get_thamb_path()
+        self._thumb_path = self._get_thumb_path()
         self._app_info = self._get_app_info()
         self._info_string = self._get_info()
 
@@ -96,7 +96,7 @@ class HistoryItem(Emitter):
 
         return text
 
-    def _get_thamb_path(self):
+    def _get_thumb_path(self):
         result = None
         filename = os.path.expanduser(self._raw)
         if not os.path.exists(filename): return result
