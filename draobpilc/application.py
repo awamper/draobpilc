@@ -264,12 +264,13 @@ class Application(Gtk.Application):
             self.show()
             return None
 
+        overlay = Gtk.Overlay()
+        overlay.add(self._merger)
+        overlay.add_overlay(self._editor)
+
         self._window = Window(self)
         self._window.connect('configure-event', self._resize)
         self._window.connect('button-release-event', self._hide_on_click)
-        overlay = Gtk.Overlay()
-        overlay.add(self._editor)
-        overlay.add_overlay(self._merger)
         self._window.grid.attach(overlay, 0, 0, 1, 1)
         self._window.grid.attach(self._items_view, 1, 0, 1, 2)
         self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
