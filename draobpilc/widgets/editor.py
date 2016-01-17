@@ -177,11 +177,11 @@ class Editor(Gtk.Revealer):
     def clear(self):
         self.set_item(None)
 
-    def show(self):
-        self.set_reveal_child(True)
+    def reveal(self, reveal, clear_after_transition=False):
+        def on_timeout():
+            if not reveal: self.hide()
+            if clear_after_transition: self.clear()
 
-    def hide(self, clear_after_transition=False):
-        self.set_reveal_child(False)
-
-        if clear_after_transition:
-            GLib.timeout_add(TRANSITION_DURATION, self.clear)
+        if reveal: self.show()
+        self.set_reveal_child(reveal)
+        GLib.timeout_add(TRANSITION_DURATION, on_timeout)

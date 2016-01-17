@@ -169,7 +169,7 @@ class Application(Gtk.Application):
                 GLib.source_remove(CONNECTION_IDS['SHOW_EDITOR'])
                 CONNECTION_IDS['SHOW_EDITOR'] = 0
 
-            self._editor.hide()
+            self._editor.reveal(False)
 
             self._merger.set_items(selected)
             self._merger.show()
@@ -183,7 +183,7 @@ class Application(Gtk.Application):
         def on_timeout():
             CONNECTION_IDS['SHOW_EDITOR'] = 0
             self._editor.set_item(history_item)
-            self._editor.show()
+            self._editor.reveal(True)
 
         if CONNECTION_IDS['HIDE_EDITOR']:
             GLib.source_remove(CONNECTION_IDS['HIDE_EDITOR'])
@@ -202,7 +202,7 @@ class Application(Gtk.Application):
     def _hide_editor(self):
         def on_timeout():
             CONNECTION_IDS['HIDE_EDITOR'] = 0
-            self._editor.hide(clear_after_transition=True)
+            self._editor.reveal(False, clear_after_transition=True)
 
         if CONNECTION_IDS['HIDE_EDITOR']:
             GLib.source_remove(CONNECTION_IDS['HIDE_EDITOR'])
