@@ -102,5 +102,21 @@
             <default>1000</default>
         </key>
 
+        <key type="s" name="gpaste-schema-id">
+            <default>'org.gnome.GPaste'</default>
+        </key>
+
+        <key type="s" name="gpaste-dbus-name">
+            <default>'org.gnome.GPaste'</default>
+        </key>
+
+        <key type="s" name="gpaste-dbus-path">
+            <default>'/org/gnome/GPaste'</default>
+        </key>
+
+        <key type="s" name="gpaste-dbus-iface">
+            <default>'org.gnome.GPaste1'</default>
+        </key>
+
     </schema>
 </schemalist>

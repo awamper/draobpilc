@@ -20,8 +20,7 @@ import dbus.mainloop.glib
 
 from gi.repository import Gio
 
-SCHEMA_ID = 'org.gnome.GPaste'
-SETTINGS = Gio.Settings(SCHEMA_ID)
+from draobpilc import common
 
 
 class Action():
@@ -41,20 +40,25 @@ class Kind():
     LINK = 'Link'
 
 
+SCHEMA_ID = common.SETTINGS[common.GPASTE_SCHEMA_ID]
+SETTINGS = Gio.Settings(SCHEMA_ID)
+
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
-DBUS_NAME = 'org.gnome.GPaste'
-DBUS_PATH = '/org/gnome/GPaste'
-DBUS_IFACE = 'org.gnome.GPaste1'
-
 _bus = dbus.SessionBus()
-_gpaste_object = _bus.get_object(DBUS_NAME, DBUS_PATH)
-_client = dbus.Interface(_gpaste_object, DBUS_IFACE)
+_gpaste_object = _bus.get_object(
+    common.SETTINGS[common.GPASTE_DBUS_NAME],
+    common.SETTINGS[common.GPASTE_DBUS_PATH]
+)
+_client = dbus.Interface(
+    _gpaste_object,
+    common.SETTINGS[common.GPASTE_DBUS_IFACE]
+)
 
 
 def get_prop(property_name):
 	return _gpaste_object.Get(
-        DBUS_IFACE,
+        common.SETTINGS[common.GPASTE_DBUS_IFACE],
         property_name,
         dbus_interface='org.freedesktop.DBus.Properties'
     )
