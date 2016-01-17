@@ -29,7 +29,7 @@ from draobpilc.widgets.item_thumb import ItemThumb
 PREVIEW_LABEL = '<span fgcolor="grey" size="xx-large"><b>Preview</b></span>'
 EDITOR_LABEL = '<span fgcolor="grey" size="xx-large"><b>Editor</b></span>'
 MARGIN = 10
-TRANSITION_DURATION = 500
+TRANSITION_DURATION = 300
 
 
 class Editor(Gtk.Revealer):
