@@ -330,11 +330,23 @@ class Application(Gtk.Application):
         self._items_view.history_switcher.show()
 
     def show_prefs(self):
-        preferences_dialog = PreferencesDialog()
-        preferences_dialog.set_modal(True)
-        preferences_dialog.set_transient_for(self._window)
-        preferences_dialog.run()
-        preferences_dialog.destroy()
+        # preferences_dialog = PreferencesDialog()
+        # preferences_dialog.set_modal(True)
+        # preferences_dialog.set_transient_for(self._window)
+        # preferences_dialog.run()
+        # preferences_dialog.destroy()
+        message_dialog = Gtk.MessageDialog(
+            None,
+            Gtk.DialogFlags.DESTROY_WITH_PARENT,
+            Gtk.MessageType.ERROR,
+            Gtk.ButtonsType.OK,
+            version.APP_NAME
+        )
+        message_dialog.set_position(Gtk.WindowPosition.CENTER)
+        message_dialog.set_icon_from_file(common.ICON_PATH)
+        message_dialog.props.secondary_text = 'Not implemented'
+        message_dialog.run()
+        self.quit()
 
     def show_about(self):
         about_dialog = AboutDialog()
