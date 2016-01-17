@@ -46,7 +46,7 @@
 
         <key type="i" name="search-timeout">
             <range min="100" max="1000"/>
-            <default>200</default>
+            <default>300</default>
         </key>
 
         <key type="i" name="fuzzy-search-max-distance">
