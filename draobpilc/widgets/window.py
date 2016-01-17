@@ -46,11 +46,10 @@ class Window(Gtk.ApplicationWindow):
         visual = screen.get_rgba_visual()
         self.set_visual(visual)
 
-        self.box = Gtk.Box()
-        self.box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        self.box.set_valign(Gtk.Align.FILL)
-        self.box.set_halign(Gtk.Align.FILL)
-        self.box.set_vexpand(True)
-        self.box.set_hexpand(True)
+        self.grid = Gtk.Grid()
+        self.grid.set_valign(Gtk.Align.FILL)
+        self.grid.set_halign(Gtk.Align.FILL)
+        self.grid.set_vexpand(True)
+        self.grid.set_hexpand(True)
 
-        self.add(self.box)
+        self.add(self.grid)

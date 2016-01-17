@@ -34,6 +34,7 @@ from draobpilc.widgets.window import Window
 from draobpilc.widgets.editor import Editor
 from draobpilc.widgets.merger import Merger
 from draobpilc.widgets.items_view import ItemsView
+from draobpilc.widgets.main_toolbox import MainToolbox
 from draobpilc.widgets.about_dialog import AboutDialog
 
 CONNECTION_IDS = {
@@ -72,6 +73,17 @@ class Application(Gtk.Application):
 
         self._merger = Merger()
         self._merger.connect('merge', self.merge_items)
+
+        self._main_toolbox = MainToolbox()
+        self._main_toolbox.prefs_btn.connect('clicked',
+            lambda b: self.show_prefs()
+        )
+        self._main_toolbox.about_btn.connect('clicked',
+            lambda b: self.show_about()
+        )
+        self._main_toolbox.quit_btn.connect('clicked',
+            lambda b: self.quit()
+        )
 
         self._history_items = HistoryItems()
 
@@ -233,6 +245,8 @@ class Application(Gtk.Application):
             pass
         elif utils.is_pointer_inside_widget(self._items_view):
             pass
+        elif utils.is_pointer_inside_widget(self._main_toolbox):
+            pass
         else:
             self.hide()
 
@@ -258,8 +272,9 @@ class Application(Gtk.Application):
         overlay = Gtk.Overlay()
         overlay.add(self._editor)
         overlay.add_overlay(self._merger)
-        self._window.box.add(overlay)
-        self._window.box.add(self._items_view)
+        self._window.grid.attach(overlay, 0, 0, 1, 1)
+        self._window.grid.attach(self._items_view, 1, 0, 1, 2)
+        self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
 
     def do_startup(self):
         Gtk.Application.do_startup(self)
