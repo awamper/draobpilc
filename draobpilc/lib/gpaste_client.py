@@ -119,3 +119,7 @@ def switch_history(name):
 
 def delete_history(name):
     return _client.DeleteHistory(name)
+
+
+def empty_history(name):
+    return _client.EmptyHistory(name)

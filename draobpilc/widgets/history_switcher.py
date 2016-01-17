@@ -48,8 +48,23 @@ class HistorySwitcherItem(Gtk.Box):
         label_style_context.add_class('text-button')
         label_style_context.add_class('button')
 
-
         icon_theme = Gtk.IconTheme.get_default()
+
+        icon_info = icon_theme.lookup_icon(
+            'edit-clear-all-symbolic',
+            DELETE_BUTTON_SIZE,
+            Gtk.IconLookupFlags.FORCE_SIZE
+        )
+        pixbuf, _ = icon_info.load_symbolic_for_context(
+            self.get_style_context()
+        )
+        btn_image = Gtk.Image.new_from_pixbuf(pixbuf)
+        self.empty_btn = Gtk.Button()
+        self.empty_btn.set_hexpand(True)
+        self.empty_btn.set_halign(Gtk.Align.END)
+        self.empty_btn.set_image(btn_image)
+        self.empty_btn.set_relief(Gtk.ReliefStyle.NONE)
+
         icon_info = icon_theme.lookup_icon(
             'edit-delete-symbolic',
             DELETE_BUTTON_SIZE,
@@ -60,13 +75,14 @@ class HistorySwitcherItem(Gtk.Box):
         )
         btn_image = Gtk.Image.new_from_pixbuf(pixbuf)
         self.delete_btn = Gtk.Button()
-        self.delete_btn.set_hexpand(True)
+        self.delete_btn.set_hexpand(False)
         self.delete_btn.set_halign(Gtk.Align.END)
         self.delete_btn.set_image(btn_image)
         self.delete_btn.set_relief(Gtk.ReliefStyle.NONE)
 
         self.add(self.link)
         self.add(self._label)
+        self.add(self.empty_btn)
         self.add(self.delete_btn)
         self.show_all()
         self.set_active(False)
@@ -135,6 +151,10 @@ class HistorySwitcher(Gtk.Box):
     def _on_history_delete(self, button, history_switcher_item):
         gpaste_client.delete_history(history_switcher_item.name)
 
+    def _on_history_empty(self, button, history_switcher_item):
+        gpaste_client.empty_history(history_switcher_item.name)
+        self.update()
+
     def _set_active(self, name):
         self.link.set_label(name)
 
@@ -166,6 +186,11 @@ class HistorySwitcher(Gtk.Box):
             history_switcher_item.delete_btn.connect(
                 'clicked',
                 self._on_history_delete,
+                history_switcher_item
+            )
+            history_switcher_item.empty_btn.connect(
+                'clicked',
+                self._on_history_empty,
                 history_switcher_item
             )
             self._box.add(history_switcher_item)
