@@ -80,11 +80,11 @@ class Infobox(Gtk.Box):
         self.set_margin_left(5)
         self.set_margin_bottom(5)
 
-        self._item = item
+        self._weakref = weakref.ref(item)
 
-        if self._item.app_info:
-            name = self._item.app_info.get_display_name()
-            gicon = self._item.app_info.get_icon()
+        if self.item.app_info:
+            name = self.item.app_info.get_display_name()
+            gicon = self.item.app_info.get_icon()
 
             if gicon:
                 icon_theme = Gtk.IconTheme.get_default()
@@ -111,21 +111,25 @@ class Infobox(Gtk.Box):
                 style_context.remove_class('text-button')
                 style_context.remove_class('button')
 
-        if self._item.info_string:
+        if self.item.info_string:
             label = Gtk.Label()
             label.set_margin_left(5)
             label.set_halign(Gtk.Align.START)
-            label.set_markup(INFOSTRING_TEMPLATE % self._item.info_string)
+            label.set_markup(INFOSTRING_TEMPLATE % self.item.info_string)
             self.add(label)
 
     def _on_activate_link(self, link_button):
-        uri = self._item.raw.strip()
-        if self._item.kind != gpaste_client.Kind.LINK:
-            uri = 'file://%s' % self._item.raw
+        uri = self.item.raw.strip()
+        if self.item.kind != gpaste_client.Kind.LINK:
+            uri = 'file://%s' % self.item.raw
 
-        self._item.app_info.launch_uris([uri])
+        self.item.app_info.launch_uris([uri])
         common.APPLICATION.hide()
         return True
+
+    @property
+    def item(self):
+        return self._weakref()
 
 
 class LinksButton(Gtk.LinkButton):
@@ -145,13 +149,13 @@ class LinksButton(Gtk.LinkButton):
         style_context.remove_class('text-button')
         style_context.remove_class('button')
 
-        self._item = item
+        self._weakref = weakref.ref(item)
 
         self._box = Gtk.Box()
         self._box.set_orientation(Gtk.Orientation.VERTICAL)
 
         height_request = 300
-        if len(self._item.links) <= 5: height_request = 150
+        if len(self.item.links) <= 5: height_request = 150
         scrolled_window = Gtk.ScrolledWindow()
         scrolled_window.set_policy(
             Gtk.PolicyType.NEVER,
@@ -172,7 +176,7 @@ class LinksButton(Gtk.LinkButton):
         return True
 
     def _populate(self):
-        for link in self._item.links:
+        for link in self.item.links:
             button = Gtk.LinkButton()
             button.set_halign(Gtk.Align.START)
             button.set_label(link[0:40])
@@ -181,6 +185,10 @@ class LinksButton(Gtk.LinkButton):
             self._box.add(button)
 
         self._box.show_all()
+
+    @property
+    def item(self):
+        return self._weakref()
 
 
 class HistoryItemView(Gtk.Box):
