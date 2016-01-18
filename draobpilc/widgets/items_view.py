@@ -24,7 +24,7 @@ from draobpilc import common
 from draobpilc.lib import utils
 from draobpilc.lib import fuzzy
 from draobpilc.widgets.search_box import SearchBox
-from draobpilc.widgets.history_switcher import HistorySwitcher
+from draobpilc.widgets.histories_manager import HistoriesManager
 from draobpilc.widgets.items_counter import ItemsCounter
 
 HIGHLIGHT_TEMPLATE = '<span bgcolor="yellow" fgcolor="black"><b>%s</b></span>'
@@ -61,7 +61,7 @@ class ItemsView(Gtk.Box):
         self._filter_mode = False
         self._show_index = None
 
-        self._history_switcher = HistorySwitcher()
+        self._histories_manager = HistoriesManager()
         self._items_counter = ItemsCounter()
         self.search_box = SearchBox()
         self.search_box.connect('search-changed', self.filter)
@@ -96,7 +96,7 @@ class ItemsView(Gtk.Box):
         bottom_box = Gtk.Box()
         bottom_box.set_orientation(Gtk.Orientation.HORIZONTAL)
         bottom_box.add(self._items_counter)
-        bottom_box.add(self._history_switcher)
+        bottom_box.add(self._histories_manager)
 
         box_margin = 10
         box = Gtk.Box()
@@ -386,8 +386,8 @@ class ItemsView(Gtk.Box):
         adjustment.set_value(lower)
 
     @property
-    def history_switcher(self):
-        return self._history_switcher
+    def histories_manager(self):
+        return self._histories_manager
 
     @property
     def listbox(self):

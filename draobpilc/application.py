@@ -290,10 +290,10 @@ class Application(Gtk.Application):
         self.add_action(delete_action)
         self.set_accels_for_action('app.delete', ['Delete'])
 
-        delete_action = Gio.SimpleAction.new('show_history_switcher', None)
-        delete_action.connect('activate', self.show_history_switcher)
-        self.add_action(delete_action)
-        self.set_accels_for_action('app.show_history_switcher', ['<Ctrl>S'])
+        show_histories_action = Gio.SimpleAction.new('show_histories_manager', None)
+        show_histories_action.connect('activate', self.show_histories_manager)
+        self.add_action(show_histories_action)
+        self.set_accels_for_action('app.show_histories_manager', ['<Ctrl>S'])
 
         preferences_action = Gio.SimpleAction.new('preferences', None)
         preferences_action.connect('activate', lambda a, p: self.show_prefs())
@@ -325,8 +325,8 @@ class Application(Gtk.Application):
         else:
             self.show()
 
-    def show_history_switcher(self, action, param):
-        self._items_view.history_switcher.show()
+    def show_histories_manager(self, action, param):
+        self._items_view.histories_manager.show()
 
     def show_prefs(self):
         # preferences_dialog = PreferencesDialog()

@@ -23,7 +23,7 @@ DELETE_BUTTON_SIZE = 14
 NAME_TEMPLATE = '%s (%i)'
 
 
-class HistorySwitcherItem(Gtk.Box):
+class HistoriesManagerItem(Gtk.Box):
 
     def __init__(self, name):
         super().__init__()
@@ -98,12 +98,12 @@ class HistorySwitcherItem(Gtk.Box):
             self.link.show()
 
 
-class HistorySwitcher(Gtk.Box): 
+class HistoriesManager(Gtk.Box):
 
     def __init__(self):
         super().__init__()
 
-        self.set_name('HistorySwitcherBox')
+        self.set_name('HistoriesManagerBox')
         self.set_orientation(Gtk.Orientation.HORIZONTAL)
         self.set_halign(Gtk.Align.END)
         self.set_valign(Gtk.Align.CENTER)
@@ -146,15 +146,15 @@ class HistorySwitcher(Gtk.Box):
         self.show()
         return True
 
-    def _on_history_swicther_item(self, link, history_switcher_item):
-        self._switch_history(history_switcher_item.name)
+    def _on_histories_manager_item(self, link, histories_manager_item):
+        self._switch_history(histories_manager_item.name)
         return True
 
-    def _on_history_delete(self, button, history_switcher_item):
-        gpaste_client.delete_history(history_switcher_item.name)
+    def _on_history_delete(self, button, histories_manager_item):
+        gpaste_client.delete_history(histories_manager_item.name)
 
-    def _on_history_empty(self, button, history_switcher_item):
-        gpaste_client.empty_history(history_switcher_item.name)
+    def _on_history_empty(self, button, histories_manager_item):
+        gpaste_client.empty_history(histories_manager_item.name)
         self.update()
 
     def _set_active(self, name):
@@ -179,27 +179,27 @@ class HistorySwitcher(Gtk.Box):
             return None
 
         for history_name in histories:
-            history_switcher_item = HistorySwitcherItem(history_name)
-            history_switcher_item.link.connect(
+            histories_manager_item = HistoriesManagerItem(history_name)
+            histories_manager_item.link.connect(
                 'activate-link',
-                self._on_history_swicther_item,
-                history_switcher_item
+                self._on_histories_manager_item,
+                histories_manager_item
             )
-            history_switcher_item.delete_btn.connect(
+            histories_manager_item.delete_btn.connect(
                 'clicked',
                 self._on_history_delete,
-                history_switcher_item
+                histories_manager_item
             )
-            history_switcher_item.empty_btn.connect(
+            histories_manager_item.empty_btn.connect(
                 'clicked',
                 self._on_history_empty,
-                history_switcher_item
+                histories_manager_item
             )
-            self._box.add(history_switcher_item)
+            self._box.add(histories_manager_item)
 
             if history_name == current_name:
                 self._set_active(history_name)
-                history_switcher_item.set_active(True)
+                histories_manager_item.set_active(True)
 
         self._box.show_all()
 
