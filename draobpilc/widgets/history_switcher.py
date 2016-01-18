@@ -55,7 +55,7 @@ class HistorySwitcherItem(Gtk.Box):
             DELETE_BUTTON_SIZE,
             Gtk.IconLookupFlags.FORCE_SIZE
         )
-        pixbuf, _ = icon_info.load_symbolic_for_context(
+        pixbuf, __ = icon_info.load_symbolic_for_context(
             self.get_style_context()
         )
         btn_image = Gtk.Image.new_from_pixbuf(pixbuf)
@@ -64,13 +64,14 @@ class HistorySwitcherItem(Gtk.Box):
         self.empty_btn.set_halign(Gtk.Align.END)
         self.empty_btn.set_image(btn_image)
         self.empty_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.empty_btn.set_tooltip_text(_('Empty history'))
 
         icon_info = icon_theme.lookup_icon(
             'edit-delete-symbolic',
             DELETE_BUTTON_SIZE,
             Gtk.IconLookupFlags.FORCE_SIZE
         )
-        pixbuf, _ = icon_info.load_symbolic_for_context(
+        pixbuf, __ = icon_info.load_symbolic_for_context(
             self.get_style_context()
         )
         btn_image = Gtk.Image.new_from_pixbuf(pixbuf)
@@ -79,6 +80,7 @@ class HistorySwitcherItem(Gtk.Box):
         self.delete_btn.set_halign(Gtk.Align.END)
         self.delete_btn.set_image(btn_image)
         self.delete_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.delete_btn.set_tooltip_text(_('Delete history'))
 
         self.add(self.link)
         self.add(self._label)
