@@ -3,7 +3,7 @@
     <schema path="/org/Draobpilc/" id="org.Draobpilc">
 
         <key type="i" name="width-percents">
-            <range min="10" max="100"/>
+            <range min="10" max="60"/>
             <default>40</default>
         </key>
 
