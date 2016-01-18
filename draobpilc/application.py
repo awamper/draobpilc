@@ -288,12 +288,18 @@ class Application(Gtk.Application):
         delete_action = Gio.SimpleAction.new('delete', None)
         delete_action.connect('activate', self._on_delete_action)
         self.add_action(delete_action)
-        self.set_accels_for_action('app.delete', ['Delete'])
+        self.set_accels_for_action(
+            'app.delete',
+            [common.SETTINGS[common.DELETE_ITEM]]
+        )
 
         show_histories_action = Gio.SimpleAction.new('show_histories_manager', None)
         show_histories_action.connect('activate', self.show_histories_manager)
         self.add_action(show_histories_action)
-        self.set_accels_for_action('app.show_histories_manager', ['<Ctrl>S'])
+        self.set_accels_for_action(
+            'app.show_histories_manager',
+            [common.SETTINGS[common.SHOW_HISTORIES]]
+        )
 
         preferences_action = Gio.SimpleAction.new('preferences', None)
         preferences_action.connect('activate', lambda a, p: self.show_prefs())

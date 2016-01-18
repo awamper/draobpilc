@@ -117,5 +117,13 @@
             <default>false</default>
         </key>
 
+        <key type="s" name="show-histories">
+            <default><![CDATA['<Ctrl>S']]></default>
+        </key>
+
+        <key type="s" name="delete-item">
+            <default><![CDATA['Delete']]></default>
+        </key>
+
     </schema>
 </schemalist>
