@@ -351,6 +351,7 @@ class ItemsView(Gtk.Box):
             self._last_search_string = ''
 
     def select_first(self, grab_focus=False):
+        self._listbox.unselect_all()
         self.set_active_item()
 
         for row in self._listbox.get_children():
@@ -370,6 +371,8 @@ class ItemsView(Gtk.Box):
         return result
 
     def clear(self):
+        self._listbox.unselect_all()
+
         for row in self._listbox.get_children():
             child = row.get_child()
             if child: row.remove(child)
