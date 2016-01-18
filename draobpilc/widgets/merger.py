@@ -142,9 +142,19 @@ class Merger(Gtk.Revealer):
             if not decorator:
                 decorator = self._decorator_combo.get_active_text()
 
+                try:
+                    decorator = decorator.encode('utf8').decode('unicode-escape')
+                except UnicodeDecodeError:
+                    pass
+
             separator = self._separator_combo.get_active_id()
             if not separator:
                 separator = self._separator_combo.get_active_text()
+
+                try:
+                    separator = separator.encode('utf8').decode('unicode-escape')
+                except UnicodeDecodeError:
+                    pass
 
             result += decorator + item.raw + decorator + separator
 
