@@ -47,7 +47,7 @@ class MainToolbox(Gtk.Box):
         self.quit_btn.set_relief(Gtk.ReliefStyle.NONE)
         self.quit_btn.set_tooltip_text(_('Quit'))
 
-        self.add(self.prefs_btn)
-        self.add(self.about_btn)
         self.add(self.quit_btn)
+        self.add(self.about_btn)
+        self.add(self.prefs_btn)
         self.show_all()
