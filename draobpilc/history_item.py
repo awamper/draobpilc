@@ -52,8 +52,14 @@ class HistoryItem(Emitter):
         self.load_data(index)
 
     def __repr__(self):
-        text = ' '.join(self.text.split())
-        text = text.strip()[:30]
+        text = 'Data not loaded'
+
+        try:
+            text = ' '.join(self.text.split())
+        except AttributeError:
+            pass
+        else:
+            text = text.strip()[:30]
 
         return '<HistoryItem: index=%i, "%s">' % (self.index, text)
 
