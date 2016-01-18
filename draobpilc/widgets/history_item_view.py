@@ -169,13 +169,13 @@ class LinksButton(Gtk.LinkButton):
         self._popover.set_relative_to(self)
         self._popover.add(scrolled_window)
 
-        self._populate()
+        self.populate()
 
     def _on_activate_link(self, link):
         self._popover.show()
         return True
 
-    def _populate(self):
+    def populate(self):
         for link in self.item.links:
             button = Gtk.LinkButton()
             button.set_halign(Gtk.Align.START)
@@ -190,6 +190,31 @@ class LinksButton(Gtk.LinkButton):
     @property
     def item(self):
         return self._weakref()
+
+
+class FilesButton(LinksButton):
+
+    def __init__(self, item):
+        super().__init__(item)
+
+        self.set_label('%i files' % self.item.n_lines)
+
+    def _on_activate_file_link(self, link_button, file_name):
+        uri = 'file://%s' % file_name
+        Gio.AppInfo.launch_default_for_uri(uri)
+        common.APPLICATION.hide()
+        return True
+
+    def populate(self):
+        for file_ in self.item.raw.split('\n'):
+            button = Gtk.LinkButton()
+            button.set_halign(Gtk.Align.START)
+            button.set_label(file_[0:40])
+            button.set_tooltip_text(file_)
+            button.connect('activate-link', self._on_activate_file_link, file_)
+            self._box.add(button)
+
+        self._box.show_all()
 
 
 class HistoryItemView(Gtk.Box):
@@ -212,6 +237,11 @@ class HistoryItemView(Gtk.Box):
             self.item.kind == gpaste_client.Kind.TEXT and self.item.links
         ):
             self._infobox = LinksButton(self.item)
+        elif (
+            self.item.kind == gpaste_client.Kind.FILE and
+            self.item.n_lines > 1
+        ):
+            self._infobox = FilesButton(self.item)
         else:
             self._infobox = Infobox(self.item)
 
