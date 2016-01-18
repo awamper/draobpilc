@@ -182,6 +182,7 @@ class LinksButton(Gtk.LinkButton):
             button.set_label(link[0:40])
             button.set_tooltip_text(link)
             button.set_uri(link)
+            button.connect('activate-link', lambda b: common.APPLICATION.hide())
             self._box.add(button)
 
         self._box.show_all()
