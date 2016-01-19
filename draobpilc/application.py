@@ -36,6 +36,7 @@ from draobpilc.widgets.merger import Merger
 from draobpilc.widgets.items_view import ItemsView
 from draobpilc.widgets.main_toolbox import MainToolbox
 from draobpilc.widgets.about_dialog import AboutDialog
+from draobpilc.widgets.preferences import show_preferences
 
 CONNECTION_IDS = {
     'SHOW_EDITOR': 0,
@@ -335,23 +336,8 @@ class Application(Gtk.Application):
         self._items_view.histories_manager.show()
 
     def show_prefs(self):
-        # preferences_dialog = PreferencesDialog()
-        # preferences_dialog.set_modal(True)
-        # preferences_dialog.set_transient_for(self._window)
-        # preferences_dialog.run()
-        # preferences_dialog.destroy()
-        message_dialog = Gtk.MessageDialog(
-            None,
-            Gtk.DialogFlags.DESTROY_WITH_PARENT,
-            Gtk.MessageType.ERROR,
-            Gtk.ButtonsType.OK,
-            version.APP_NAME
-        )
-        message_dialog.set_position(Gtk.WindowPosition.CENTER)
-        message_dialog.set_icon_from_file(common.ICON_PATH)
-        message_dialog.props.secondary_text = 'Not implemented'
-        message_dialog.run()
-        self.quit()
+        show_preferences()
+        self.hide()
 
     def show_about(self):
         about_dialog = AboutDialog()
