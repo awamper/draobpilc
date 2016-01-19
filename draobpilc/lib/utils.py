@@ -17,6 +17,8 @@
 
 import os
 import re
+import sys
+import subprocess
 
 from gi.repository import Gio
 from gi.repository import Gdk
@@ -32,6 +34,13 @@ simple_url_2_re = re.compile(
     r'^www\.|^(?!http)\w[^@]+\.(com|edu|gov|int|mil|net|org)($|/.*)$',
     re.IGNORECASE
 )
+
+
+def restart_app():
+    from draobpilc.common import APPLICATION
+    APPLICATION.quit()
+    subprocess.Popen('draobpilc')
+    sys.exit()
 
 
 def notify(summary=None, body=None, icon_name=None):

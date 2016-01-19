@@ -21,6 +21,8 @@ from gi.repository import Gdk
 from gi.repository import GPaste
 
 from draobpilc import common
+from draobpilc import version
+from draobpilc.lib import utils
 
 _window = None
 
@@ -291,10 +293,27 @@ class Preferences(Gtk.Window):
         self.set_icon_from_file(common.ICON_PATH)
         self.set_default_size(200, 200)
         self.set_resizable(False)
+        self.connect('destroy', self._on_destroy)
 
         switcher_margin = 5
         stack_margin = 10
         self._transition_duration = 500
+        self._need_restart = False
+
+        requires_restart = [
+            common.WIDTH_PERCENTS,
+            common.ITEM_MAX_LINES,
+            common.ITEM_MAX_HEIGHT,
+            common.KIND_INDICATOR_WIDTH,
+            common.SHOW_INDEXES,
+            common.SHOW_TEXT_INFO,
+            common.SHOW_THUMBNAILS
+        ]
+        for key in requires_restart:
+            common.SETTINGS.connect(
+                'changed::' + key,
+                self._on_settings_changed
+            )
 
         main = self._get_main_page()
         editor = self._get_editor_page()
@@ -334,6 +353,29 @@ class Preferences(Gtk.Window):
         self.set_titlebar(header_bar)
         self.add(stack)
 
+    def _on_destroy(self, window):
+        if not self._need_restart: return
+
+        self._need_restart = False
+        msg = _(
+            'You need to restart the app for the changes to take effect. Restart now?'
+        )
+        message_dialog = Gtk.MessageDialog(
+            None,
+            Gtk.DialogFlags.DESTROY_WITH_PARENT,
+            Gtk.MessageType.INFO,
+            Gtk.ButtonsType.YES_NO,
+            version.APP_NAME
+        )
+        message_dialog.set_position(Gtk.WindowPosition.CENTER)
+        message_dialog.set_icon_from_file(common.ICON_PATH)
+        message_dialog.props.secondary_text = msg
+        response = message_dialog.run()
+        message_dialog.destroy()
+
+        if response == Gtk.ResponseType.YES:
+            utils.restart_app()
+
     def _on_button_clicked(self, button):
         dialog = Gtk.Dialog()
         dialog.set_transient_for(self)
@@ -367,6 +409,9 @@ class Preferences(Gtk.Window):
         dialog.show_all()
         dialog.run()
         dialog.destroy()
+
+    def _on_settings_changed(self, settings, param):
+        self._need_restart = True
 
     def _get_main_page(self):
         name = _('Main')
