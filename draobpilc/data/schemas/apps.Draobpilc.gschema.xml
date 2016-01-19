@@ -115,5 +115,9 @@
             <default><![CDATA['Delete']]></default>
         </key>
 
+        <key type="b" name="show-thumbnails">
+            <default>true</default>
+        </key>
+
     </schema>
 </schemalist>

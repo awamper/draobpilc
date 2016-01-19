@@ -384,6 +384,10 @@ class Preferences(Gtk.Window):
             _('Show info for text items:'),
             common.SHOW_TEXT_INFO
         )
+        page.add_boolean(
+            _('Show thumbnails for file/image items:'),
+            common.SHOW_THUMBNAILS
+        )
 
         page.add_separator()
 

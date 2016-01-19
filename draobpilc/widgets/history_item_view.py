@@ -250,7 +250,10 @@ class HistoryItemView(Gtk.Box):
         self._grid.attach(self._label, 2, 0, 1, 1)
         self._grid.attach(self._infobox, 2, 1, 1, 1)
 
-        if self.item.thumb_path:
+        if (
+            self.item.thumb_path and
+            common.SETTINGS[common.SHOW_THUMBNAILS]
+        ):
             self._preview = ItemThumb(
                 self.item.thumb_path,
                 -1,
