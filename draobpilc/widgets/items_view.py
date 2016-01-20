@@ -52,7 +52,6 @@ class ItemsView(Gtk.Box):
         self.set_vexpand(True)
         self.set_hexpand(False)
         self.set_name('ItemsViewBox')
-        self.connect('key-release-event', self._on_key_release)
 
         self._bound_history = None
         self._last_entered_item = None
@@ -113,20 +112,6 @@ class ItemsView(Gtk.Box):
 
     def __len__(self):
         return len(self._listbox.get_children())
-
-    def _on_key_release(self, window, event):
-        if self.search_box.entry.has_focus():
-            return False
-
-        char = chr(Gdk.keyval_to_unicode(event.keyval))
-        if not char.isalpha():
-            return False
-
-        self.search_box.entry.grab_focus()
-        self.search_box.entry.set_text(self.search_box.entry.get_text() + char)
-        self.search_box.entry.set_position(-1)
-
-        return True
 
     def _on_leave_event(self, listbox, event):
         if self._last_entered_item:
