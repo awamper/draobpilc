@@ -23,6 +23,7 @@ from gi.repository import GObject
 
 from draobpilc import common
 
+ENTRY_PLACE_HOLDER = _('Filter items')
 SEARCH_INDEX_RE = re.compile('^#([0-9]+)$')
 
 
@@ -41,7 +42,7 @@ class SearchBox(Gtk.Box):
         self.entry = Gtk.Entry()
         self.entry.set_hexpand(True)
         self.entry.set_halign(Gtk.Align.FILL)
-        self.entry.set_placeholder_text(_('Type to search...'))
+        self.entry.set_placeholder_text(ENTRY_PLACE_HOLDER)
         self.entry.set_icon_from_icon_name(
             Gtk.EntryIconPosition.PRIMARY,
             'edit-find-symbolic'
