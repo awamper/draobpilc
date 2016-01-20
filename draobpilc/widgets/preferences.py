@@ -307,7 +307,8 @@ class Preferences(Gtk.Window):
             common.KIND_INDICATOR_WIDTH,
             common.SHOW_INDEXES,
             common.SHOW_TEXT_INFO,
-            common.SHOW_THUMBNAILS
+            common.SHOW_THUMBNAILS,
+            common.FOCUS_SEARCH
         ]
         for key in requires_restart:
             common.SETTINGS.connect(
@@ -553,7 +554,8 @@ class Preferences(Gtk.Window):
 
         keybindings = {
             common.SHOW_HISTORIES: _('Show histories'),
-            common.DELETE_ITEM: _('Delete an item')
+            common.DELETE_ITEM: _('Delete an item'),
+            common.FOCUS_SEARCH: _('Focus search entry')
         }
 
         keybindings_widget = KeybindingsWidget(keybindings)
