@@ -308,7 +308,9 @@ class Preferences(Gtk.Window):
             common.SHOW_INDEXES,
             common.SHOW_TEXT_INFO,
             common.SHOW_THUMBNAILS,
-            common.FOCUS_SEARCH
+            common.FOCUS_SEARCH,
+            common.SHOW_HISTORIES,
+            common.DELETE_ITEM
         ]
         for key in requires_restart:
             common.SETTINGS.connect(
