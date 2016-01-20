@@ -126,9 +126,14 @@ class KeybindingsWidget(Gtk.Box):
 
     def _refresh(self):
         self._store.clear()
+        sorted_keybindings = [(k, self._keybindings[k]) for k in sorted(
+            self._keybindings,
+            key=self._keybindings.get,
+            reverse=False
+        )]
 
-        for settings_key in self._keybindings:
-            key, mods = Gtk.accelerator_parse(common.SETTINGS[settings_key])
+        for kb_key, kb_name in sorted_keybindings:
+            key, mods = Gtk.accelerator_parse(common.SETTINGS[kb_key])
             iter = self._store.append()
             columns = [
                 KeybindingsWidget.Columns.NAME,
@@ -136,7 +141,7 @@ class KeybindingsWidget(Gtk.Box):
                 KeybindingsWidget.Columns.MODS,
                 KeybindingsWidget.Columns.KEY
             ]
-            values = [settings_key, self._keybindings[settings_key], mods, key]
+            values = [kb_key, kb_name, mods, key]
             self._store.set(iter, columns, values)
 
 
