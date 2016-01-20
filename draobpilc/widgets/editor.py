@@ -28,6 +28,7 @@ from draobpilc.widgets.item_thumb import ItemThumb
 
 PREVIEW_LABEL = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>' % _('Preview')
 EDITOR_LABEL = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>' % _('Editor')
+WRAP_MODE_LABEL = '<span fgcolor="grey" size="small"><b>%s</b></span>' % _('"wrap text" on')
 MARGIN = 10
 TRANSITION_DURATION = 300
 
@@ -71,6 +72,14 @@ class Editor(Gtk.Revealer):
         self._label.set_halign(Gtk.Align.START)
         self._label.set_valign(Gtk.Align.CENTER)
 
+        self._wrap_mode_label = Gtk.Label()
+        self._wrap_mode_label.set_markup(WRAP_MODE_LABEL)
+        self._wrap_mode_label.set_margin_top(MARGIN)
+        self._wrap_mode_label.set_margin_bottom(MARGIN)
+        self._wrap_mode_label.set_margin_right(MARGIN)
+        self._wrap_mode_label.set_halign(Gtk.Align.END)
+        self._wrap_mode_label.set_valign(Gtk.Align.CENTER)
+
         self._textview = Gtk.TextView()
         self._textview.set_name('EditorTextView')
         self._textview.set_vexpand(True)
@@ -101,17 +110,32 @@ class Editor(Gtk.Revealer):
         self._grid = Gtk.Grid()
         self._grid.set_name('EditorGrid')
         self._grid.attach(self._label, 0, 0, 1, 1)
+        self._grid.attach(self._wrap_mode_label, 1, 0, 1, 1)
         self._grid.attach(self._scrolled_window, 0, 1, 2, 1)
         self._grid.attach(self._thumb, 0, 2, 2, 1)
 
         self.add(self._grid)
         self.show_all()
 
+        self._update_wrap_mode()
+        common.SETTINGS.connect(
+            'changed::' + common.EDITOR_WRAP_TEXT,
+            lambda s, p: self._update_wrap_mode()
+        )
+
     def _on_enter(self, sender, event):
         self.emit('enter-notify', event)
 
     def _on_leave(self, sender, event):
         self.emit('leave-notify', event)
+
+    def _update_wrap_mode(self):
+        if common.SETTINGS[common.EDITOR_WRAP_TEXT]:
+            self._wrap_mode_label.show()
+            self._textview.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
+        else:
+            self._wrap_mode_label.hide()
+            self._textview.set_wrap_mode(Gtk.WrapMode.NONE)
 
     def _on_text_changed(self, buffer):
         if self._timeout_id:
@@ -155,10 +179,12 @@ class Editor(Gtk.Revealer):
             )
             self._label.set_markup(PREVIEW_LABEL)
             self._scrolled_window.hide()
+            self._wrap_mode_label.hide()
             self._thumb.show()
         else:
             self._thumb.hide()
             self._scrolled_window.show()
+            self._update_wrap_mode()
 
         self._textview.props.buffer.set_text(self.item.raw)
 

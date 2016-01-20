@@ -119,7 +119,15 @@
             <default><![CDATA['<Ctrl>F']]></default>
         </key>
 
+        <key type="s" name="editor-wrap-text-shortcut">
+            <default><![CDATA['<Ctrl>W']]></default>
+        </key>
+
         <key type="b" name="show-thumbnails">
+            <default>true</default>
+        </key>
+
+        <key type="b" name="editor-wrap-text">
             <default>true</default>
         </key>
 

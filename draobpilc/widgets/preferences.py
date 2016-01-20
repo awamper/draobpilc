@@ -315,7 +315,8 @@ class Preferences(Gtk.Window):
             common.SHOW_THUMBNAILS,
             common.FOCUS_SEARCH,
             common.SHOW_HISTORIES,
-            common.DELETE_ITEM
+            common.DELETE_ITEM,
+            common.EDITOR_WRAP_TEXT_SHORTCUT
         ]
         for key in requires_restart:
             common.SETTINGS.connect(
@@ -511,6 +512,12 @@ class Preferences(Gtk.Window):
         name = _('Editor')
         page = PrefsGrid(common.SETTINGS)
 
+        page.add_boolean(
+            _('Wrap text:'),
+            common.EDITOR_WRAP_TEXT
+        )
+        page.add_separator()
+
         spin_props = {}
         spin_props['lower'] = 200
         spin_props['upper'] = 1000
@@ -562,7 +569,8 @@ class Preferences(Gtk.Window):
         keybindings = {
             common.SHOW_HISTORIES: _('Show histories'),
             common.DELETE_ITEM: _('Delete an item'),
-            common.FOCUS_SEARCH: _('Focus search entry')
+            common.FOCUS_SEARCH: _('Focus search entry'),
+            common.EDITOR_WRAP_TEXT_SHORTCUT: _('Toggle text wrap in the editor')
         }
 
         keybindings_widget = KeybindingsWidget(keybindings)

@@ -266,6 +266,12 @@ class Application(Gtk.Application):
 
         utils.restart_app()
 
+    def _on_editor_wrap_action(self, action, param):
+        if common.SETTINGS[common.EDITOR_WRAP_TEXT]:
+            common.SETTINGS[common.EDITOR_WRAP_TEXT] = False
+        else:
+            common.SETTINGS[common.EDITOR_WRAP_TEXT] = True
+
     def merge_items(self, merger, items):
         merged_text = self._merger.buffer.props.text
         if not merged_text: return
@@ -327,6 +333,14 @@ class Application(Gtk.Application):
         self.set_accels_for_action(
             'app.focus_search',
             [common.SETTINGS[common.FOCUS_SEARCH]]
+        )
+
+        editor_wrap_action = Gio.SimpleAction.new('editor_wrap_text', None)
+        editor_wrap_action.connect('activate', self._on_editor_wrap_action)
+        self.add_action(editor_wrap_action)
+        self.set_accels_for_action(
+            'app.editor_wrap_text',
+            [common.SETTINGS[common.EDITOR_WRAP_TEXT_SHORTCUT]]
         )
 
         preferences_action = Gio.SimpleAction.new('preferences', None)
