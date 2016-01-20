@@ -83,6 +83,10 @@ class Application(Gtk.Application):
         self._main_toolbox.quit_btn.connect('clicked',
             lambda b: self.quit()
         )
+        self._main_toolbox.track_btn.connect('clicked',
+            lambda b: gpaste_client.track(b.get_active())
+        )
+        self._main_toolbox.track_btn.set_active(gpaste_client.get_prop('Active'))
 
         self._history_items = HistoryItems()
 
@@ -103,6 +107,9 @@ class Application(Gtk.Application):
         self._items_view.bind(self._history_items)
 
         gpaste_client.connect('ShowHistory', self.toggle)
+        gpaste_client.connect('Tracking',
+            lambda t: self._main_toolbox.track_btn.set_active(t)
+        )
         common.APPLICATION = self
 
     def _check_version(self):

@@ -47,7 +47,27 @@ class MainToolbox(Gtk.Box):
         self.quit_btn.set_relief(Gtk.ReliefStyle.NONE)
         self.quit_btn.set_tooltip_text(_('Quit'))
 
+        self._track_img = Gtk.Image.new_from_icon_name(
+            'emblem-synchronizing-symbolic',
+            Gtk.IconSize.LARGE_TOOLBAR
+        )
+        self._track_img.set_name('TrackImg')
+        self.track_btn = Gtk.ToggleButton()
+        self.track_btn.set_image(self._track_img)
+        self.track_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.track_btn.set_tooltip_text(_('Track clipboard changes'))
+        self.track_btn.connect('toggled', self._on_toggled)
+
         self.add(self.quit_btn)
         self.add(self.about_btn)
         self.add(self.prefs_btn)
+        self.add(self.track_btn)
         self.show_all()
+
+    def _on_toggled(self, button):
+        style_context = self._track_img.get_style_context()
+
+        if button.get_active():
+            style_context.add_class('active')
+        else:
+            style_context.remove_class('active')

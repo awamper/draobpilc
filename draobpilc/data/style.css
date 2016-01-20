@@ -53,3 +53,7 @@
     font-size: x-small;
     font-weight: bold;
 }
+
+#TrackImg.active {
+    color: green;
+}

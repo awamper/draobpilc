@@ -127,3 +127,7 @@ def delete_history(name):
 
 def empty_history(name):
     return _client.EmptyHistory(name)
+
+
+def track(t):
+    return _client.Track(t)
