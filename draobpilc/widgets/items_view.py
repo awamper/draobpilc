@@ -328,8 +328,7 @@ class ItemsView(Gtk.Box):
         self._listbox.invalidate_filter()
         self._listbox.invalidate_sort()
         self.select_first(grab_focus=False)
-        self.reset_scroll()
-        
+
         if search_string:
             self._last_search_string = search_string
         else:
@@ -345,6 +344,8 @@ class ItemsView(Gtk.Box):
             self._listbox.select_row(row)
             if grab_focus: row.grab_focus()
             break
+
+        self.reset_scroll()
 
     def get_selected(self):
         result = []
