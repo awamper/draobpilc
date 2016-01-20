@@ -319,6 +319,16 @@ class Application(Gtk.Application):
             [common.SETTINGS[common.SHOW_HISTORIES]]
         )
 
+        focus_search_action = Gio.SimpleAction.new('focus_search', None)
+        focus_search_action.connect('activate',
+            lambda a, p: self._items_view.search_box.entry.grab_focus()
+        )
+        self.add_action(focus_search_action)
+        self.set_accels_for_action(
+            'app.focus_search',
+            [common.SETTINGS[common.FOCUS_SEARCH]]
+        )
+
         preferences_action = Gio.SimpleAction.new('preferences', None)
         preferences_action.connect('activate', lambda a, p: self.show_prefs())
         self.add_action(preferences_action)

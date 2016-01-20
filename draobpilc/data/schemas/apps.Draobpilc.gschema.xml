@@ -115,6 +115,10 @@
             <default><![CDATA['Delete']]></default>
         </key>
 
+        <key type="s" name="focus-search">
+            <default><![CDATA['<Ctrl>F']]></default>
+        </key>
+
         <key type="b" name="show-thumbnails">
             <default>true</default>
         </key>
