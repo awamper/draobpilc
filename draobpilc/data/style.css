@@ -41,7 +41,7 @@
     background-color: green;
 }
 
-#EditorBox, #MergerBox {
+#EditorGrid, #MergerBox {
     background-color: rgba(0, 0, 0, 0.5);
 }
 

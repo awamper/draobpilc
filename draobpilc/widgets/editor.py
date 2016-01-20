@@ -55,10 +55,6 @@ class Editor(Gtk.Revealer):
         self.set_transition_duration(TRANSITION_DURATION)
         self.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
 
-        self._box = Gtk.Box()
-        self._box.set_name('EditorBox')
-        self._box.set_orientation(Gtk.Orientation.VERTICAL)
-
         self.item = None
         self._timeout_id = 0
         common.SETTINGS.bind(
@@ -102,11 +98,13 @@ class Editor(Gtk.Revealer):
         self._thumb.set_no_show_all(True)
         self._thumb.hide()
 
-        self._box.add(self._label)
-        self._box.add(self._scrolled_window)
-        self._box.add(self._thumb)
+        self._grid = Gtk.Grid()
+        self._grid.set_name('EditorGrid')
+        self._grid.attach(self._label, 0, 0, 1, 1)
+        self._grid.attach(self._scrolled_window, 0, 1, 2, 1)
+        self._grid.attach(self._thumb, 0, 2, 2, 1)
 
-        self.add(self._box)
+        self.add(self._grid)
         self.show_all()
 
     def _on_enter(self, sender, event):
