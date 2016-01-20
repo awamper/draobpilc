@@ -131,3 +131,7 @@ def empty_history(name):
 
 def track(t):
     return _client.Track(t)
+
+
+def reexecute():
+    return _client.Reexecute()

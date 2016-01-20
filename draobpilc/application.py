@@ -15,6 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from dbus.exceptions import DBusException
 from distutils.version import StrictVersion
 
 from gi.repository import Gtk
@@ -87,6 +88,7 @@ class Application(Gtk.Application):
             lambda b: gpaste_client.track(b.get_active())
         )
         self._main_toolbox.track_btn.set_active(gpaste_client.get_prop('Active'))
+        self._main_toolbox.restart_btn.connect('clicked', self._restart_daemon)
 
         self._history_items = HistoryItems()
 
@@ -255,6 +257,14 @@ class Application(Gtk.Application):
             pass
         else:
             self.hide()
+
+    def _restart_daemon(self, button):
+        try:
+            gpaste_client.reexecute()
+        except DBusException:
+            pass
+
+        utils.restart_app()
 
     def merge_items(self, merger, items):
         merged_text = self._merger.buffer.props.text

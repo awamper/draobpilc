@@ -58,8 +58,16 @@ class MainToolbox(Gtk.Box):
         self.track_btn.set_tooltip_text(_('Track clipboard changes'))
         self.track_btn.connect('toggled', self._on_toggled)
 
-        self.add(self.quit_btn)
+        self.restart_btn = Gtk.Button.new_from_icon_name(
+            'view-refresh-symbolic',
+            Gtk.IconSize.LARGE_TOOLBAR
+        )
+        self.restart_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.restart_btn.set_tooltip_text(_('Restart the daemon'))
+
         self.add(self.about_btn)
+        self.add(self.quit_btn)
+        self.add(self.restart_btn)
         self.add(self.prefs_btn)
         self.add(self.track_btn)
         self.show_all()
