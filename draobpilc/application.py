@@ -16,7 +16,6 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from dbus.exceptions import DBusException
-from distutils.version import StrictVersion
 
 from gi.repository import Gtk
 from gi.repository import Gio
@@ -113,33 +112,6 @@ class Application(Gtk.Application):
             lambda t: self._main_toolbox.track_btn.set_active(t)
         )
         common.APPLICATION = self
-
-    def _check_version(self):
-        current_version = gpaste_client.get_prop('Version')
-
-        if (
-            StrictVersion(current_version) <
-            StrictVersion(version.GPASTE_VERSION)
-        ):
-            msg = _(
-                'GPaste version >= {0} is required, '
-                'current version == {1}.'
-            ).format(
-                version.GPASTE_VERSION,
-                current_version
-            )
-            message_dialog = Gtk.MessageDialog(
-                None,
-                Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                Gtk.MessageType.ERROR,
-                Gtk.ButtonsType.OK,
-                version.APP_NAME
-            )
-            message_dialog.set_position(Gtk.WindowPosition.CENTER)
-            message_dialog.set_icon_from_file(common.ICON_PATH)
-            message_dialog.props.secondary_text = msg
-            message_dialog.run()
-            self.quit()
 
     def _resize(self, window, event):
         size = window.get_size()
@@ -282,8 +254,6 @@ class Application(Gtk.Application):
         self._merger.reveal(False)
 
     def do_activate(self):
-        self._check_version()
-
         if self._window:
             self.show()
             return None
