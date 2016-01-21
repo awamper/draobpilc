@@ -210,6 +210,19 @@ class Application(Gtk.Application):
         index = selected_items[0].index
         gpaste_client.delete(index)
 
+    def _on_open_item(self, action, param):
+        selected_items = self._items_view.get_selected()
+        if not selected_items: return
+        item = selected_items[0]
+        if not item.app_info: return
+
+        uri = item.raw.strip()
+        if item.kind != gpaste_client.Kind.LINK:
+            uri = 'file://%s' % item.raw
+
+        item.app_info.launch_uris([uri])
+        self.hide()
+
     def _hide_on_click(self, window, event):
         pointer_x, pointer_y = event.get_coords()
 
@@ -311,6 +324,14 @@ class Application(Gtk.Application):
         self.set_accels_for_action(
             'app.editor_wrap_text',
             [common.SETTINGS[common.EDITOR_WRAP_TEXT_SHORTCUT]]
+        )
+
+        open_item_action = Gio.SimpleAction.new('open_item', None)
+        open_item_action.connect('activate', self._on_open_item)
+        self.add_action(open_item_action)
+        self.set_accels_for_action(
+            'app.open_item',
+            [common.SETTINGS[common.OPEN_ITEM]]
         )
 
         preferences_action = Gio.SimpleAction.new('preferences', None)

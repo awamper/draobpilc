@@ -123,6 +123,10 @@
             <default><![CDATA['<Ctrl>W']]></default>
         </key>
 
+        <key type="s" name="open-item">
+            <default><![CDATA['<Ctrl>Return']]></default>
+        </key>
+
         <key type="b" name="show-thumbnails">
             <default>true</default>
         </key>
