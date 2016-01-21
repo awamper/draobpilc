@@ -36,6 +36,10 @@ simple_url_2_re = re.compile(
 )
 
 
+class SettingsSchemaNotFound(Exception):
+    """ """
+
+
 def restart_app():
     from draobpilc.common import APPLICATION
     APPLICATION.quit()
@@ -56,17 +60,20 @@ def notify(summary=None, body=None, icon_name=None):
     notification.show()
 
 
-def get_settings(schema_id, schema_dir):
-    schema_source = Gio.SettingsSchemaSource.new_from_directory(
-        schema_dir,
-        Gio.SettingsSchemaSource.get_default(),
-        False
-    )
+def get_settings(schema_id, schema_dir=None):
+    if not schema_dir:
+        schema_source = Gio.SettingsSchemaSource.get_default()
+    else:
+        schema_source = Gio.SettingsSchemaSource.new_from_directory(
+            schema_dir,
+            Gio.SettingsSchemaSource.get_default(),
+            False
+        )
 
     settings = schema_source.lookup(schema_id, True)
 
     if not settings:
-        raise Exception(
+        raise SettingsSchemaNotFound(
             'Schema "{schema}"" could not be found'.format(schema=schema_id)
         )
 
