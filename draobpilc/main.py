@@ -20,18 +20,54 @@ import sys
 import signal
 import logging
 import argparse
+from distutils.version import StrictVersion
+from dbus.exceptions import DBusException
 
 from gi.repository import Gtk
 from draobpilc import get_data_path
 from draobpilc import common
 from draobpilc import version
 from draobpilc.lib import utils
-from draobpilc.application import Application
 
 DESKTOP_FILE_PATH = os.path.join(
     os.path.expanduser('~/.local/share/applications'),
     '%s.desktop' % version.APP_NAME
 )
+
+
+def check_gpaste_version():
+    result = True
+
+    try:
+        from draobpilc.lib import gpaste_client
+    except DBusException:
+        result = False
+        current_version = _('Not detected')
+    else:
+        try:
+            gpaste_client.get_history_name()
+        except DBusException:
+            result = False
+            current_version = _('Not detected')
+        else:
+            current_version = gpaste_client.get_prop('Version')
+
+            if (
+                StrictVersion(current_version) <
+                StrictVersion(version.GPASTE_VERSION)
+            ):
+                result = False
+
+    if not result:
+        msg = _(
+               'GPaste version >= {0} is required, '
+               'current version == {1}.'
+           ).format(
+               version.GPASTE_VERSION,
+               current_version
+           )
+        utils.notify(version.APP_NAME, msg)
+        sys.exit(msg)
 
 
 def install_excepthook():
@@ -80,6 +116,8 @@ def uninstall_desktop_file():
 
 
 def run():
+    check_gpaste_version()
+    from draobpilc.application import Application
     install_excepthook()
 
     parser = argparse.ArgumentParser(description='GPaste GUI')
