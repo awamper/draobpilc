@@ -21,6 +21,7 @@ import dbus.mainloop.glib
 from gi.repository import Gio
 
 from draobpilc import common
+from draobpilc.lib import utils
 
 
 class Action():
@@ -41,7 +42,10 @@ class Kind():
 
 
 SCHEMA_ID = common.SETTINGS[common.GPASTE_SCHEMA_ID]
-SETTINGS = Gio.Settings(SCHEMA_ID)
+try:
+    SETTINGS = utils.get_settings(SCHEMA_ID)
+except utils.SettingsSchemaNotFound:
+    pass
 
 dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
