@@ -232,6 +232,7 @@ class HistoriesManager(Gtk.Box):
         self.link = Gtk.LinkButton()
         self.link.connect('activate-link', self._on_activate_link)
         self.link.set_label('...')
+        self.link.set_tooltip_text(_('Open histories manager'))
 
         self._entry = Gtk.Entry()
         self._entry.set_placeholder_text(_('New history'))
