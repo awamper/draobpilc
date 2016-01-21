@@ -191,6 +191,8 @@ class HistoriesManagerItem(Gtk.Box):
         self._confirmation_revealer.show_all()
         self._confirmation_revealer.set_reveal_child(True)
 
+        self._confirmation_revealer.no_btn.grab_focus()
+
     def _confirm(self, yes_btn):
         if not self._wait_for_confirm: return
 
