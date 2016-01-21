@@ -16,21 +16,95 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from gi.repository import Gtk
+from gi.repository import GObject
 
 from draobpilc.lib import gpaste_client
 
-DELETE_BUTTON_SIZE = 14
+ITEM_BUTTON_SIZE = 14
 NAME_TEMPLATE = '%s (%i)'
+TRANSITION_TIME_MS = 500
+
+
+class ItemAction():
+
+    EMPTY = 1
+    DELETE = 2
+
+
+class ItemButton(Gtk.Button):
+
+    def __init__(self, icon_name, icon_size, tooltip, expand=False):
+        super().__init__()
+
+        icon_theme = Gtk.IconTheme.get_default()
+
+        icon_info = icon_theme.lookup_icon(
+            icon_name,
+            icon_size,
+            Gtk.IconLookupFlags.FORCE_SIZE
+        )
+        pixbuf, __ = icon_info.load_symbolic_for_context(
+            self.get_style_context()
+        )
+        btn_image = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        self.set_hexpand(expand)
+        self.set_halign(Gtk.Align.END)
+        self.set_image(btn_image)
+        self.set_relief(Gtk.ReliefStyle.NONE)
+        self.set_tooltip_text(tooltip)
+
+
+class ItemConfirmation(Gtk.Revealer):
+
+    def __init__(self):
+        super().__init__()
+
+        self.set_reveal_child(False)
+        self.set_transition_duration(TRANSITION_TIME_MS)
+        self.set_transition_type(Gtk.RevealerTransitionType.SLIDE_UP)
+
+        self.label = Gtk.Label()
+        style_context = self.label.get_style_context()
+        style_context.add_class('flat')
+        style_context.add_class('text-button')
+        style_context.add_class('button')
+
+        self.yes_btn = ItemButton(
+            'emblem-ok-symbolic',
+            ITEM_BUTTON_SIZE,
+            _('Yes'),
+            expand=True
+        )
+        self.no_btn = ItemButton(
+            'process-stop-symbolic',
+            ITEM_BUTTON_SIZE,
+            _('No'),
+            expand=False
+        )
+
+        box = Gtk.Box()
+        box.set_orientation(Gtk.Orientation.HORIZONTAL)
+        box.set_halign(Gtk.Align.FILL)
+        box.add(self.label)
+        box.add(self.yes_btn)
+        box.add(self.no_btn)
+
+        self.add(box)
 
 
 class HistoriesManagerItem(Gtk.Box):
 
+    __gsignals__ = {
+        'action-request': (GObject.SIGNAL_RUN_FIRST, None, (int,))
+    }
+
     def __init__(self, name):
         super().__init__()
 
-        self.set_orientation(Gtk.Orientation.HORIZONTAL)
-        self.set_halign(Gtk.Align.FILL)
+        self.set_orientation(Gtk.Orientation.VERTICAL)
 
+        self._wait_for_confirm = None
         self.name = name
         self.size = gpaste_client.get_history_size(self.name)
 
@@ -48,46 +122,89 @@ class HistoriesManagerItem(Gtk.Box):
         label_style_context.add_class('text-button')
         label_style_context.add_class('button')
 
-        icon_theme = Gtk.IconTheme.get_default()
-
-        icon_info = icon_theme.lookup_icon(
+        self.empty_btn = ItemButton(
             'edit-clear-all-symbolic',
-            DELETE_BUTTON_SIZE,
-            Gtk.IconLookupFlags.FORCE_SIZE
+            ITEM_BUTTON_SIZE,
+            _('Empty history'),
+            expand=True
         )
-        pixbuf, __ = icon_info.load_symbolic_for_context(
-            self.get_style_context()
+        self.empty_btn.connect(
+            'clicked',
+            self._request_confirmation,
+            ItemAction.EMPTY
         )
-        btn_image = Gtk.Image.new_from_pixbuf(pixbuf)
-        self.empty_btn = Gtk.Button()
-        self.empty_btn.set_hexpand(True)
-        self.empty_btn.set_halign(Gtk.Align.END)
-        self.empty_btn.set_image(btn_image)
-        self.empty_btn.set_relief(Gtk.ReliefStyle.NONE)
-        self.empty_btn.set_tooltip_text(_('Empty history'))
 
-        icon_info = icon_theme.lookup_icon(
+        self.delete_btn = ItemButton(
             'edit-delete-symbolic',
-            DELETE_BUTTON_SIZE,
-            Gtk.IconLookupFlags.FORCE_SIZE
+            ITEM_BUTTON_SIZE,
+            _('Delete history'),
+            expand=False
         )
-        pixbuf, __ = icon_info.load_symbolic_for_context(
-            self.get_style_context()
+        self.delete_btn.connect(
+            'clicked',
+            self._request_confirmation,
+            ItemAction.DELETE
         )
-        btn_image = Gtk.Image.new_from_pixbuf(pixbuf)
-        self.delete_btn = Gtk.Button()
-        self.delete_btn.set_hexpand(False)
-        self.delete_btn.set_halign(Gtk.Align.END)
-        self.delete_btn.set_image(btn_image)
-        self.delete_btn.set_relief(Gtk.ReliefStyle.NONE)
-        self.delete_btn.set_tooltip_text(_('Delete history'))
 
-        self.add(self.link)
-        self.add(self._label)
-        self.add(self.empty_btn)
-        self.add(self.delete_btn)
+        self._box = Gtk.Box()
+        self._box.set_orientation(Gtk.Orientation.HORIZONTAL)
+        self._box.set_halign(Gtk.Align.FILL)
+        self._box.add(self.link)
+        self._box.add(self._label)
+        self._box.add(self.empty_btn)
+        self._box.add(self.delete_btn)
+
+        self._revealer = Gtk.Revealer()
+        self._revealer.set_reveal_child(True)
+        self._revealer.set_transition_duration(TRANSITION_TIME_MS)
+        self._revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
+        self._revealer.add(self._box)
+
+        self._confirmation_revealer = ItemConfirmation()
+        self._confirmation_revealer.label.set_label(_('Are you sure?'))
+        self._confirmation_revealer.yes_btn.connect('clicked', self._confirm)
+        self._confirmation_revealer.no_btn.connect('clicked', self._cancel)
+
+        self.add(self._revealer)
+        self.add(self._confirmation_revealer)
         self.show_all()
+
         self.set_active(False)
+
+    def _hide_confirm_dialog(self):
+        self._confirmation_revealer.set_transition_type(
+            Gtk.RevealerTransitionType.SLIDE_UP
+        )
+        self._confirmation_revealer.set_reveal_child(False)
+
+        self._revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
+        self._revealer.show_all()
+        self._revealer.set_reveal_child(True)
+
+    def _show_confirm_dialog(self):
+        self._revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
+        self._revealer.set_reveal_child(False)
+
+        self._confirmation_revealer.set_transition_type(
+            Gtk.RevealerTransitionType.SLIDE_UP
+        )
+        self._confirmation_revealer.show_all()
+        self._confirmation_revealer.set_reveal_child(True)
+
+    def _confirm(self, yes_btn):
+        if not self._wait_for_confirm: return
+
+        self.emit('action-request', self._wait_for_confirm)
+        self._wait_for_confirm = None
+        self._hide_confirm_dialog()
+
+    def _cancel(self, no_btn):
+        self._wait_for_confirm = None
+        self._hide_confirm_dialog()
+
+    def _request_confirmation(self, button, action):
+        self._wait_for_confirm = action
+        self._show_confirm_dialog()
 
     def set_active(self, active=False):
         if active:
@@ -150,12 +267,14 @@ class HistoriesManager(Gtk.Box):
         self._switch_history(histories_manager_item.name)
         return True
 
-    def _on_history_delete(self, button, histories_manager_item):
-        gpaste_client.delete_history(histories_manager_item.name)
-
-    def _on_history_empty(self, button, histories_manager_item):
-        gpaste_client.empty_history(histories_manager_item.name)
-        self.update()
+    def _on_item_action(self, histories_manager_item, action):
+        if action == ItemAction.EMPTY:
+            gpaste_client.empty_history(histories_manager_item.name)
+            self.update()
+        elif action == ItemAction.DELETE:
+            gpaste_client.delete_history(histories_manager_item.name)
+        else:
+            pass
 
     def _set_active(self, name):
         self.link.set_label(name)
@@ -185,15 +304,9 @@ class HistoriesManager(Gtk.Box):
                 self._on_histories_manager_item,
                 histories_manager_item
             )
-            histories_manager_item.delete_btn.connect(
-                'clicked',
-                self._on_history_delete,
-                histories_manager_item
-            )
-            histories_manager_item.empty_btn.connect(
-                'clicked',
-                self._on_history_empty,
-                histories_manager_item
+            histories_manager_item.connect(
+                'action-request',
+                self._on_item_action
             )
             self._box.add(histories_manager_item)
 
