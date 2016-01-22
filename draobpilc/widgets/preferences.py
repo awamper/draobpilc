@@ -317,7 +317,8 @@ class Preferences(Gtk.Window):
             common.SHOW_HISTORIES,
             common.DELETE_ITEM,
             common.EDITOR_WRAP_TEXT_SHORTCUT,
-            common.OPEN_ITEM
+            common.OPEN_ITEM,
+            common.BACKUP_HISTORY
         ]
         for key in requires_restart:
             common.SETTINGS.connect(
@@ -572,7 +573,8 @@ class Preferences(Gtk.Window):
             common.DELETE_ITEM: _('Delete an item'),
             common.FOCUS_SEARCH: _('Focus search entry'),
             common.EDITOR_WRAP_TEXT_SHORTCUT: _('Toggle text wrap in the editor'),
-            common.OPEN_ITEM: _('Open item(file, image, url)')
+            common.OPEN_ITEM: _('Open item(file, image, url)'),
+            common.BACKUP_HISTORY: _('Backup current history')
         }
 
         keybindings_widget = KeybindingsWidget(keybindings)

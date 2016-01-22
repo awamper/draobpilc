@@ -37,6 +37,7 @@ from draobpilc.widgets.items_view import ItemsView
 from draobpilc.widgets.main_toolbox import MainToolbox
 from draobpilc.widgets.about_dialog import AboutDialog
 from draobpilc.widgets.preferences import show_preferences
+from draobpilc.widgets.backup_history_dialog import BackupHistoryDialog
 
 CONNECTION_IDS = {
     'SHOW_EDITOR': 0,
@@ -257,6 +258,10 @@ class Application(Gtk.Application):
         else:
             common.SETTINGS[common.EDITOR_WRAP_TEXT] = True
 
+    def _on_backup_history(self, action, param):
+        dialog = BackupHistoryDialog(self._window)
+        dialog.run()
+
     def merge_items(self, merger, items):
         merged_text = self._merger.buffer.props.text
         if not merged_text: return
@@ -332,6 +337,14 @@ class Application(Gtk.Application):
         self.set_accels_for_action(
             'app.open_item',
             [common.SETTINGS[common.OPEN_ITEM]]
+        )
+
+        backup_history_action = Gio.SimpleAction.new('backup_history', None)
+        backup_history_action.connect('activate', self._on_backup_history)
+        self.add_action(backup_history_action)
+        self.set_accels_for_action(
+            'app.backup_history',
+            [common.SETTINGS[common.BACKUP_HISTORY]]
         )
 
         preferences_action = Gio.SimpleAction.new('preferences', None)

@@ -139,3 +139,7 @@ def track(t):
 
 def reexecute():
     return _client.Reexecute()
+
+
+def backup_history(history_name, backup_name):
+    return _client.BackupHistory(history_name, backup_name)
