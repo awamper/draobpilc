@@ -22,12 +22,12 @@ from draobpilc.lib import gpaste_client
 
 class BackupHistoryDialog(Gtk.Dialog):
 
-    def __init__(self, transient_for):
+    def __init__(self, transient_for=None, current_name=None):
         super().__init__(use_header_bar=True)
 
         self.set_title(_('Backup history'))
         self.set_resizable(False)
-        self.set_transient_for(transient_for)
+        if transient_for: self.set_transient_for(transient_for)
         self.set_position(Gtk.WindowPosition.CENTER)
         self.set_destroy_with_parent(True)
         self.set_modal(True)
@@ -38,8 +38,8 @@ class BackupHistoryDialog(Gtk.Dialog):
             Gtk.ResponseType.CANCEL
         )
 
-        current_name = gpaste_client.get_history_name()
-        backup_name = current_name + _('_backup')
+        self._current_name = current_name or gpaste_client.get_history_name()
+        backup_name = self._current_name + _('_backup')
 
         self._label = Gtk.Label()
         self._label.set_label (
@@ -96,7 +96,6 @@ class BackupHistoryDialog(Gtk.Dialog):
             self._show_error()
             return False
 
-        current_name = gpaste_client.get_history_name()
-        gpaste_client.backup_history(current_name, name)
+        gpaste_client.backup_history(self._current_name, name)
 
         return True
