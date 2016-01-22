@@ -19,6 +19,7 @@ from gi.repository import Gtk
 from gi.repository import GObject
 
 from draobpilc.lib import gpaste_client
+from draobpilc.widgets.backup_history_dialog import BackupHistoryDialog
 
 ITEM_BUTTON_SIZE = 14
 NAME_TEMPLATE = '%s (%i)'
@@ -29,6 +30,7 @@ class ItemAction():
 
     EMPTY = 1
     DELETE = 2
+    BACKUP = 3
 
 
 class ItemButton(Gtk.Button):
@@ -122,11 +124,22 @@ class HistoriesManagerItem(Gtk.Box):
         label_style_context.add_class('text-button')
         label_style_context.add_class('button')
 
+        self.backup_btn = ItemButton(
+            'document-save-symbolic',
+            ITEM_BUTTON_SIZE,
+            _('Backup history'),
+            expand=True
+        )
+        self.backup_btn.connect(
+            'clicked',
+            lambda b: self.emit('action-request', ItemAction.BACKUP)
+        )
+
         self.empty_btn = ItemButton(
             'edit-clear-all-symbolic',
             ITEM_BUTTON_SIZE,
             _('Empty history'),
-            expand=True
+            expand=False
         )
         self.empty_btn.connect(
             'clicked',
@@ -151,6 +164,7 @@ class HistoriesManagerItem(Gtk.Box):
         self._box.set_halign(Gtk.Align.FILL)
         self._box.add(self.link)
         self._box.add(self._label)
+        self._box.add(self.backup_btn)
         self._box.add(self.empty_btn)
         self._box.add(self.delete_btn)
 
@@ -276,6 +290,12 @@ class HistoriesManager(Gtk.Box):
             self.update()
         elif action == ItemAction.DELETE:
             gpaste_client.delete_history(histories_manager_item.name)
+        elif action == ItemAction.BACKUP:
+            dialog = BackupHistoryDialog(
+                self.get_toplevel(),
+                histories_manager_item.name
+            )
+            dialog.run()
         else:
             pass
 
