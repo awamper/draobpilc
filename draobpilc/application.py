@@ -282,7 +282,7 @@ class Application(Gtk.Application):
 
         self._window = Window(self)
         self._window.connect('configure-event', self._resize)
-        self._window.connect('button-release-event', self._hide_on_click)
+        self._window.connect('button-press-event', self._hide_on_click)
         self._window.grid.attach(overlay, 0, 0, 1, 1)
         self._window.grid.attach(self._items_view, 1, 0, 1, 2)
         self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
