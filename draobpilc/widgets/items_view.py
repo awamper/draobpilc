@@ -209,7 +209,6 @@ class ItemsView(Gtk.Box):
 
     def _filter_row(self, row):
         result = True
-        search_string = self.search_box.entry.get_text()
         history_item = row.get_child().item
 
         if self._show_index:
@@ -219,13 +218,19 @@ class ItemsView(Gtk.Box):
         if self._filter_mode and not row.get_mapped():
             return False
 
-        if not search_string.strip():
+        if (
+            self.search_box.flags and
+            history_item.kind not in self.search_box.flags
+        ):
+            return False
+
+        if not self.search_box.search_text:
             history_item.markup = None
             history_item.sort_score = None
             return result
 
         match = fuzzy.match(
-            search_string,
+            self.search_box.search_text,
             history_item.text,
             common.SETTINGS[common.FUZZY_SEARCH_MAX_DISTANCE]
         )
@@ -318,9 +323,8 @@ class ItemsView(Gtk.Box):
 
     def filter(self, search_box):
         self._show_index = None
-        search_string = self.search_box.entry.get_text().strip()
 
-        if len(search_string) > len(self._last_search_string):
+        if len(self.search_box.search_text) > len(self._last_search_string):
             self._filter_mode = True
         else:
             self._filter_mode = False
@@ -329,8 +333,8 @@ class ItemsView(Gtk.Box):
         self._listbox.invalidate_sort()
         self.select_first(grab_focus=False)
 
-        if search_string:
-            self._last_search_string = search_string
+        if self.search_box.search_text:
+            self._last_search_string = self.search_box.search_text
         else:
             self._last_search_string = ''
 

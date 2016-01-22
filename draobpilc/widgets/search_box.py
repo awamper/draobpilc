@@ -22,9 +22,11 @@ from gi.repository import GLib
 from gi.repository import GObject
 
 from draobpilc import common
+from draobpilc.lib import gpaste_client
 
 ENTRY_PLACE_HOLDER = _('Filter items')
-SEARCH_INDEX_RE = re.compile('^#([0-9]+)$')
+SEARCH_INDEX_RE = re.compile(r'^#([0-9]+)$')
+FLAGS_RE = re.compile(r'^(.*?)\-([lfi]+)$')
 
 
 class SearchBox(Gtk.Box):
@@ -47,6 +49,10 @@ class SearchBox(Gtk.Box):
             Gtk.EntryIconPosition.PRIMARY,
             'edit-find-symbolic'
         )
+        self.entry.set_tooltip_text(
+            _('You can add "-{flags}" at the end to search for types.') +
+            _('\nl - links\nf - files\ni - images')
+        )
 
         self.spinner = Gtk.Spinner()
         self.spinner.set_halign(Gtk.Align.END)
@@ -60,15 +66,16 @@ class SearchBox(Gtk.Box):
         self.buffer.connect('notify::text', self._on_text_changed)
 
         self._timeout_id = 0
+        self.flags = []
 
         self.add(overlay)
         self.show_all()
 
     def _on_text_changed(self, buffer, *a, **kw):
         def on_timeout():
+            self._update_flags()
             self._timeout_id = 0
-            text = self.entry.get_text()
-            match = SEARCH_INDEX_RE.findall(text)
+            match = SEARCH_INDEX_RE.findall(self.search_text)
 
             if match:
                 self.emit('search-index', int(match[0]))
@@ -84,7 +91,23 @@ class SearchBox(Gtk.Box):
         search_timeout = common.SETTINGS[common.SEARCH_TIMEOUT]
         self._timeout_id = GLib.timeout_add(search_timeout, on_timeout)
 
+    def _update_flags(self):
+        flags = FLAGS_RE.findall(self.entry.get_text())
+        self.flags.clear()
+
+        if not flags: return
+        else: flags = flags[0][1]
+
+        if 'l' in flags: self.flags.append(gpaste_client.Kind.LINK)
+        if 'f' in flags: self.flags.append(gpaste_client.Kind.FILE)
+        if 'i' in flags: self.flags.append(gpaste_client.Kind.IMAGE)
+
     @property
     def buffer(self):
         return self.entry.props.buffer
-    
+
+    @property
+    def search_text(self):
+        text = self.entry.get_text().strip()
+        text = FLAGS_RE.sub(r'\1', text)
+        return text
