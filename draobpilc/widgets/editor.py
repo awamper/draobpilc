@@ -28,7 +28,7 @@ from draobpilc.widgets.item_thumb import ItemThumb
 
 PREVIEW_LABEL = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>' % _('Preview')
 EDITOR_LABEL = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>' % _('Editor')
-WRAP_MODE_LABEL = '<span fgcolor="grey" size="small"><b>%s</b></span>' % _('"wrap text" on')
+WRAP_MODE_LABEL = '<span fgcolor="grey" size="small"><b>%s</b></span>' % _('"wrap text" is on')
 MARGIN = 10
 TRANSITION_DURATION = 300
 
