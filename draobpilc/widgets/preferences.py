@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import json
 
 from gi.repository import Gtk
 from gi.repository import Gio
@@ -171,16 +172,16 @@ class PrefsGrid(Gtk.Grid):
 
         return self.add_row(text, item)
 
-    def add_combo(self, text, key, entries_dict, type_):
+    def add_combo(self, text, key, entries_list, type_):
         def on_changed(combo):
             self._settings[key] = type_(combo.props.active_id)
 
         item = Gtk.ComboBoxText()
 
-        for entry in entries_dict:
-            item.insert(-1, unicode(entry.value), entry.title.strip())
+        for entry in entries_list:
+            item.insert(-1, entry['value'], entry['title'].strip())
 
-        item.set_active_id(unicode(self._settings[key]))
+        item.set_active_id(self._settings[key])
         item.connect('changed', on_changed)
 
         return self.add_row(text, item)
@@ -224,6 +225,12 @@ class PrefsGrid(Gtk.Grid):
             spin_button.set_digits(2)
 
         return self.add_row(label, spin_button, True)
+
+    def add_label(self, label):
+        item = Gtk.Label()
+        item.set_label(label)
+
+        return self.add_item(item)
 
     def add_row(self, text, widget, wrap=False):
         label = Gtk.Label()
@@ -549,6 +556,41 @@ class Preferences(Gtk.Window):
             common.HIDE_EDITOR_TIMEOUT,
             spin_props,
             int
+        )
+
+        page.add_separator()
+        page.add_label(_('Merger'))
+
+        decorators = json.loads(common.SETTINGS[common.MERGE_DECORATORS])
+        decorators = [{
+            'value': decorator[1],
+            'title': decorator[0]
+        } for decorator in decorators]
+        decorators.append({
+            'value': '',
+            'title': _('None')
+        })
+        page.add_combo(
+            _('Default decorator:'),
+            common.MERGE_DEFAULT_DECORATOR,
+            decorators,
+            str
+        )
+
+        separators = json.loads(common.SETTINGS[common.MERGE_SEPARATORS])
+        separators = [{
+            'value': separator[1],
+            'title': separator[0]
+        } for separator in separators]
+        separators.append({
+            'value': '',
+            'title': _('None')
+        })
+        page.add_combo(
+            _('Default separator:'),
+            common.MERGE_DEFAULT_SEPARATOR,
+            separators,
+            str
         )
 
         result = dict(page=page, name=name)
