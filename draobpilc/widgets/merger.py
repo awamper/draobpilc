@@ -76,17 +76,6 @@ class Merger(Gtk.Revealer):
         self._decorator_combo.connect('changed', lambda c: self.update())
         self._decorator_combo.props.margin = MARGIN
 
-        decorators = json.loads(common.SETTINGS[common.MERGE_DECORATORS])
-        decorators.append([_('None'), COMBOBOX_NONE_STRING])
-        for decorator in decorators:
-            self._decorator_combo.append(decorator[1], decorator[0])
-
-        default_decorator = common.SETTINGS[common.MERGE_DEFAULT_DECORATOR]
-        if not default_decorator:
-            self._decorator_combo.set_active_id(COMBOBOX_NONE_STRING)
-        else:
-            self._decorator_combo.set_active_id(default_decorator)
-
         self._separator_label = Gtk.Label()
         self._separator_label.props.margin = MARGIN
         self._separator_label.set_label(_('Separator'))
@@ -94,17 +83,6 @@ class Merger(Gtk.Revealer):
         self._separator_combo = Gtk.ComboBoxText.new_with_entry()
         self._separator_combo.connect('changed', lambda c: self.update())
         self._separator_combo.props.margin = MARGIN
-
-        separators = json.loads(common.SETTINGS[common.MERGE_SEPARATORS])
-        separators.append([_('None'), COMBOBOX_NONE_STRING])
-        for separator in separators:
-            self._separator_combo.append(separator[1], separator[0])
-
-        default_separator = common.SETTINGS[common.MERGE_DEFAULT_SEPARATOR]
-        if not default_separator:
-            self._separator_combo.set_active_id(COMBOBOX_NONE_STRING)
-        else:
-            self._separator_combo.set_active_id(default_separator)
 
         self._textview = Gtk.TextView()
         self._textview.set_name('MergerTextView')
@@ -151,6 +129,16 @@ class Merger(Gtk.Revealer):
             'changed::' + common.MERGE_DEFAULT_SEPARATOR,
             self._on_settings_changed
         )
+        common.SETTINGS.connect(
+            'changed::' + common.MERGE_DECORATORS,
+            lambda s, k: self._update_merge_data()
+        )
+        common.SETTINGS.connect(
+            'changed::' + common.MERGE_SEPARATORS,
+            lambda s, k: self._update_merge_data()
+        )
+
+        self._update_merge_data()
 
     def _on_settings_changed(self, settings, key):
         if key == common.MERGE_DEFAULT_DECORATOR:
@@ -162,6 +150,32 @@ class Merger(Gtk.Revealer):
             combo.set_active_id(COMBOBOX_NONE_STRING)
         else:
             combo.set_active_id(settings[key])
+
+    def _update_merge_data(self):
+        self._decorator_combo.remove_all()
+        self._separator_combo.remove_all()
+
+        decorators = json.loads(common.SETTINGS[common.MERGE_DECORATORS])
+        decorators.append([_('None'), COMBOBOX_NONE_STRING])
+        for decorator in decorators:
+            self._decorator_combo.append(decorator[1], decorator[0])
+
+        default_decorator = common.SETTINGS[common.MERGE_DEFAULT_DECORATOR]
+        if not default_decorator:
+            self._decorator_combo.set_active_id(COMBOBOX_NONE_STRING)
+        else:
+            self._decorator_combo.set_active_id(default_decorator)
+
+        separators = json.loads(common.SETTINGS[common.MERGE_SEPARATORS])
+        separators.append([_('None'), COMBOBOX_NONE_STRING])
+        for separator in separators:
+            self._separator_combo.append(separator[1], separator[0])
+
+        default_separator = common.SETTINGS[common.MERGE_DEFAULT_SEPARATOR]
+        if not default_separator:
+            self._separator_combo.set_active_id(COMBOBOX_NONE_STRING)
+        else:
+            self._separator_combo.set_active_id(default_separator)
 
     def _get_merged_text(self):
 

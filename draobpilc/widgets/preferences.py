@@ -14,6 +14,7 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 import json
 
 from gi.repository import Gtk
@@ -24,6 +25,7 @@ from gi.repository import GPaste
 from draobpilc import common
 from draobpilc import version
 from draobpilc.lib import utils
+from draobpilc.widgets.merger_data_manager import MergerDataManager
 
 _window = None
 
@@ -174,7 +176,9 @@ class PrefsGrid(Gtk.Grid):
 
     def add_combo(self, text, key, entries_list, type_):
         def on_changed(combo):
-            self._settings[key] = type_(combo.props.active_id)
+            value = combo.props.active_id
+            if value is None: return
+            self._settings[key] = type_(value)
 
         item = Gtk.ComboBoxText()
 
@@ -371,6 +375,15 @@ class Preferences(Gtk.Window):
         self.set_titlebar(header_bar)
         self.add(stack)
 
+        common.SETTINGS.connect(
+            'changed::' + common.MERGE_DECORATORS,
+            lambda s, k: self._update_merge_data()
+        )
+        common.SETTINGS.connect(
+            'changed::' + common.MERGE_SEPARATORS,
+            lambda s, k: self._update_merge_data()
+        )
+
     def _on_destroy(self, window):
         if not self._need_restart: return
 
@@ -430,6 +443,51 @@ class Preferences(Gtk.Window):
 
     def _on_settings_changed(self, settings, param):
         self._need_restart = True
+
+    def _update_merge_data(self):
+        self._decorators_combo.remove_all()
+        self._separators_combo.remove_all()
+
+        decorators = json.loads(common.SETTINGS[common.MERGE_DECORATORS])
+        decorators = [{
+            'value': decorator[1],
+            'title': decorator[0]
+        } for decorator in decorators]
+        decorators.append({
+            'value': '',
+            'title': _('None')
+        })
+        for decorator in decorators:
+            self._decorators_combo.insert(-1,
+                decorator['value'],
+                decorator['title'].strip()
+            )
+        self._decorators_combo.set_active_id(
+            common.SETTINGS[common.MERGE_DEFAULT_DECORATOR]
+        )
+
+        separators = json.loads(common.SETTINGS[common.MERGE_SEPARATORS])
+        separators = [{
+            'value': separator[1],
+            'title': separator[0]
+        } for separator in separators]
+        separators.append({
+            'value': '',
+            'title': _('None')
+        })
+        for separator in separators:
+            self._separators_combo.insert(-1,
+                separator['value'],
+                separator['title'].strip()
+            )
+        self._separators_combo.set_active_id(
+            common.SETTINGS[common.MERGE_DEFAULT_SEPARATOR]
+        )
+
+    def _show_merger_manager(self, label, key):
+        dialog = MergerDataManager(label, key, self)
+        dialog.run()
+        dialog.destroy()
 
     def _get_main_page(self):
         name = _('Main')
@@ -561,38 +619,48 @@ class Preferences(Gtk.Window):
         page.add_separator()
         page.add_label(_('Merger'))
 
-        decorators = json.loads(common.SETTINGS[common.MERGE_DECORATORS])
-        decorators = [{
-            'value': decorator[1],
-            'title': decorator[0]
-        } for decorator in decorators]
-        decorators.append({
-            'value': '',
-            'title': _('None')
-        })
-        page.add_combo(
+        self._decorators_combo = page.add_combo(
             _('Default decorator:'),
             common.MERGE_DEFAULT_DECORATOR,
-            decorators,
+            [],
             str
         )
 
-        separators = json.loads(common.SETTINGS[common.MERGE_SEPARATORS])
-        separators = [{
-            'value': separator[1],
-            'title': separator[0]
-        } for separator in separators]
-        separators.append({
-            'value': '',
-            'title': _('None')
-        })
-        page.add_combo(
+        self._separators_combo = page.add_combo(
             _('Default separator:'),
             common.MERGE_DEFAULT_SEPARATOR,
-            separators,
+            [],
             str
         )
 
+        decorators_button = Gtk.Button()
+        decorators_button.set_label(_('Decorators'))
+        decorators_button.connect(
+            'clicked',
+            lambda b: self._show_merger_manager(
+                _('Decorators'),
+                common.MERGE_DECORATORS
+            )
+        )
+
+        separators_button = Gtk.Button()
+        separators_button.set_label(_('Separators'))
+        separators_button.connect(
+            'clicked',
+            lambda b: self._show_merger_manager(
+                _('Separators'),
+                common.MERGE_SEPARATORS
+            )
+        )
+
+        buttons_box = Gtk.ButtonBox()
+        buttons_box.set_layout(Gtk.ButtonBoxStyle.EXPAND)
+        buttons_box.add(decorators_button)
+        buttons_box.add(separators_button)
+
+        page.add_item(buttons_box)
+
+        self._update_merge_data()
         result = dict(page=page, name=name)
         return result
 
