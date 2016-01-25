@@ -42,7 +42,7 @@ class ItemsCounter(Gtk.Label):
 
     def update(self, history_items=None):
         if not self._history_items:
-            self.set_label(LABEL_TEMPLATE % 0)
+            self.set_markup(LABEL_TEMPLATE % 0)
             return
 
         shown = 0
