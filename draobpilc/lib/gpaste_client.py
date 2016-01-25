@@ -69,7 +69,15 @@ def get_prop(property_name):
 
 
 def connect(name, callback):
-	return _client.connect_to_signal(name, callback)
+	return _client.connect_to_signal(
+        name,
+        callback,
+        common.SETTINGS[common.GPASTE_DBUS_IFACE]
+    )
+
+
+def disconnect(signal_match):
+    signal_match.remove()
 
 
 def add(text):
