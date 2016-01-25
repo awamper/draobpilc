@@ -26,9 +26,12 @@ from draobpilc import common
 from draobpilc.lib import gpaste_client
 from draobpilc.widgets.item_thumb import ItemThumb
 
-PREVIEW_LABEL = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>' % _('Preview')
-EDITOR_LABEL = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>' % _('Editor')
-WRAP_MODE_LABEL = '<span fgcolor="grey" size="small"><b>%s</b></span>' % _('"wrap text" is on')
+PREVIEW_LABEL = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>'
+PREVIEW_LABEL = PREVIEW_LABEL % _('Preview')
+EDITOR_LABEL = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>'
+EDITOR_LABEL = EDITOR_LABEL % _('Editor')
+WRAP_MODE_LABEL = '<span fgcolor="grey" size="small"><b>%s</b></span>'
+WRAP_MODE_LABEL = WRAP_MODE_LABEL % _('"wrap text" is on')
 MARGIN = 10
 TRANSITION_DURATION = 300
 
