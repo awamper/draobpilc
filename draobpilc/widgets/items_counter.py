@@ -17,7 +17,8 @@
 
 from gi.repository import Gtk
 
-LABEL_TEMPLATE = _('Total: %s')
+LABEL_TEMPLATE = _('Total: <b>%i</b>')
+LABEL_FILTER_TEMPLATE = _('Showing <b>%i</b> out of <b>%i</b> total')
 
 
 class ItemsCounter(Gtk.Label):
@@ -40,8 +41,19 @@ class ItemsCounter(Gtk.Label):
             history_items.connect('changed', self.update)
 
     def update(self, history_items=None):
-        if self._history_items:
-            label = LABEL_TEMPLATE % str(len(self._history_items))
-            self.set_label(label)
+        if not self._history_items:
+            self.set_label(LABEL_TEMPLATE % 0)
+            return
+
+        shown = 0
+        total = len(self._history_items)
+
+        for item in self._history_items:
+            if item.widget.get_mapped(): shown += 1
+
+        if shown and shown < total:
+            label = LABEL_FILTER_TEMPLATE % (shown, total)
         else:
-            self.set_label(LABEL_TEMPLATE % '...')
+            label = LABEL_TEMPLATE % total
+
+        self.set_markup(label)
