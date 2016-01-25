@@ -31,7 +31,7 @@ class HistoryItems(Emitter):
         self.add_signal('removed')
         self.add_signal('changed')
 
-        gpaste_client.connect('Update', self._on_update)
+        self._signal_match = gpaste_client.connect('Update', self._on_update)
         self.reload_history()
 
     def __len__(self):
@@ -133,3 +133,15 @@ class HistoryItems(Emitter):
         self._raw_history.clear()
         self._items.clear()
         self.emit('changed')
+
+    def freeze(self, freeze):
+        if freeze:
+            if not self._signal_match: return
+
+            gpaste_client.disconnect(self._signal_match)
+            self._signal_match = None
+        else:
+            self._signal_match = gpaste_client.connect(
+                'Update',
+                self._on_update
+            )
