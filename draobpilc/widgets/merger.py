@@ -21,7 +21,6 @@ from gi.repository import Gtk
 from gi.repository import GObject
 
 from draobpilc import common
-from draobpilc.lib import gpaste_client
 
 MARGIN = 10
 TRANSITION_DURATION = 300
