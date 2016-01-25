@@ -267,6 +267,7 @@ class Application(Gtk.Application):
 
         self._items_view.set_sensitive(False)
         self._history_items.freeze(True)
+        self._items_view.save_selection()
 
         for i, index in enumerate(delete_indexes):
             delete_index = index - i
@@ -276,6 +277,7 @@ class Application(Gtk.Application):
         self._history_items.freeze(False)
         self._history_items.reload_history()
         self._items_view.set_sensitive(True)
+        self._items_view.resume_selection()
 
     def merge_items(self, merger, items, delete_merged):
         merged_text = self._merger.buffer.props.text
