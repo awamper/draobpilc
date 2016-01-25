@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import time
+import os
 
 from gi.repository import Gio
 from gi.repository import Gtk
@@ -152,7 +152,12 @@ class Editor(Gtk.Revealer):
 
     def _edit_item(self):
         self._timeout_id = 0
-        if self.item is None: return GLib.SOURCE_REMOVE
+
+        if (
+            self.item is None or
+            self.item.kind == gpaste_client.Kind.FILE or
+            self._preview_supported()
+        ): return GLib.SOURCE_REMOVE
 
         contents = self._textview.props.buffer.props.text
 
@@ -166,6 +171,23 @@ class Editor(Gtk.Revealer):
         self._textview.props.buffer.set_text('')
         self._thumb.clear()
 
+    def _is_previewable_type(self, content_type):
+        if content_type.startswith('text'):
+            return True
+        else:
+            return False
+
+    def _preview_supported(self):
+        if (
+            not self.item or
+            not os.path.exists(self.item.raw) or
+            not common.SETTINGS[common.PREVIEW_TEXT_FILES] or
+            not self.item.content_type or
+            not self._is_previewable_type(self.item.content_type)
+        ): return False
+
+        return True
+
     def set_item(self, history_item):
         if history_item is None:
             self._remove_item()
@@ -173,7 +195,7 @@ class Editor(Gtk.Revealer):
 
         self.item = history_item
 
-        if self.item.thumb_path:
+        if self.item.thumb_path and not self._preview_supported():
             allocation = self.get_allocation()
             self._thumb.set_filename(
                 self.item.thumb_path,
@@ -189,11 +211,17 @@ class Editor(Gtk.Revealer):
             self._scrolled_window.show()
             self._update_wrap_mode()
 
-        self._textview.props.buffer.set_text(self.item.raw)
+        if not self._preview_supported():
+            self._textview.props.buffer.set_text(self.item.raw)
+        else:
+            with open(self.item.raw, 'r') as fp:
+                contents = fp.read()
+                self._textview.props.buffer.set_text(contents)
 
         if (
             self.item.kind != gpaste_client.Kind.TEXT and
-            self.item.kind != gpaste_client.Kind.LINK
+            self.item.kind != gpaste_client.Kind.LINK or
+            self._preview_supported()
         ):
             self._label.set_markup(PREVIEW_LABEL)
             self._textview.set_editable(False)

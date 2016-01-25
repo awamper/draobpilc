@@ -509,6 +509,10 @@ class Preferences(Gtk.Window):
             _('Show thumbnails for file/image items:'),
             common.SHOW_THUMBNAILS
         )
+        page.add_boolean(
+            _('Preview text files'),
+            common.PREVIEW_TEXT_FILES
+        )
 
         page.add_separator()
 

@@ -139,5 +139,9 @@
             <default>true</default>
         </key>
 
+        <key type="b" name="preview-text-files">
+            <default>true</default>
+        </key>
+
     </schema>
 </schemalist>
