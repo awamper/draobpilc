@@ -6,7 +6,7 @@
     border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-#HistoryItemBox:insensitive {
+#HistoryItemBox.active {
     background-color: rgba(52, 101, 164, 0.7);
     border: 1px solid #0D4CA3;
     color: white;

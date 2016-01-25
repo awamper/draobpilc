@@ -304,7 +304,7 @@ class ItemsView(Gtk.Box):
 
             first_row.set_selectable(False)
             first_row.set_activatable(False)
-            first_row.get_child().set_sensitive(False)
+            first_row.get_child().get_style_context().add_class('active')
 
         if len(self) < 1: return
 
@@ -312,6 +312,7 @@ class ItemsView(Gtk.Box):
             row.set_selectable(True)
             row.set_activatable(True)
             row.get_child().set_sensitive(True)
+            row.get_child().get_style_context().remove_class('active')
 
         clipboard = Gtk.Clipboard.get_default(Gdk.Display.get_default())
         text = clipboard.wait_for_text()
