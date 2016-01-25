@@ -51,7 +51,7 @@ class SearchBox(Gtk.Box):
         )
         self.entry.set_tooltip_text(
             _('You can add "-{flags}" at the end to search for types.') +
-            _('\nl - links\nf - files\ni - images') +
+            _('\nt - text\nl - links\nf - files\ni - images') +
             _('\n\nUse #{number} to filter by index number')
         )
 
