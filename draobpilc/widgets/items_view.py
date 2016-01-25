@@ -334,6 +334,7 @@ class ItemsView(Gtk.Box):
         self._listbox.invalidate_filter()
         self._listbox.invalidate_sort()
         self.select_first(grab_focus=False)
+        self._items_counter.update()
 
         if self.search_box.search_text:
             self._last_search_string = self.search_box.search_text
