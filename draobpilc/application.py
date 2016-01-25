@@ -208,20 +208,7 @@ class Application(Gtk.Application):
         selected_items = self._items_view.get_selected()
         if not selected_items: return
 
-        delete_indexes = [item.index for item in selected_items]
-        delete_indexes = sorted(delete_indexes)
-
-        self._items_view.set_sensitive(False)
-        self._history_items.freeze(True)
-
-        for i, index in enumerate(delete_indexes):
-            delete_index = index - i
-            if delete_index < 0: continue
-            gpaste_client.delete(delete_index)
-
-        self._history_items.freeze(False)
-        self._history_items.reload_history()
-        self._items_view.set_sensitive(True)
+        self.delete_items(selected_items)
 
     def _on_open_item(self, action, param):
         selected_items = self._items_view.get_selected()
@@ -274,14 +261,30 @@ class Application(Gtk.Application):
         dialog = BackupHistoryDialog(self._window)
         dialog.run()
 
-    def merge_items(self, merger, items):
+    def delete_items(self, items):
+        delete_indexes = [item.index for item in items]
+        delete_indexes = sorted(delete_indexes)
+
+        self._items_view.set_sensitive(False)
+        self._history_items.freeze(True)
+
+        for i, index in enumerate(delete_indexes):
+            delete_index = index - i
+            if delete_index < 0: continue
+            gpaste_client.delete(delete_index)
+
+        self._history_items.freeze(False)
+        self._history_items.reload_history()
+        self._items_view.set_sensitive(True)
+
+    def merge_items(self, merger, items, delete_merged):
         merged_text = self._merger.buffer.props.text
         if not merged_text: return
 
+        self._merger.reveal(False, animation=False)
+        if delete_merged: self.delete_items(items)
         gpaste_client.add(merged_text)
-        self._items_view.halt_updates = False
         self.hide()
-        self._merger.reveal(False)
 
     def do_activate(self):
         if self._window:

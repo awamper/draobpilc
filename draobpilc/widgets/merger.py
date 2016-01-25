@@ -36,7 +36,7 @@ COMBOBOX_NONE_STRING = 'Draobpilc.Merger.ComboBoxText.Id == None'
 class Merger(Gtk.Revealer):
 
     __gsignals__ = {
-        'merge': (GObject.SIGNAL_RUN_FIRST, None, (object,))
+        'merge': (GObject.SIGNAL_RUN_FIRST, None, (object, bool))
     }
 
     def __init__(self):
@@ -94,11 +94,26 @@ class Merger(Gtk.Revealer):
 
         self._merge_btn = Gtk.Button()
         self._merge_btn.set_label(_('Merge'))
-        self._merge_btn.set_hexpand(True)
-        self._merge_btn.props.margin = MARGIN
-        self._merge_btn.connect('clicked',
-            lambda b: self.emit('merge', self._history_items)
+        self._merge_btn.connect(
+            'clicked',
+            lambda b: self.emit('merge', self._history_items, False)
         )
+
+        self._merget_del_btn = Gtk.Button()
+        self._merget_del_btn.set_label(_('Merge & Delete'))
+        self._merget_del_btn.set_tooltip_text(
+            _('Merge and delete merged items')
+        )
+        self._merget_del_btn.connect(
+            'clicked',
+            lambda b: self.emit('merge', self._history_items, True)
+        )
+
+        buttons_box = Gtk.ButtonBox()
+        buttons_box.set_layout(Gtk.ButtonBoxStyle.EXPAND)
+        buttons_box.props.margin = MARGIN
+        buttons_box.add(self._merget_del_btn)
+        buttons_box.add(self._merge_btn)
 
         self._grid = Gtk.Grid()
         self._grid.set_name('MergerBox')
@@ -115,7 +130,7 @@ class Merger(Gtk.Revealer):
         self._grid.attach(self._separator_label, 1, 2, 1, 1)
         self._grid.attach(self._separator_combo, 1, 3, 1, 1)
         self._grid.attach(self._scrolled_window, 0, 4, 2, 1)
-        self._grid.attach(self._merge_btn, 0, 5, 2, 1)
+        self._grid.attach(buttons_box, 0, 5, 2, 1)
 
         self.add(self._grid)
         self.show_all()
@@ -242,8 +257,16 @@ class Merger(Gtk.Revealer):
         self._history_items.clear()
         self.update()
 
-    def reveal(self, reveal):
+    def reveal(self, reveal, animation=True):
+        if animation:
+            self.set_transition_duration(TRANSITION_DURATION)
+        else:
+            self.set_transition_duration(0)
+
         self.set_reveal_child(reveal)
+
+        if reveal:
+            self._merge_btn.grab_focus()
 
     @property
     def buffer(self):
