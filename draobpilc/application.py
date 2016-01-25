@@ -208,8 +208,20 @@ class Application(Gtk.Application):
         selected_items = self._items_view.get_selected()
         if not selected_items: return
 
-        index = selected_items[0].index
-        gpaste_client.delete(index)
+        delete_indexes = [item.index for item in selected_items]
+        delete_indexes = sorted(delete_indexes)
+
+        self._items_view.set_sensitive(False)
+        self._history_items.freeze(True)
+
+        for i, index in enumerate(delete_indexes):
+            delete_index = index - i
+            if delete_index < 0: continue
+            gpaste_client.delete(delete_index)
+
+        self._history_items.freeze(False)
+        self._history_items.reload_history()
+        self._items_view.set_sensitive(True)
 
     def _on_open_item(self, action, param):
         selected_items = self._items_view.get_selected()
