@@ -17,6 +17,8 @@
 
 from gi.repository import Gtk
 
+from draobpilc.history_items import HistoryItems
+
 LABEL_TEMPLATE = _('Total: <b>%i</b>')
 LABEL_FILTER_TEMPLATE = _('Showing <b>%i</b> out of <b>%i</b> total')
 
@@ -36,7 +38,7 @@ class ItemsCounter(Gtk.Label):
         self.update()
 
     def bind(self, history_items):
-        if history_items:
+        if isinstance(history_items, HistoryItems):
             self._history_items = history_items
             history_items.connect('changed', self.update)
 
