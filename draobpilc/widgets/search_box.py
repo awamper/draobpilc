@@ -26,7 +26,7 @@ from draobpilc.lib import gpaste_client
 
 ENTRY_PLACE_HOLDER = _('Filter items')
 SEARCH_INDEX_RE = re.compile(r'^#([0-9]+)$')
-FLAGS_RE = re.compile(r'^(.*?)\-([lfi]+)$')
+FLAGS_RE = re.compile(r'^(.*?)\-([lfit]+)$')
 
 
 class SearchBox(Gtk.Box):
@@ -102,6 +102,7 @@ class SearchBox(Gtk.Box):
         if 'l' in flags: self.flags.append(gpaste_client.Kind.LINK)
         if 'f' in flags: self.flags.append(gpaste_client.Kind.FILE)
         if 'i' in flags: self.flags.append(gpaste_client.Kind.IMAGE)
+        if 't' in flags: self.flags.append(gpaste_client.Kind.TEXT)
 
     @property
     def buffer(self):
