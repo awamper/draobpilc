@@ -149,7 +149,8 @@ class ItemsView(Gtk.Box):
     def _on_changed(self, history_items):
         self.clear()
         self.load_all()
-        self._resume_selection()
+        self._resume_selection() or self.select_first()
+        self._last_selected_index = 0
 
     def _remove(self, history_items, item=None):
         self._save_selection()
@@ -259,7 +260,7 @@ class ItemsView(Gtk.Box):
         self._last_selected_index = selected[0].index
 
     def _resume_selection(self):
-        if not self._last_selected_index: return
+        if not self._last_selected_index: return False
 
         if len(self._bound_history) == self._last_selected_index:
             self._last_selected_index -= 1
@@ -274,6 +275,8 @@ class ItemsView(Gtk.Box):
                 # i'm sorry
                 GLib.timeout_add(200, lambda *a, **ka: row.grab_focus())
                 break
+
+        return True
 
     def bind(self, history_items):
         if self._bound_history:
