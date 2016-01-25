@@ -69,7 +69,7 @@ class ItemsView(Gtk.Box):
 
         placeholder = Gtk.Label()
         placeholder.set_markup(
-            '<span font-size="xx-large">History is empty</span>'
+            '<span font-size="xx-large">%s</span>' % _('Nothing')
         )
         placeholder.show()
 
