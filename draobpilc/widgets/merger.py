@@ -266,6 +266,7 @@ class Merger(Gtk.Revealer):
         self.set_reveal_child(reveal)
 
         if reveal:
+            self._update_merge_data()
             self._merge_btn.grab_focus()
 
     @property
