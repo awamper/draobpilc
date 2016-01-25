@@ -297,22 +297,23 @@ class ItemsView(Gtk.Box):
         self.show_all()
 
     def set_active_item(self):
-        def on_clipboard(clipboard, text):
-            first_row = self._listbox.get_children()[0]
-            item = first_row.get_child().item
-            if item.raw != text: return
 
-            first_row.set_selectable(False)
-            first_row.set_activatable(False)
-            first_row.get_child().get_style_context().add_class('active')
+        def on_clipboard(clipboard, text):
+            for row in self._listbox.get_children():
+                item_widget = row.get_child()
+                item = item_widget.item
+
+                if item.raw != text:
+                    row.set_selectable(True)
+                    row.set_activatable(True)
+                    item_widget.set_sensitive(True)
+                    item_widget.get_style_context().remove_class('active')
+                else:
+                    row.set_selectable(False)
+                    row.set_activatable(False)
+                    item_widget.get_style_context().add_class('active')
 
         if len(self) < 1: return
-
-        for row in self._listbox.get_children():
-            row.set_selectable(True)
-            row.set_activatable(True)
-            row.get_child().set_sensitive(True)
-            row.get_child().get_style_context().remove_class('active')
 
         clipboard = Gtk.Clipboard.get_default(Gdk.Display.get_default())
         text = clipboard.wait_for_text()
