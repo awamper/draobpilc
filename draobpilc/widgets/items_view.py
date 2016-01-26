@@ -250,26 +250,44 @@ class ItemsView(Gtk.Box):
         return result
 
     def save_selection(self):
-        selected = self.get_selected()
 
-        if not selected:
-            self._last_selected_index = 0
-            return None
+        def get_current_index(child):
+            result = None
 
-        self._last_selected_index = selected[0].index
+            for i, ch in enumerate(self._listbox.get_children()):
+                if not ch.get_mapped() or ch != child: continue
+                result = i
+                break
+
+            return result
+
+        selected_row = self._listbox.get_selected_rows()
+
+        try:
+            selected_row = selected_row[0]
+        except IndexError:
+            return
+
+        self._last_selected_index = get_current_index(selected_row)
 
     def resume_selection(self):
-        if not self._last_selected_index: return False
 
-        if len(self._bound_history) == self._last_selected_index:
+        def get_mapped_children():
+            children = []
+
+            for child in self._listbox.get_children():
+                if child.get_mapped(): children.append(child)
+
+            return children
+
+        if not self._last_selected_index: return False
+        children = get_mapped_children()
+
+        if len(children) == self._last_selected_index:
             self._last_selected_index -= 1
 
-        children = self._listbox.get_children()
-
-        for row in children:
-            index = row.get_child().item.index
-
-            if index == self._last_selected_index:
+        for i, row in enumerate(children):
+            if i == self._last_selected_index:
                 self._listbox.select_row(row)
                 # i'm sorry
                 GLib.timeout_add(200, lambda *a, **ka: row.grab_focus())
