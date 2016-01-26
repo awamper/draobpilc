@@ -60,6 +60,7 @@ class Editor(Gtk.Revealer):
         self.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
 
         self.item = None
+        self._block_leave_trigger = False
         self._timeout_id = 0
         common.SETTINGS.bind(
             common.EDIT_TIMEOUT_MS,
@@ -88,8 +89,9 @@ class Editor(Gtk.Revealer):
         self._textview.set_vexpand(True)
         self._textview.set_hexpand(True)
         self._textview.set_can_default(False)
-        self._textview.show()
+        self._textview.connect('populate-popup', self._on_popup_menu)
         self._textview.props.buffer.connect('changed', self._on_text_changed)
+        self._textview.show()
 
         self._scrolled_window = Gtk.ScrolledWindow()
         self._scrolled_window.connect('enter-notify-event', self._on_enter)
@@ -126,11 +128,17 @@ class Editor(Gtk.Revealer):
             lambda s, p: self._update_wrap_mode()
         )
 
+    def _on_popup_menu(self, textview, popup_widget):
+        self._block_leave_trigger = True
+
     def _on_enter(self, sender, event):
         self.emit('enter-notify', event)
 
     def _on_leave(self, sender, event):
-        self.emit('leave-notify', event)
+        if self._block_leave_trigger:
+            self._block_leave_trigger = False
+        else:
+            self.emit('leave-notify', event)
 
     def _update_wrap_mode(self):
         if common.SETTINGS[common.EDITOR_WRAP_TEXT]:
