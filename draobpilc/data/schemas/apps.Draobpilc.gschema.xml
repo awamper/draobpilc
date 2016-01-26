@@ -135,6 +135,14 @@
             <default><![CDATA['<Ctrl>Escape']]></default>
         </key>
 
+        <key type="s" name="hide-app">
+            <default><![CDATA['Escape']]></default>
+        </key>
+
+        <key type="s" name="quit-app">
+            <default><![CDATA['<Ctrl>Q']]></default>
+        </key>
+
         <key type="b" name="show-thumbnails">
             <default>true</default>
         </key>

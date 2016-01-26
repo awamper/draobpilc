@@ -325,13 +325,6 @@ class Application(Gtk.Application):
     def do_startup(self):
         Gtk.Application.do_startup(self)
 
-        self.builder = Gtk.Builder()
-        file_name = get_data_path('app_menu.ui')
-        self.builder.add_from_file(file_name)
-
-        app_menu = self.builder.get_object('app_menu')
-        self.set_app_menu(app_menu)
-
         actions = [
             [
                 'delete',
@@ -374,27 +367,23 @@ class Application(Gtk.Application):
                 'app.keep_search',
                 common.KEEP_SEARCH_AND_CLOSE,
                 lambda _, __: self.hide(False)
+            ],
+            [
+                'hide',
+                'app.hide',
+                common.HIDE_APP,
+                lambda _, __: self.hide()
+            ],
+            [
+                'quit',
+                'app.quit',
+                common.QUIT_APP,
+                lambda _, __: self.quit()
             ]
         ]
 
         for name, target, key, callback in actions:
             self._bind_action(name, target, key, callback)
-
-        preferences_action = Gio.SimpleAction.new('preferences', None)
-        preferences_action.connect('activate', lambda a, p: self.show_prefs())
-        self.add_action(preferences_action)
-
-        about_action = Gio.SimpleAction.new('about', None)
-        about_action.connect('activate', lambda a, p: self.show_about())
-        self.add_action(about_action)
-
-        close_action = Gio.SimpleAction.new('hide', None)
-        close_action.connect('activate', lambda a, p: self.hide())
-        self.add_action(close_action)
-
-        quit_action = Gio.SimpleAction.new('quit', None)
-        quit_action.connect('activate', lambda a, p: self.quit())
-        self.add_action(quit_action)
 
         if common.SETTINGS[common.STARTUP_NOTIFICATION]:
             utils.notify(body=_(

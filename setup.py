@@ -98,7 +98,6 @@ setup(
     # include_package_data=True,
     package_data={
         'draobpilc': [
-            'data/app_menu.ui',
             'data/desktop_file.tpl',
             'data/draobpilc.png',
             'data/style.css',
