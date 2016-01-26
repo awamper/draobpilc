@@ -104,6 +104,9 @@ class SearchBox(Gtk.Box):
         if 'i' in flags: self.flags.append(gpaste_client.Kind.IMAGE)
         if 't' in flags: self.flags.append(gpaste_client.Kind.TEXT)
 
+    def reset(self):
+        self.entry.set_text('')
+
     @property
     def buffer(self):
         return self.entry.props.buffer

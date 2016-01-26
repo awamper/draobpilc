@@ -413,5 +413,6 @@ class Application(Gtk.Application):
         self._window.present_with_time(Gdk.CURRENT_TIME)
         self._items_view.select_first()
 
-    def hide(self):
+    def hide(self, reset_search=True):
         self._window.hide()
+        if reset_search: self._items_view.search_box.reset()
