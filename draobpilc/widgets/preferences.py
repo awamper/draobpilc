@@ -20,6 +20,7 @@ import json
 from gi.repository import Gtk
 from gi.repository import Gio
 from gi.repository import Gdk
+from gi.repository import GLib
 from gi.repository import GPaste
 
 from draobpilc import common
@@ -49,7 +50,7 @@ def show_preferences():
 class KeybindingsWidget(Gtk.Box):
 
     class Columns():
-        NAME = 0
+        SETTINGS_KEY = 0
         ACCEL_NAME = 1
         MODS = 2
         KEY = 3
@@ -106,26 +107,55 @@ class KeybindingsWidget(Gtk.Box):
         self._refresh()
 
     def _on_accel_edited(self, renderer, iter_, key, mods, *args):
-        value = Gtk.accelerator_name(key, mods)
         iterator = self._store.get_iter_from_string(iter_)
-
         if not iterator:
+            self._show_message(version.APP_NAME, _('Can\'t change hotkey.'))
+            return
+
+        accel_name = Gtk.accelerator_name(key, mods)
+        settings_key = self._store.get_value(
+            iterator,
+            KeybindingsWidget.Columns.SETTINGS_KEY
+        )
+        ex_key, ex_name = self._get_existed(key, mods)
+
+        if ex_key:
+            msg = _('"{accel_name}" already taken for "{action_name}"')
+            msg = msg.format(accel_name=accel_name, action_name=ex_name)
+            self._show_message(version.APP_NAME, msg)
+            return
+
+        columns = [
+            KeybindingsWidget.Columns.MODS,
+            KeybindingsWidget.Columns.KEY
+        ]
+        self._store.set(iterator, columns, [mods, key])
+        common.SETTINGS[settings_key] = accel_name
+
+    def _get_existed(self, key, mods):
+        result = [None, None]
+
+        for settings_key in self._keybindings:
+            ex_key, ex_mods = Gtk.accelerator_parse(
+                common.SETTINGS[settings_key]
+            )
+            if ex_key == key and ex_mods == mods:
+                result = [settings_key, self._keybindings[settings_key]]
+                break
+
+        return result
+
+    def _show_message(self, title, msg):
             message_dialog = Gtk.MessageDialog(
                 self.get_toplevel(),
                 Gtk.DialogFlags.DESTROY_WITH_PARENT,
                 Gtk.MessageType.ERROR,
                 Gtk.ButtonsType.OK
             )
-            message_dialog.set_markup(_('Can\'t change hotkey.'))
+            message_dialog.set_title(title)
+            message_dialog.set_markup(GLib.markup_escape_text(msg))
             message_dialog.run()
             message_dialog.destroy()
-
-        name = self._store.get_value(iterator, 0)
-
-        columns = [KeybindingsWidget.Columns.MODS, KeybindingsWidget.Columns.KEY]
-        values = [mods, key]
-        self._store.set(iterator, columns, values)
-        common.SETTINGS[name] = value
 
     def _refresh(self):
         self._store.clear()
@@ -139,7 +169,7 @@ class KeybindingsWidget(Gtk.Box):
             key, mods = Gtk.accelerator_parse(common.SETTINGS[kb_key])
             iter = self._store.append()
             columns = [
-                KeybindingsWidget.Columns.NAME,
+                KeybindingsWidget.Columns.SETTINGS_KEY,
                 KeybindingsWidget.Columns.ACCEL_NAME,
                 KeybindingsWidget.Columns.MODS,
                 KeybindingsWidget.Columns.KEY
