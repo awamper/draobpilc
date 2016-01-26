@@ -261,6 +261,24 @@ class Application(Gtk.Application):
         dialog = BackupHistoryDialog(self._window)
         dialog.run()
 
+    def _bind_action(self, name, target, settings_key, callback):
+        def on_settings_change(settings, key, target):
+            self.set_accels_for_action(target, [settings[key]])
+
+        action = Gio.SimpleAction.new(name, None)
+        action.connect('activate', callback)
+        self.add_action(action)
+        self.set_accels_for_action(
+            target,
+            [common.SETTINGS[settings_key]]
+        )
+
+        common.SETTINGS.connect(
+            'changed::' + settings_key,
+            on_settings_change,
+            target
+        )
+
     def delete_items(self, items):
         delete_indexes = [item.index for item in items]
         delete_indexes = sorted(delete_indexes)
@@ -314,63 +332,53 @@ class Application(Gtk.Application):
         app_menu = self.builder.get_object('app_menu')
         self.set_app_menu(app_menu)
 
-        delete_action = Gio.SimpleAction.new('delete', None)
-        delete_action.connect('activate', self._on_delete_action)
-        self.add_action(delete_action)
-        self.set_accels_for_action(
-            'app.delete',
-            [common.SETTINGS[common.DELETE_ITEM]]
-        )
+        actions = [
+            [
+                'delete',
+                'app.delete',
+                common.DELETE_ITEM,
+                self._on_delete_action
+            ],
+            [
+                'show_histories',
+                'app.show_histories',
+                common.SHOW_HISTORIES,
+                self.show_histories_manager
+            ],
+            [
+                'focus_search',
+                'app.focus_search',
+                common.FOCUS_SEARCH,
+                lambda _, __: self._items_view.search_box.entry.grab_focus()
+            ],
+            [
+                'editor_wrap_text',
+                'app.editor_wrap_text',
+                common.EDITOR_WRAP_TEXT_SHORTCUT,
+                self._on_editor_wrap_action
+            ],
+            [
+                'open_item',
+                'app.open_item',
+                common.OPEN_ITEM,
+                self._on_open_item
+            ],
+            [
+                'backup_history',
+                'app.backup_history',
+                common.BACKUP_HISTORY,
+                self._on_backup_history
+            ],
+            [
+                'keep_search',
+                'app.keep_search',
+                common.KEEP_SEARCH_AND_CLOSE,
+                lambda _, __: self.hide(False)
+            ]
+        ]
 
-        show_histories_action = Gio.SimpleAction.new('show_histories_manager', None)
-        show_histories_action.connect('activate', self.show_histories_manager)
-        self.add_action(show_histories_action)
-        self.set_accels_for_action(
-            'app.show_histories_manager',
-            [common.SETTINGS[common.SHOW_HISTORIES]]
-        )
-
-        focus_search_action = Gio.SimpleAction.new('focus_search', None)
-        focus_search_action.connect('activate',
-            lambda a, p: self._items_view.search_box.entry.grab_focus()
-        )
-        self.add_action(focus_search_action)
-        self.set_accels_for_action(
-            'app.focus_search',
-            [common.SETTINGS[common.FOCUS_SEARCH]]
-        )
-
-        editor_wrap_action = Gio.SimpleAction.new('editor_wrap_text', None)
-        editor_wrap_action.connect('activate', self._on_editor_wrap_action)
-        self.add_action(editor_wrap_action)
-        self.set_accels_for_action(
-            'app.editor_wrap_text',
-            [common.SETTINGS[common.EDITOR_WRAP_TEXT_SHORTCUT]]
-        )
-
-        open_item_action = Gio.SimpleAction.new('open_item', None)
-        open_item_action.connect('activate', self._on_open_item)
-        self.add_action(open_item_action)
-        self.set_accels_for_action(
-            'app.open_item',
-            [common.SETTINGS[common.OPEN_ITEM]]
-        )
-
-        backup_history_action = Gio.SimpleAction.new('backup_history', None)
-        backup_history_action.connect('activate', self._on_backup_history)
-        self.add_action(backup_history_action)
-        self.set_accels_for_action(
-            'app.backup_history',
-            [common.SETTINGS[common.BACKUP_HISTORY]]
-        )
-
-        keep_search_action = Gio.SimpleAction.new('keep_search', None)
-        keep_search_action.connect('activate', lambda a, p: self.hide(False))
-        self.add_action(keep_search_action)
-        self.set_accels_for_action(
-            'app.keep_search',
-            [common.SETTINGS[common.KEEP_SEARCH_AND_CLOSE]]
-        )
+        for name, target, key, callback in actions:
+            self._bind_action(name, target, key, callback)
 
         preferences_action = Gio.SimpleAction.new('preferences', None)
         preferences_action.connect('activate', lambda a, p: self.show_prefs())
