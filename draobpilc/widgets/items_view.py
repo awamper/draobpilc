@@ -366,7 +366,7 @@ class ItemsView(Gtk.Box):
         self.set_active_item()
 
         for row in self._listbox.get_children():
-            if not row.get_selectable(): continue
+            if not row.get_selectable() or not row.get_mapped(): continue
 
             self._listbox.select_row(row)
             if grab_focus: row.grab_focus()
