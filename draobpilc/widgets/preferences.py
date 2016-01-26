@@ -684,7 +684,8 @@ class Preferences(Gtk.Window):
             common.EDITOR_WRAP_TEXT_SHORTCUT: _('Toggle text wrap in the editor'),
             common.OPEN_ITEM: _('Open item(file, image, url)'),
             common.BACKUP_HISTORY: _('Backup current history'),
-            common.KEEP_SEARCH_AND_CLOSE: _('Keep search and close window')
+            common.KEEP_SEARCH_AND_CLOSE: _('Keep search and close window'),
+            common.QUIT_APP: _('Quit app')
         }
 
         keybindings_widget = KeybindingsWidget(keybindings)
