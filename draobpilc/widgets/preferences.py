@@ -323,15 +323,9 @@ class Preferences(Gtk.Window):
             common.KIND_INDICATOR_WIDTH,
             common.SHOW_INDEXES,
             common.SHOW_TEXT_INFO,
-            common.SHOW_THUMBNAILS,
-            common.FOCUS_SEARCH,
-            common.SHOW_HISTORIES,
-            common.DELETE_ITEM,
-            common.EDITOR_WRAP_TEXT_SHORTCUT,
-            common.OPEN_ITEM,
-            common.BACKUP_HISTORY,
-            common.KEEP_SEARCH_AND_CLOSE
+            common.SHOW_THUMBNAILS
         ]
+
         for key in requires_restart:
             common.SETTINGS.connect(
                 'changed::' + key,
