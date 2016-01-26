@@ -364,6 +364,14 @@ class Application(Gtk.Application):
             [common.SETTINGS[common.BACKUP_HISTORY]]
         )
 
+        keep_search_action = Gio.SimpleAction.new('keep_search', None)
+        keep_search_action.connect('activate', lambda a, p: self.hide(False))
+        self.add_action(keep_search_action)
+        self.set_accels_for_action(
+            'app.keep_search',
+            [common.SETTINGS[common.KEEP_SEARCH_AND_CLOSE]]
+        )
+
         preferences_action = Gio.SimpleAction.new('preferences', None)
         preferences_action.connect('activate', lambda a, p: self.show_prefs())
         self.add_action(preferences_action)

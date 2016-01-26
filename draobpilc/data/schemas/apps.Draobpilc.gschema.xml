@@ -131,6 +131,10 @@
             <default><![CDATA['<Ctrl>B']]></default>
         </key>
 
+        <key type="s" name="keep-search-and-close">
+            <default><![CDATA['<Ctrl>Escape']]></default>
+        </key>
+
         <key type="b" name="show-thumbnails">
             <default>true</default>
         </key>
