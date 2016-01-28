@@ -349,7 +349,7 @@ class Application(Gtk.Application):
         grab_focus = True
 
         if self._items_view.search_box.entry.get_text():
-            self._items_view.search_box.grab_focus()
+            self._items_view.search_box.entry.grab_focus()
             grab_focus = False
 
         self._items_view.select_first(grab_focus=grab_focus)
