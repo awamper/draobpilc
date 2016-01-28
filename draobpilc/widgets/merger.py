@@ -21,10 +21,9 @@ from gi.repository import Gtk
 from gi.repository import GObject
 
 from draobpilc import common
+from draobpilc.widgets.items_processor_base import ItemsProcessorBase
 
-MARGIN = 10
-TRANSITION_DURATION = 300
-MERGER_LABEL = (
+MERGER_TITLE = (
     '<span fgcolor="grey" size="xx-large"><b>%s</b></span>' % _('Merger')
 )
 COUNTER_LABEL_TPL = (
@@ -33,7 +32,7 @@ COUNTER_LABEL_TPL = (
 COMBOBOX_NONE_STRING = 'Draobpilc.Merger.ComboBoxText.Id == None'
 
 
-class Merger(Gtk.Revealer):
+class Merger(ItemsProcessorBase):
 
     __gsignals__ = {
         'merge': (GObject.SIGNAL_RUN_FIRST, None, (object, bool))
@@ -42,23 +41,7 @@ class Merger(Gtk.Revealer):
     def __init__(self):
         super().__init__()
 
-        self.set_valign(Gtk.Align.CENTER)
-        self.set_halign(Gtk.Align.CENTER)
-        self.set_hexpand(True)
-        self.set_vexpand(True)
-        self.set_reveal_child(False)
-        self.set_transition_duration(TRANSITION_DURATION)
-        self.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
-
-        self._history_items = []
-
-        self._label = Gtk.Label()
-        self._label.set_margin_top(MARGIN)
-        self._label.set_margin_bottom(MARGIN)
-        self._label.set_margin_left(MARGIN)
-        self._label.set_halign(Gtk.Align.START)
-        self._label.set_valign(Gtk.Align.CENTER)
-        self._label.set_markup(MERGER_LABEL)
+        self.set_title(MERGER_TITLE, markup=True)
 
         self._counter_label = Gtk.Label()
         self._counter_label.set_markup(COUNTER_LABEL_TPL % 0)
@@ -68,20 +51,20 @@ class Merger(Gtk.Revealer):
         self._counter_label.set_halign(Gtk.Align.CENTER)
 
         self._decorator_label = Gtk.Label()
-        self._decorator_label.props.margin = MARGIN
+        self._decorator_label.props.margin = ItemsProcessorBase.MARGIN
         self._decorator_label.set_label(_('Decorator'))
 
         self._decorator_combo = Gtk.ComboBoxText.new_with_entry()
         self._decorator_combo.connect('changed', lambda c: self.update())
-        self._decorator_combo.props.margin = MARGIN
+        self._decorator_combo.props.margin = ItemsProcessorBase.MARGIN
 
         self._separator_label = Gtk.Label()
-        self._separator_label.props.margin = MARGIN
+        self._separator_label.props.margin = ItemsProcessorBase.MARGIN
         self._separator_label.set_label(_('Separator'))
 
         self._separator_combo = Gtk.ComboBoxText.new_with_entry()
         self._separator_combo.connect('changed', lambda c: self.update())
-        self._separator_combo.props.margin = MARGIN
+        self._separator_combo.props.margin = ItemsProcessorBase.MARGIN
 
         self._textview = Gtk.TextView()
         self._textview.set_name('MergerTextView')
@@ -89,14 +72,14 @@ class Merger(Gtk.Revealer):
         self._textview.set_hexpand(True)
 
         self._scrolled_window = Gtk.ScrolledWindow()
-        self._scrolled_window.props.margin = MARGIN
+        self._scrolled_window.props.margin = ItemsProcessorBase.MARGIN
         self._scrolled_window.add(self._textview)
 
         self._merge_btn = Gtk.Button()
         self._merge_btn.set_label(_('Merge'))
         self._merge_btn.connect(
             'clicked',
-            lambda b: self.emit('merge', self._history_items, False)
+            lambda b: self.emit('merge', self.items, False)
         )
 
         self._merget_del_btn = Gtk.Button()
@@ -106,34 +89,23 @@ class Merger(Gtk.Revealer):
         )
         self._merget_del_btn.connect(
             'clicked',
-            lambda b: self.emit('merge', self._history_items, True)
+            lambda b: self.emit('merge', self.items, True)
         )
 
         buttons_box = Gtk.ButtonBox()
         buttons_box.set_layout(Gtk.ButtonBoxStyle.EXPAND)
-        buttons_box.props.margin = MARGIN
+        buttons_box.props.margin = ItemsProcessorBase.MARGIN
         buttons_box.add(self._merget_del_btn)
         buttons_box.add(self._merge_btn)
 
-        self._grid = Gtk.Grid()
-        self._grid.set_name('MergerBox')
-        self._grid.set_orientation(Gtk.Orientation.VERTICAL)
-        self._grid.set_vexpand(True)
-        self._grid.set_hexpand(True)
-        self._grid.set_margin_bottom(MARGIN)
-        self._grid.set_margin_left(MARGIN)
-        self._grid.set_margin_right(MARGIN)
-        self._grid.attach(self._label, 0, 0, 1, 1)
-        self._grid.attach(self._counter_label, 0, 1, 2, 1)
-        self._grid.attach(self._decorator_label, 0, 2, 1, 1)
-        self._grid.attach(self._decorator_combo, 0, 3, 1, 1)
-        self._grid.attach(self._separator_label, 1, 2, 1, 1)
-        self._grid.attach(self._separator_combo, 1, 3, 1, 1)
-        self._grid.attach(self._scrolled_window, 0, 4, 2, 1)
-        self._grid.attach(buttons_box, 0, 5, 2, 1)
-
-        self.add(self._grid)
-        self.show_all()
+        self.grid.set_name('MergerBox')
+        self.grid.attach(self._counter_label, 0, 1, 2, 1)
+        self.grid.attach(self._decorator_label, 0, 2, 1, 1)
+        self.grid.attach(self._decorator_combo, 0, 3, 1, 1)
+        self.grid.attach(self._separator_label, 1, 2, 1, 1)
+        self.grid.attach(self._separator_combo, 1, 3, 1, 1)
+        self.grid.attach(self._scrolled_window, 0, 4, 2, 1)
+        self.grid.attach(buttons_box, 0, 5, 2, 1)
 
         common.SETTINGS.connect(
             'changed::' + common.MERGE_DEFAULT_DECORATOR,
@@ -225,7 +197,7 @@ class Merger(Gtk.Revealer):
 
         result = ''
 
-        for item in self._history_items:
+        for item in self.items:
             decorator = get_decorator()
             separator = get_separator()
             result += decorator + item.raw + decorator + separator
@@ -233,13 +205,13 @@ class Merger(Gtk.Revealer):
         return result
 
     def update(self):
-        if not self._history_items: return
+        if not self.items: return
 
         self._counter_label.set_markup(
-            COUNTER_LABEL_TPL % len(self._history_items)
+            COUNTER_LABEL_TPL % len(self.items)
         )
 
-        if len(self._history_items) < 2:
+        if len(self.items) < 2:
             self._merge_btn.set_sensitive(False)
             return
 
@@ -248,22 +220,16 @@ class Merger(Gtk.Revealer):
         preview = self._get_merged_text()
         self.buffer.set_text(preview)
 
-    def set_items(self, history_items):
-        self.clear()
-        self._history_items = history_items
+    def set_items(self, items):
+        super().set_items(items)
         self.update()
 
     def clear(self):
-        self._history_items.clear()
+        super().clear()
         self.update()
 
-    def reveal(self, reveal, animation=True):
-        if animation:
-            self.set_transition_duration(TRANSITION_DURATION)
-        else:
-            self.set_transition_duration(0)
-
-        self.set_reveal_child(reveal)
+    def reveal(self, reveal, animation=True, on_done=None):
+        super().reveal(reveal, animation=animation, on_done=on_done)
 
         if reveal:
             self._update_merge_data()

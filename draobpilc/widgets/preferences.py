@@ -625,26 +625,6 @@ class Preferences(Gtk.Window):
             int
         )
 
-        spin_props['lower'] = 200
-        spin_props['upper'] = 1000
-        spin_props['step_increment'] = 100
-        page.add_spin(
-            _('Show timeout(ms):'),
-            common.SHOW_EDITOR_TIMEOUT,
-            spin_props,
-            int
-        )
-
-        spin_props['lower'] = 200
-        spin_props['upper'] = 1000
-        spin_props['step_increment'] = 100
-        page.add_spin(
-            _('Hide timeout(ms):'),
-            common.HIDE_EDITOR_TIMEOUT,
-            spin_props,
-            int
-        )
-
         page.add_separator()
         page.add_label(_('Merger'))
 

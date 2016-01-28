@@ -79,14 +79,6 @@
             <default>'\n'</default>
         </key>
 
-        <key type="i" name="show-editor-timeout">
-            <default>500</default>
-        </key>
-
-        <key type="i" name="hide-editor-timeout">
-            <default>1000</default>
-        </key>
-
         <key type="s" name="gpaste-schema-id">
             <default>'org.gnome.GPaste'</default>
         </key>

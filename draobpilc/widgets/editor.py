@@ -25,62 +25,29 @@ from gi.repository import GObject
 from draobpilc import common
 from draobpilc.lib import gpaste_client
 from draobpilc.widgets.item_thumb import ItemThumb
+from draobpilc.widgets.items_processor_base import ItemsProcessorBase
 
-PREVIEW_LABEL = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>'
-PREVIEW_LABEL = PREVIEW_LABEL % _('Preview')
-EDITOR_LABEL = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>'
-EDITOR_LABEL = EDITOR_LABEL % _('Editor')
+PREVIEW_TITLE = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>'
+PREVIEW_TITLE = PREVIEW_TITLE % _('Preview')
+EDITOR_TITLE = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>'
+EDITOR_TITLE = EDITOR_TITLE % _('Editor')
 WRAP_MODE_LABEL = '<span fgcolor="grey" size="small"><b>%s</b></span>'
 WRAP_MODE_LABEL = WRAP_MODE_LABEL % _('"wrap text" is on')
-MARGIN = 10
-TRANSITION_DURATION = 300
 
 
-class Editor(Gtk.Revealer):
-
-    __gsignals__ = {
-        'enter-notify': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        'leave-notify': (GObject.SIGNAL_RUN_FIRST, None, (object,))
-    }
-
-    timeout_ms = GObject.property(
-        type=int,
-        default=common.SETTINGS[common.EDIT_TIMEOUT_MS]
-    )
+class Editor(ItemsProcessorBase):
 
     def __init__(self):
         super().__init__()
 
-        self.set_valign(Gtk.Align.CENTER)
-        self.set_halign(Gtk.Align.CENTER)
-        self.set_hexpand(True)
-        self.set_vexpand(True)
-        self.set_reveal_child(False)
-        self.set_transition_duration(TRANSITION_DURATION)
-        self.set_transition_type(Gtk.RevealerTransitionType.CROSSFADE)
-
         self.item = None
-        self._block_leave_trigger = False
         self._timeout_id = 0
-        common.SETTINGS.bind(
-            common.EDIT_TIMEOUT_MS,
-            self,
-            'timeout_ms',
-            Gio.SettingsBindFlags.DEFAULT
-        )
-
-        self._label = Gtk.Label()
-        self._label.set_margin_top(MARGIN)
-        self._label.set_margin_bottom(MARGIN)
-        self._label.set_margin_left(MARGIN)
-        self._label.set_halign(Gtk.Align.START)
-        self._label.set_valign(Gtk.Align.CENTER)
 
         self._wrap_mode_label = Gtk.Label()
         self._wrap_mode_label.set_markup(WRAP_MODE_LABEL)
-        self._wrap_mode_label.set_margin_top(MARGIN)
-        self._wrap_mode_label.set_margin_bottom(MARGIN)
-        self._wrap_mode_label.set_margin_right(MARGIN)
+        self._wrap_mode_label.set_margin_top(ItemsProcessorBase.MARGIN)
+        self._wrap_mode_label.set_margin_bottom(ItemsProcessorBase.MARGIN)
+        self._wrap_mode_label.set_margin_right(ItemsProcessorBase.MARGIN)
         self._wrap_mode_label.set_halign(Gtk.Align.END)
         self._wrap_mode_label.set_valign(Gtk.Align.CENTER)
 
@@ -89,16 +56,13 @@ class Editor(Gtk.Revealer):
         self._textview.set_vexpand(True)
         self._textview.set_hexpand(True)
         self._textview.set_can_default(False)
-        self._textview.connect('populate-popup', self._on_popup_menu)
         self._textview.props.buffer.connect('changed', self._on_text_changed)
         self._textview.show()
 
         self._scrolled_window = Gtk.ScrolledWindow()
-        self._scrolled_window.connect('enter-notify-event', self._on_enter)
-        self._scrolled_window.connect('leave-notify-event', self._on_leave)
-        self._scrolled_window.set_margin_bottom(MARGIN)
-        self._scrolled_window.set_margin_left(MARGIN)
-        self._scrolled_window.set_margin_right(MARGIN)
+        self._scrolled_window.set_margin_bottom(ItemsProcessorBase.MARGIN)
+        self._scrolled_window.set_margin_left(ItemsProcessorBase.MARGIN)
+        self._scrolled_window.set_margin_right(ItemsProcessorBase.MARGIN)
         self._scrolled_window.add(self._textview)
         self._scrolled_window.set_no_show_all(True)
         self._scrolled_window.hide()
@@ -108,37 +72,20 @@ class Editor(Gtk.Revealer):
         self._thumb.set_hexpand(True)
         self._thumb.set_valign(Gtk.Align.CENTER)
         self._thumb.set_halign(Gtk.Align.CENTER)
-        self._thumb.props.margin = MARGIN
+        self._thumb.props.margin = ItemsProcessorBase.MARGIN
         self._thumb.set_no_show_all(True)
         self._thumb.hide()
 
-        self._grid = Gtk.Grid()
-        self._grid.set_name('EditorGrid')
-        self._grid.attach(self._label, 0, 0, 1, 1)
-        self._grid.attach(self._wrap_mode_label, 1, 0, 1, 1)
-        self._grid.attach(self._scrolled_window, 0, 1, 2, 1)
-        self._grid.attach(self._thumb, 0, 2, 2, 1)
-
-        self.add(self._grid)
-        self.show_all()
+        self.grid.set_name('EditorGrid')
+        self.grid.attach(self._wrap_mode_label, 1, 0, 1, 1)
+        self.grid.attach(self._scrolled_window, 0, 1, 2, 1)
+        self.grid.attach(self._thumb, 0, 2, 2, 1)
 
         self._update_wrap_mode()
         common.SETTINGS.connect(
             'changed::' + common.EDITOR_WRAP_TEXT,
             lambda s, p: self._update_wrap_mode()
         )
-
-    def _on_popup_menu(self, textview, popup_widget):
-        self._block_leave_trigger = True
-
-    def _on_enter(self, sender, event):
-        self.emit('enter-notify', event)
-
-    def _on_leave(self, sender, event):
-        if self._block_leave_trigger:
-            self._block_leave_trigger = False
-        else:
-            self.emit('leave-notify', event)
 
     def _update_wrap_mode(self):
         if common.SETTINGS[common.EDITOR_WRAP_TEXT]:
@@ -154,7 +101,7 @@ class Editor(Gtk.Revealer):
             self._timeout_id = 0
 
         self._timeout_id = GLib.timeout_add(
-            self.props.timeout_ms,
+            common.SETTINGS[common.EDIT_TIMEOUT_MS],
             self._edit_item
         )
 
@@ -174,11 +121,6 @@ class Editor(Gtk.Revealer):
 
         return GLib.SOURCE_REMOVE
 
-    def _remove_item(self):
-        self.item = None
-        self._textview.props.buffer.set_text('')
-        self._thumb.clear()
-
     def _is_previewable_type(self, content_type):
         if content_type.startswith('text'):
             return True
@@ -196,12 +138,21 @@ class Editor(Gtk.Revealer):
 
         return True
 
-    def set_item(self, history_item):
+    def clear(self):
+        super().clear()
+
+        self.item = None
+        self._textview.props.buffer.set_text('')
+        self._textview.set_sensitive(False)
+        self._thumb.clear()
+
+    def set_items(self, history_item):
         if history_item is None:
-            self._remove_item()
+            self.clear()
             return
 
         self.item = history_item
+        self._textview.set_sensitive(True)
 
         if self.item.thumb_path and not self._preview_supported():
             allocation = self.get_allocation()
@@ -210,7 +161,7 @@ class Editor(Gtk.Revealer):
                 allocation.width * 0.8,
                 allocation.height * 0.8
             )
-            self._label.set_markup(PREVIEW_LABEL)
+            self.set_title(PREVIEW_TITLE, markup=True)
             self._scrolled_window.hide()
             self._wrap_mode_label.hide()
             self._thumb.show()
@@ -231,20 +182,8 @@ class Editor(Gtk.Revealer):
             self.item.kind != gpaste_client.Kind.LINK or
             self._preview_supported()
         ):
-            self._label.set_markup(PREVIEW_LABEL)
+            self.set_title(PREVIEW_TITLE, markup=True)
             self._textview.set_editable(False)
         else:
-            self._label.set_markup(EDITOR_LABEL)
+            self.set_title(EDITOR_TITLE, markup=True)
             self._textview.set_editable(True)
-
-    def clear(self):
-        self.set_item(None)
-
-    def reveal(self, reveal, clear_after_transition=False):
-        def on_timeout():
-            if not reveal: self.hide()
-            if clear_after_transition: self.clear()
-
-        if reveal: self.show()
-        self.set_reveal_child(reveal)
-        GLib.timeout_add(TRANSITION_DURATION, on_timeout)

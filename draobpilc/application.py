@@ -37,12 +37,8 @@ from draobpilc.widgets.items_view import ItemsView
 from draobpilc.widgets.main_toolbox import MainToolbox
 from draobpilc.widgets.about_dialog import AboutDialog
 from draobpilc.widgets.preferences import show_preferences
+from draobpilc.widgets.items_processors import ItemsProcessors
 from draobpilc.widgets.backup_history_dialog import BackupHistoryDialog
-
-CONNECTION_IDS = {
-    'SHOW_EDITOR': 0,
-    'HIDE_EDITOR': 0
-}
 
 
 class Application(Gtk.Application):
@@ -67,12 +63,13 @@ class Application(Gtk.Application):
         gtk_settings.props.gtk_application_prefer_dark_theme = True
 
         self._window = None
-        self._editor = Editor()
-        self._editor.connect('enter-notify', self._on_editor_enter)
-        self._editor.connect('leave-notify', self._on_editor_leave)
 
+        self._editor = Editor()
         self._merger = Merger()
         self._merger.connect('merge', self.merge_items)
+        self._items_processors = ItemsProcessors()
+        self._items_processors.add_processor(self._editor)
+        self._items_processors.add_processor(self._merger)
 
         self._main_toolbox = MainToolbox()
         self._main_toolbox.prefs_btn.connect('clicked',
@@ -93,18 +90,21 @@ class Application(Gtk.Application):
         self._history_items = HistoryItems()
 
         self._items_view = ItemsView()
-        self._items_view.connect('item-activated', self._on_item_activated)
-        self._items_view.connect('item-entered',
-            lambda view, item: (
-                self._show_editor(item) if view.n_selected == 1 else None
-            )
+        self._items_view.connect(
+            'item-activated',
+            self._on_item_activated
         )
-        self._items_view.connect('item-left',
-            lambda view, item: self._hide_editor()
+        self._items_view.connect(
+            'item-entered',
+            self._on_item_entered
+        )
+        self._items_view.connect(
+            'item-left',
+            lambda iv, i: self.selection_changed()
         )
         self._items_view.listbox.connect(
             'selected-rows-changed',
-            self._on_selection_changed
+            lambda iv: self.selection_changed()
         )
         self._items_view.bind(self._history_items)
 
@@ -121,88 +121,29 @@ class Application(Gtk.Application):
             size[0] / 100 * common.SETTINGS[common.WIDTH_PERCENTS]
         )
 
-        editor_width = round(
+        processors_width = round(
             (size[0] - list_width) / 100 *
             common.SETTINGS[common.EDITOR_WIDTH_PERCENTS]
         )
-        editor_height = round(
+        processors_height = round(
             size[1] / 100 * common.SETTINGS[common.EDITOR_HEIGHT_PERCENTS]
         )
 
         self._items_view.set_size_request(list_width, -1)
-        self._editor.set_size_request(editor_width, editor_height)
-        self._merger.set_size_request(editor_width, editor_height)
-
-    def _on_selection_changed(self, listbox):
-        selected = self._items_view.get_selected()
-        if not selected: return
-
-        if len(selected) == 1:
-            self._merger.reveal(False)
-
-            if self._editor.is_visible():
-                self._hide_editor()
-
-            self._show_editor(selected[0])
-        elif not selected:
-            self._hide_editor()
-            self._merger.reveal(False)
-        else:
-            if CONNECTION_IDS['SHOW_EDITOR']:
-                GLib.source_remove(CONNECTION_IDS['SHOW_EDITOR'])
-                CONNECTION_IDS['SHOW_EDITOR'] = 0
-
-            self._editor.reveal(False)
-
-            self._merger.set_items(selected)
-            self._merger.reveal(True)
+        self._items_processors.set_size_request(
+            processors_width,
+            processors_height
+        )
 
     def _on_item_activated(self, items_view, history_item):
         gpaste_client.select(history_item.index)
         self._items_view.search_box.entry.set_text('')
         self.hide()
 
-    def _show_editor(self, history_item):
-        def on_timeout():
-            CONNECTION_IDS['SHOW_EDITOR'] = 0
-            self._editor.set_item(history_item)
-            self._editor.reveal(True)
-
-        if CONNECTION_IDS['HIDE_EDITOR']:
-            GLib.source_remove(CONNECTION_IDS['HIDE_EDITOR'])
-            CONNECTION_IDS['HIDE_EDITOR'] = 0
-
-        if CONNECTION_IDS['SHOW_EDITOR']:
-            GLib.source_remove(CONNECTION_IDS['SHOW_EDITOR'])
-            CONNECTION_IDS['SHOW_EDITOR'] = 0
-
-        if not self._merger.get_reveal_child():
-            CONNECTION_IDS['SHOW_EDITOR'] = GLib.timeout_add(
-                common.SETTINGS[common.SHOW_EDITOR_TIMEOUT],
-                on_timeout
-            )
-
-    def _hide_editor(self):
-        def on_timeout():
-            CONNECTION_IDS['HIDE_EDITOR'] = 0
-            self._editor.reveal(False, clear_after_transition=True)
-
-        if CONNECTION_IDS['HIDE_EDITOR']:
-            GLib.source_remove(CONNECTION_IDS['HIDE_EDITOR'])
-            CONNECTION_IDS['HIDE_EDITOR'] = 0
-
-        CONNECTION_IDS['HIDE_EDITOR'] = GLib.timeout_add(
-            common.SETTINGS[common.HIDE_EDITOR_TIMEOUT],
-            on_timeout
-        )
-
-    def _on_editor_enter(self, editor, event):
-        if CONNECTION_IDS['HIDE_EDITOR']:
-            GLib.source_remove(CONNECTION_IDS['HIDE_EDITOR'])
-            CONNECTION_IDS['HIDE_EDITOR'] = 0
-
-    def _on_editor_leave(self, editor, event):
-        self._hide_editor()
+    def _on_item_entered(self, items_view, item):
+        if self._items_processors.current != self._merger:
+            self._editor.set_items(item)
+            self._items_processors.reveal(self._editor, True)
 
     def _on_delete_action(self, action, param):
         selected_items = self._items_view.get_selected()
@@ -222,26 +163,6 @@ class Application(Gtk.Application):
 
         item.app_info.launch_uris([uri])
         self.hide()
-
-    def _hide_on_click(self, window, event):
-        pointer_x, pointer_y = event.get_coords()
-
-        if (
-            self._editor.get_reveal_child() and
-            utils.is_pointer_inside_widget(self._editor)
-        ):
-            pass
-        elif (
-            self._merger.get_reveal_child() and
-            utils.is_pointer_inside_widget(self._merger)
-        ):
-            pass
-        elif utils.is_pointer_inside_widget(self._items_view):
-            pass
-        elif utils.is_pointer_inside_widget(self._main_toolbox):
-            pass
-        else:
-            self.hide()
 
     def _restart_daemon(self, button):
         try:
@@ -279,13 +200,26 @@ class Application(Gtk.Application):
             target
         )
 
-    def delete_items(self, items):
+    def selection_changed(self):
+        selected = self._items_view.get_selected()
+
+        if len(selected) == 1:
+            self._editor.set_items(selected[0])
+            self._items_processors.reveal(self._editor, True)
+        elif not selected:
+            for processor in self._items_processors:
+                processor.clear()
+        else:
+            self._merger.set_items(selected)
+            self._items_processors.reveal(self._merger, True)
+
+    def delete_items(self, items, resume_selection=True):
         delete_indexes = [item.index for item in items]
         delete_indexes = sorted(delete_indexes)
 
         self._items_view.set_sensitive(False)
         self._history_items.freeze(True)
-        self._items_view.save_selection()
+        if resume_selection: self._items_view.save_selection()
 
         for i, index in enumerate(delete_indexes):
             delete_index = index - i
@@ -295,14 +229,14 @@ class Application(Gtk.Application):
         self._history_items.freeze(False)
         self._history_items.reload_history()
         self._items_view.set_sensitive(True)
-        self._items_view.resume_selection()
+        if resume_selection: self._items_view.resume_selection()
 
     def merge_items(self, merger, items, delete_merged):
         merged_text = self._merger.buffer.props.text
         if not merged_text: return
 
-        self._merger.reveal(False, animation=False)
-        if delete_merged: self.delete_items(items)
+        self._items_processors.reveal(self._merger, animation=False)
+        if delete_merged: self.delete_items(items, resume_selection=False)
         gpaste_client.add(merged_text)
         self.hide()
 
@@ -311,14 +245,9 @@ class Application(Gtk.Application):
             self.show()
             return None
 
-        overlay = Gtk.Overlay()
-        overlay.add(self._merger)
-        overlay.add_overlay(self._editor)
-
         self._window = Window(self)
         self._window.connect('configure-event', self._resize)
-        self._window.connect('button-press-event', self._hide_on_click)
-        self._window.grid.attach(overlay, 0, 0, 1, 1)
+        self._window.grid.attach(self._items_processors, 0, 0, 1, 1)
         self._window.grid.attach(self._items_view, 1, 0, 1, 2)
         self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
 
@@ -416,7 +345,14 @@ class Application(Gtk.Application):
         self._window.maximize()
         self._window.get_window().focus(Gdk.CURRENT_TIME)
         self._window.present_with_time(Gdk.CURRENT_TIME)
-        self._items_view.select_first()
+
+        grab_focus = True
+
+        if self._items_view.search_box.entry.get_text():
+            self._items_view.search_box.grab_focus()
+            grab_focus = False
+
+        self._items_view.select_first(grab_focus=grab_focus)
 
     def hide(self, reset_search=True):
         self._window.hide()
