@@ -608,12 +608,6 @@ class Preferences(Gtk.Window):
         name = _('Editor')
         page = PrefsGrid(common.SETTINGS)
 
-        page.add_boolean(
-            _('Wrap text:'),
-            common.EDITOR_WRAP_TEXT
-        )
-        page.add_separator()
-
         spin_props = {}
         spin_props['lower'] = 200
         spin_props['upper'] = 1000

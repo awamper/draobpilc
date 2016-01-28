@@ -32,7 +32,7 @@ PREVIEW_TITLE = PREVIEW_TITLE % _('Preview')
 EDITOR_TITLE = '<span fgcolor="grey" size="xx-large"><b>%s</b></span>'
 EDITOR_TITLE = EDITOR_TITLE % _('Editor')
 WRAP_MODE_LABEL = '<span fgcolor="grey" size="small"><b>%s</b></span>'
-WRAP_MODE_LABEL = WRAP_MODE_LABEL % _('"wrap text" is on')
+WRAP_MODE_LABEL = WRAP_MODE_LABEL % _('wrap text')
 
 
 class Editor(ItemsProcessorBase):
@@ -43,13 +43,18 @@ class Editor(ItemsProcessorBase):
         self.item = None
         self._timeout_id = 0
 
-        self._wrap_mode_label = Gtk.Label()
-        self._wrap_mode_label.set_markup(WRAP_MODE_LABEL)
-        self._wrap_mode_label.set_margin_top(ItemsProcessorBase.MARGIN)
-        self._wrap_mode_label.set_margin_bottom(ItemsProcessorBase.MARGIN)
-        self._wrap_mode_label.set_margin_right(ItemsProcessorBase.MARGIN)
-        self._wrap_mode_label.set_halign(Gtk.Align.END)
-        self._wrap_mode_label.set_valign(Gtk.Align.CENTER)
+        self._wrap_mode_btn = Gtk.CheckButton.new_with_label('')
+        self._wrap_mode_btn.set_halign(Gtk.Align.END)
+        self._wrap_mode_btn.set_valign(Gtk.Align.CENTER)
+        self._wrap_mode_btn.props.margin = ItemsProcessorBase.MARGIN
+        self._wrap_mode_btn.set_active(common.SETTINGS[common.EDITOR_WRAP_TEXT])
+        btn_children = self._wrap_mode_btn.get_children()
+        if btn_children and isinstance(btn_children[0], Gtk.Label):
+            btn_children[0].set_markup(WRAP_MODE_LABEL)
+        self._wrap_mode_btn.connect(
+            'toggled',
+            lambda b: self._update_wrap_mode()
+        )
 
         self._textview = Gtk.TextView()
         self._textview.set_name('EditorTextView')
@@ -77,22 +82,24 @@ class Editor(ItemsProcessorBase):
         self._thumb.hide()
 
         self.grid.set_name('EditorGrid')
-        self.grid.attach(self._wrap_mode_label, 1, 0, 1, 1)
+        self.grid.attach(self._wrap_mode_btn, 1, 0, 1, 1)
         self.grid.attach(self._scrolled_window, 0, 1, 2, 1)
         self.grid.attach(self._thumb, 0, 2, 2, 1)
 
-        self._update_wrap_mode()
         common.SETTINGS.connect(
-            'changed::' + common.EDITOR_WRAP_TEXT,
-            lambda s, p: self._update_wrap_mode()
+           'changed::' + common.EDITOR_WRAP_TEXT,
+           lambda s, k: self._wrap_mode_btn.set_active(s[k])
         )
+        self._update_wrap_mode()
 
     def _update_wrap_mode(self):
-        if common.SETTINGS[common.EDITOR_WRAP_TEXT]:
-            self._wrap_mode_label.show()
+        wrap = self._wrap_mode_btn.get_active()
+
+        if wrap:
+            common.SETTINGS[common.EDITOR_WRAP_TEXT] = wrap
             self._textview.set_wrap_mode(Gtk.WrapMode.WORD_CHAR)
         else:
-            self._wrap_mode_label.hide()
+            common.SETTINGS[common.EDITOR_WRAP_TEXT] = wrap
             self._textview.set_wrap_mode(Gtk.WrapMode.NONE)
 
     def _on_text_changed(self, buffer):
@@ -163,12 +170,12 @@ class Editor(ItemsProcessorBase):
             )
             self.set_title(PREVIEW_TITLE, markup=True)
             self._scrolled_window.hide()
-            self._wrap_mode_label.hide()
+            self._wrap_mode_btn.hide()
             self._thumb.show()
         else:
             self._thumb.hide()
             self._scrolled_window.show()
-            self._update_wrap_mode()
+            self._wrap_mode_btn.show()
 
         if not self._preview_supported():
             self._textview.props.buffer.set_text(self.item.raw)
