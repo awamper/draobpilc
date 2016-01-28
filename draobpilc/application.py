@@ -81,11 +81,20 @@ class Application(Gtk.Application):
         self._main_toolbox.quit_btn.connect('clicked',
             lambda b: self.quit()
         )
+        self._main_toolbox.restart_btn.connect(
+            'clicked',
+            self._restart_daemon
+        )
+        self._main_toolbox.close_btn.connect(
+            'clicked',
+            lambda b: self.hide(reset_search=True)
+        )
         self._main_toolbox.track_btn.connect('clicked',
             lambda b: gpaste_client.track(b.get_active())
         )
-        self._main_toolbox.track_btn.set_active(gpaste_client.get_prop('Active'))
-        self._main_toolbox.restart_btn.connect('clicked', self._restart_daemon)
+        self._main_toolbox.track_btn.set_active(
+            gpaste_client.get_prop('Active')
+        )
 
         self._history_items = HistoryItems()
 

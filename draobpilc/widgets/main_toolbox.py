@@ -17,6 +17,8 @@
 
 from gi.repository import Gtk
 
+from draobpilc.lib import gpaste_client
+
 
 class MainToolbox(Gtk.Box):
 
@@ -65,11 +67,23 @@ class MainToolbox(Gtk.Box):
         self.restart_btn.set_relief(Gtk.ReliefStyle.NONE)
         self.restart_btn.set_tooltip_text(_('Restart the daemon'))
 
+        self.close_btn = Gtk.Button.new_from_icon_name(
+            'window-close-symbolic',
+            Gtk.IconSize.LARGE_TOOLBAR
+        )
+        self.close_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.close_btn.set_tooltip_text(
+            _('Close the app (<Escape> or %s)' % (
+                gpaste_client.SETTINGS['show-history']
+            ))
+        )
+
         self.add(self.about_btn)
         self.add(self.quit_btn)
         self.add(self.restart_btn)
         self.add(self.prefs_btn)
         self.add(self.track_btn)
+        self.add(self.close_btn)
         self.show_all()
 
     def _on_toggled(self, button):
