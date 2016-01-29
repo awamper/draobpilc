@@ -324,12 +324,10 @@ class ItemsView(Gtk.Box):
                 item = item_widget.item
 
                 if item.raw != text:
-                    row.set_selectable(True)
                     row.set_activatable(True)
                     item_widget.set_sensitive(True)
                     item_widget.get_style_context().remove_class('active')
                 else:
-                    row.set_selectable(False)
                     row.set_activatable(False)
                     item_widget.get_style_context().add_class('active')
 
@@ -366,7 +364,7 @@ class ItemsView(Gtk.Box):
         self.set_active_item()
 
         for row in self._listbox.get_children():
-            if not row.get_selectable() or not row.get_mapped(): continue
+            if not row.get_activatable() or not row.get_mapped(): continue
 
             self._listbox.select_row(row)
             if grab_focus: row.grab_focus()
