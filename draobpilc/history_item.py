@@ -104,7 +104,10 @@ class HistoryItem(Emitter):
 
     def _get_thumb_path(self):
         result = None
-        if self.kind != gpaste_client.Kind.FILE: return result
+        if (
+            self.kind != gpaste_client.Kind.FILE and
+            self.kind != gpaste_client.Kind.IMAGE
+        ): return result
         filename = os.path.expanduser(self._raw)
         if not os.path.exists(filename): return result
 
