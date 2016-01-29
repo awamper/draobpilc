@@ -81,10 +81,24 @@ class Editor(ItemsProcessorBase):
         self._thumb.set_no_show_all(True)
         self._thumb.hide()
 
+        self._path_entry = Gtk.Entry()
+        self._path_entry.set_editable(False)
+        self._path_entry.set_icon_from_icon_name(
+            Gtk.EntryIconPosition.PRIMARY,
+            'system-file-manager-symbolic'
+        )
+        self._path_entry.set_icon_activatable(
+            Gtk.EntryIconPosition.PRIMARY,
+            False
+        )
+        self._path_entry.props.margin = ItemsProcessorBase.MARGIN
+        self._path_entry.hide()
+
         self.grid.set_name('EditorGrid')
         self.grid.attach(self._wrap_mode_btn, 1, 0, 1, 1)
-        self.grid.attach(self._scrolled_window, 0, 1, 2, 1)
-        self.grid.attach(self._thumb, 0, 2, 2, 1)
+        self.grid.attach(self._path_entry, 0, 1, 2, 1)
+        self.grid.attach(self._scrolled_window, 0, 2, 2, 1)
+        self.grid.attach(self._thumb, 0, 3, 2, 1)
 
         common.SETTINGS.connect(
            'changed::' + common.EDITOR_WRAP_TEXT,
@@ -160,6 +174,7 @@ class Editor(ItemsProcessorBase):
 
         self.item = history_item
         self._textview.set_sensitive(True)
+        self._path_entry.set_text(self.item.raw)
 
         if self.item.thumb_path and not self._preview_supported():
             allocation = self.get_allocation()
@@ -172,17 +187,21 @@ class Editor(ItemsProcessorBase):
             self._scrolled_window.hide()
             self._wrap_mode_btn.hide()
             self._thumb.show()
+            self._path_entry.show()
         else:
             self._thumb.hide()
             self._scrolled_window.show()
             self._wrap_mode_btn.show()
 
-        if not self._preview_supported():
-            self._textview.props.buffer.set_text(self.item.raw)
-        else:
-            with open(self.item.raw, 'r') as fp:
-                contents = fp.read()
-                self._textview.props.buffer.set_text(contents)
+            if not self._preview_supported():
+                self._path_entry.hide()
+                self._textview.props.buffer.set_text(self.item.raw)
+            else:
+                self._path_entry.show()
+
+                with open(self.item.raw, 'r') as fp:
+                    contents = fp.read()
+                    self._textview.props.buffer.set_text(contents)
 
         if (
             self.item.kind != gpaste_client.Kind.TEXT and
