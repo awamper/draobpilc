@@ -357,7 +357,10 @@ class Application(Gtk.Application):
 
         grab_focus = True
 
-        if self._items_view.search_box.entry.get_text():
+        if (
+            self._items_view.search_box.entry.get_text() or
+            common.SETTINGS[common.FOCUS_SEARCH_ON_OPEN]
+        ):
             self._items_view.search_box.entry.grab_focus()
             grab_focus = False
 

@@ -523,6 +523,10 @@ class Preferences(Gtk.Window):
             common.STARTUP_NOTIFICATION
         )
         page.add_boolean(
+            _('Focus search entry when app is open'),
+            common.FOCUS_SEARCH_ON_OPEN
+        )
+        page.add_boolean(
             _('Show items index number:'),
             common.SHOW_INDEXES
         )

@@ -147,5 +147,9 @@
             <default>true</default>
         </key>
 
+        <key type="b" name="focus-search-on-open">
+            <default>true</default>
+        </key>
+
     </schema>
 </schemalist>
