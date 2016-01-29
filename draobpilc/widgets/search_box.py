@@ -24,7 +24,7 @@ from gi.repository import GObject
 from draobpilc import common
 from draobpilc.lib import gpaste_client
 
-ENTRY_PLACE_HOLDER = _('Filter items')
+ENTRY_PLACE_HOLDER = _('Filter items (%s to focus)' % common.SETTINGS[common.FOCUS_SEARCH])
 SEARCH_INDEX_RE = re.compile(r'^#([0-9]+)$')
 FLAGS_RE = re.compile(r'^(.*?)\-([lfit]+)$')
 
