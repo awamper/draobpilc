@@ -17,10 +17,19 @@
 
 import os
 
+from gi import require_version
 from gi.repository import Gio
 from gi.repository import Gtk
 from gi.repository import GLib
 from gi.repository import GObject
+
+try:
+    require_version('GtkSource', '3.0')
+except ValueError:
+    GTK_SOURCE_INSTALLED = False
+else:
+    from gi.repository import GtkSource
+    GTK_SOURCE_INSTALLED = True
 
 from draobpilc import common
 from draobpilc.lib import gpaste_client
@@ -56,7 +65,14 @@ class Editor(ItemsProcessorBase):
             lambda b: self._update_wrap_mode()
         )
 
-        self._textview = Gtk.TextView()
+        if GTK_SOURCE_INSTALLED:
+            self._textview = GtkSource.View()
+            self._textview.set_show_line_numbers(True)
+            self._lang_manager = GtkSource.LanguageManager.get_default()
+        else:
+            self._textview = Gtk.TextView()
+            self._lang_manager = None
+
         self._textview.set_name('EditorTextView')
         self._textview.set_vexpand(True)
         self._textview.set_hexpand(True)
@@ -193,15 +209,36 @@ class Editor(ItemsProcessorBase):
             self._scrolled_window.show()
             self._wrap_mode_btn.show()
 
+            lang = None
+
             if not self._preview_supported():
                 self._path_entry.hide()
                 self._textview.props.buffer.set_text(self.item.raw)
+
+                if self._lang_manager:
+                    lang = self._lang_manager.guess_language(
+                        None,
+                        self.item.raw
+                    )
             else:
                 self._path_entry.show()
 
                 with open(self.item.raw, 'r') as fp:
                     contents = fp.read()
+
+                    if self._lang_manager:
+                        lang = self._lang_manager.guess_language(
+                            self.item.raw,
+                            contents
+                        )
                     self._textview.props.buffer.set_text(contents)
+
+            if lang:
+                self._textview.props.buffer.set_language(lang)
+                self._textview.set_monospace(True)
+            else:
+                self._textview.props.buffer.set_language(None)
+                self._textview.set_monospace(False)
 
         if (
             self.item.kind != gpaste_client.Kind.TEXT and
