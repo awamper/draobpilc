@@ -5,6 +5,7 @@ GPaste GUI, currently beta.
 * Python 3
 * GTK 3.16+
 * GPaste 3.18+
+* OPTIONAL: GtkSourceView3
 
 ## Installation
 > pip3 install \<path to draobpilc root dir\>  
