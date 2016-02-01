@@ -26,13 +26,16 @@ from gi.repository import GdkPixbuf
 from draobpilc import get_data_path
 from draobpilc import common
 from draobpilc import version
+from draobpilc.processors import (
+    editor,
+    merger,
+    previewer
+)
 from draobpilc.lib import utils
 from draobpilc.lib import gpaste_client
 from draobpilc.history_item import HistoryItem
 from draobpilc.history_items import HistoryItems
 from draobpilc.widgets.window import Window
-from draobpilc.widgets.editor import Editor
-from draobpilc.widgets.merger import Merger
 from draobpilc.widgets.items_view import ItemsView
 from draobpilc.widgets.main_toolbox import MainToolbox
 from draobpilc.widgets.about_dialog import AboutDialog
@@ -64,12 +67,14 @@ class Application(Gtk.Application):
 
         self._window = None
 
-        self._editor = Editor()
-        self._merger = Merger()
+        self._editor = editor.Editor()
+        self._previewer = previewer.Previewer()
+        self._merger = merger.Merger()
         self._merger.connect('merge', self.merge_items)
         self._items_processors = ItemsProcessors()
         self._items_processors.add_processor(self._editor)
         self._items_processors.add_processor(self._merger)
+        self._items_processors.add_processor(self._previewer)
 
         self._main_toolbox = MainToolbox()
         self._main_toolbox.prefs_btn.connect('clicked',
@@ -132,10 +137,10 @@ class Application(Gtk.Application):
 
         processors_width = round(
             (size[0] - list_width) / 100 *
-            common.SETTINGS[common.EDITOR_WIDTH_PERCENTS]
+            common.SETTINGS[common.PROCESSOR_WIDTH_PERCENTS]
         )
         processors_height = round(
-            size[1] / 100 * common.SETTINGS[common.EDITOR_HEIGHT_PERCENTS]
+            size[1] / 100 * common.SETTINGS[common.PROCESSOR_HEIGHT_PERCENTS]
         )
 
         self._items_view.set_size_request(list_width, -1)
@@ -150,9 +155,8 @@ class Application(Gtk.Application):
         self.hide()
 
     def _on_item_entered(self, items_view, item):
-        if self._items_processors.current != self._merger:
-            self._editor.set_items(item)
-            self._items_processors.reveal(self._editor, True)
+        if self._items_view.n_selected == 1:
+            self._items_processors.set_items([item])
 
     def _on_delete_action(self, action, param):
         selected_items = self._items_view.get_selected()
@@ -211,16 +215,7 @@ class Application(Gtk.Application):
 
     def selection_changed(self):
         selected = self._items_view.get_selected()
-
-        if len(selected) == 1:
-            self._editor.set_items(selected[0])
-            self._items_processors.reveal(self._editor, True)
-        elif not selected:
-            for processor in self._items_processors:
-                processor.clear()
-        else:
-            self._merger.set_items(selected)
-            self._items_processors.reveal(self._merger, True)
+        self._items_processors.set_items(selected)
 
     def delete_items(self, items, resume_selection=True):
         delete_indexes = [item.index for item in items]
@@ -244,7 +239,6 @@ class Application(Gtk.Application):
         merged_text = self._merger.buffer.props.text
         if not merged_text: return
 
-        self._items_processors.reveal(self._merger, animation=False)
         if delete_merged: self.delete_items(items, resume_selection=False)
         gpaste_client.add(merged_text)
         self.hide()

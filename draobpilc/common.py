@@ -33,8 +33,8 @@ CSS_PATH = get_data_path('style.css')
 
 # settings keys
 WIDTH_PERCENTS = 'width-percents'
-EDITOR_WIDTH_PERCENTS = 'editor-width-percents'
-EDITOR_HEIGHT_PERCENTS = 'editor-height-percents'
+PROCESSOR_WIDTH_PERCENTS = 'processor-width-percents'
+PROCESSOR_HEIGHT_PERCENTS = 'processor-height-percents'
 ITEM_MAX_LINES = 'item-max-lines'
 ITEM_MAX_HEIGHT = 'item-max-height'
 KIND_INDICATOR_WIDTH = 'kind-indicator-width'

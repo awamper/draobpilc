@@ -21,11 +21,11 @@ from gi.repository import Gtk
 from gi.repository import GObject
 
 from draobpilc import common
-from draobpilc.widgets.items_processor_base import ItemsProcessorBase
-
-MERGER_TITLE = (
-    '<span fgcolor="grey" size="xx-large"><b>%s</b></span>' % _('Merger')
+from draobpilc.widgets.items_processor_base import (
+    ItemsProcessorBase,
+    ItemsProcessorPriority
 )
+
 COUNTER_LABEL_TPL = (
     '<span size="xx-large">%s</span>' % _('Merge <b>%i</b> items.')
 )
@@ -39,9 +39,7 @@ class Merger(ItemsProcessorBase):
     }
 
     def __init__(self):
-        super().__init__()
-
-        self.set_title(MERGER_TITLE, markup=True)
+        super().__init__(_('Merge'), ItemsProcessorPriority.HIGHEST)
 
         self._counter_label = Gtk.Label()
         self._counter_label.set_markup(COUNTER_LABEL_TPL % 0)
@@ -82,12 +80,12 @@ class Merger(ItemsProcessorBase):
             lambda b: self.emit('merge', self.items, False)
         )
 
-        self._merget_del_btn = Gtk.Button()
-        self._merget_del_btn.set_label(_('Merge & Delete'))
-        self._merget_del_btn.set_tooltip_text(
+        self._merge_del_btn = Gtk.Button()
+        self._merge_del_btn.set_label(_('Merge & Delete'))
+        self._merge_del_btn.set_tooltip_text(
             _('Merge and delete merged items')
         )
-        self._merget_del_btn.connect(
+        self._merge_del_btn.connect(
             'clicked',
             lambda b: self.emit('merge', self.items, True)
         )
@@ -95,7 +93,7 @@ class Merger(ItemsProcessorBase):
         buttons_box = Gtk.ButtonBox()
         buttons_box.set_layout(Gtk.ButtonBoxStyle.EXPAND)
         buttons_box.props.margin = ItemsProcessorBase.MARGIN
-        buttons_box.add(self._merget_del_btn)
+        buttons_box.add(self._merge_del_btn)
         buttons_box.add(self._merge_btn)
 
         self.grid.set_name('MergerBox')
@@ -205,20 +203,15 @@ class Merger(ItemsProcessorBase):
         return result
 
     def update(self):
-        if not self.items: return
-
         self._counter_label.set_markup(
             COUNTER_LABEL_TPL % len(self.items)
         )
 
         if len(self.items) < 2:
-            self._merge_btn.set_sensitive(False)
-            return
-
-        self._merge_btn.set_sensitive(True)
-
-        preview = self._get_merged_text()
-        self.buffer.set_text(preview)
+            self.buffer.set_text('')
+        else:
+            preview = self._get_merged_text()
+            self.buffer.set_text(preview)
 
     def set_items(self, items):
         super().set_items(items)
@@ -228,12 +221,11 @@ class Merger(ItemsProcessorBase):
         super().clear()
         self.update()
 
-    def reveal(self, reveal, animation=True, on_done=None):
-        super().reveal(reveal, animation=animation, on_done=on_done)
-
-        if reveal:
-            self._update_merge_data()
-            self._merge_btn.grab_focus()
+    def can_process(self, items):
+        if len(items) > 1:
+            return True
+        else:
+            return False
 
     @property
     def buffer(self):

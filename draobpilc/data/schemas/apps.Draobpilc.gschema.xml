@@ -6,11 +6,11 @@
             <default>40</default>
         </key>
 
-        <key type="i" name="editor-width-percents">
+        <key type="i" name="processor-width-percents">
             <default>85</default>
         </key>
 
-        <key type="i" name="editor-height-percents">
+        <key type="i" name="processor-height-percents">
             <default>85</default>
         </key>
 

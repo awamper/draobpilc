@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2016 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -18,28 +18,74 @@
 from gi.repository import Gtk
 from gi.repository import GLib
 
-from draobpilc import common
 from draobpilc.widgets.items_processor_base import ItemsProcessorBase
 
 
-class ItemsProcessors(Gtk.Bin):
+class ItemsProcessors(Gtk.Box):
+
+    MARGIN = 10
 
     def __init__(self):
         super().__init__()
 
+        self.set_name('ProcessorBox')
         self.set_valign(Gtk.Align.CENTER)
         self.set_halign(Gtk.Align.CENTER)
         self.set_hexpand(True)
         self.set_vexpand(True)
+        self.set_orientation(Gtk.Orientation.VERTICAL)
 
-        self.current = None
-        self.grid = Gtk.Grid()
+        self._stack = Gtk.Stack()
+        self._stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
+        self._stack.set_transition_duration(300)
+        self._stack.props.margin = ItemsProcessors.MARGIN
 
-        self.add(self.grid)
+        self._switcher = Gtk.StackSwitcher()
+        self._switcher.set_stack(self._stack)
+        self._switcher.props.margin = ItemsProcessors.MARGIN
+
+        self.add(self._switcher)
+        self.add(self._stack)
         self.show_all()
 
+        self._items = []
+
     def __iter__(self):
-        return iter(self.grid.get_children())
+        return iter(self.processors)
+
+    def _get_for_items(self, items):
+        result = None
+
+        for processor in self:
+            if not processor.can_process(items): continue
+
+            if result and processor.priority > result.priority:
+                result = processor
+            elif not result:
+                result = processor
+
+        return result
+
+    def _get_for_title(self, title):
+        result = None
+
+        for processor in self:
+            if processor.title == title:
+                result = processor
+                break
+
+        return result
+
+    def _update_switcher(self):
+        for button in self._switcher.get_children():
+            if not isinstance(button, Gtk.RadioButton): continue
+
+            for label in button.get_children():
+                if not isinstance(label, Gtk.Label): continue
+                processor = self._get_for_title(label.get_text())
+                if not processor: continue
+
+                button.set_sensitive(processor.get_sensitive())
 
     def add_processor(self, processor):
         if not isinstance(processor, ItemsProcessorBase):
@@ -47,22 +93,56 @@ class ItemsProcessors(Gtk.Bin):
                 '"processor" must be instance of ItemsProcessorBase'
             )
         else:
-            processor.hide()
-            self.grid.attach(processor, 0, 0, 1, 1)
+            processor.set_sensitive(False)
+            self._stack.add_titled(
+                processor,
+                processor.title,
+                processor.title
+            )
 
-    def reveal(self, processor=None, reveal=False, animation=True, on_done=None):
-        for child in self:
-            if not processor:
-                if not reveal: self.current = None
-                child.reveal(reveal, animation=animation, on_done=on_done)
-                continue
+    def set_items(self, items):
+        if self._items == items: return
 
-            if child != processor:
-                child.reveal(not reveal, animation=animation, on_done=on_done)
+        if not items:
+            self._items.clear()
+        else:
+            self._items = items
+
+        for processor in self:
+            if items is None:
+                processor.clear()
+                processor.set_sensitive(False)
             else:
-                if reveal:
-                    self.current = child
+                if processor.can_process(items):
+                    processor.set_sensitive(True)
+                    processor.set_items(items)
                 else:
-                    self.current = None
+                    processor.set_sensitive(False)
+                    processor.clear()
 
-                child.reveal(reveal, animation=animation, on_done=on_done)
+        processor = self._get_for_items(self._items)
+
+        if processor:
+            self._stack.set_visible_child(processor)
+        else:
+            self._stack.set_visible_child(self.default)
+
+        self._update_switcher()
+
+    @property
+    def processors(self):
+        return self._stack.get_children()
+
+    @property
+    def default(self):
+        result = None
+
+        for processor in self:
+            if not processor.default: continue
+
+            if result and processor.priority > result.priority:
+                result = processor
+            elif not result:
+                result = processor
+
+        return result
