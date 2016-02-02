@@ -214,6 +214,7 @@ class Merger(ItemsProcessorBase):
 
     def clear(self):
         super().clear()
+        self._update_merge_data()
         self.update()
 
     def can_process(self, items):
