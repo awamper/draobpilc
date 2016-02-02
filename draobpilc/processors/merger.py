@@ -21,6 +21,7 @@ from gi.repository import Gtk
 from gi.repository import GObject
 
 from draobpilc import common
+from draobpilc.processors.processor_textwindow import TextWindow
 from draobpilc.widgets.items_processor_base import (
     ItemsProcessorBase,
     ItemsProcessorPriority
@@ -64,14 +65,8 @@ class Merger(ItemsProcessorBase):
         self._separator_combo.connect('changed', lambda c: self.update())
         self._separator_combo.props.margin = ItemsProcessorBase.MARGIN
 
-        self._textview = Gtk.TextView()
-        self._textview.set_name('MergerTextView')
-        self._textview.set_vexpand(True)
-        self._textview.set_hexpand(True)
-
-        self._scrolled_window = Gtk.ScrolledWindow()
-        self._scrolled_window.props.margin = ItemsProcessorBase.MARGIN
-        self._scrolled_window.add(self._textview)
+        self._text_window = TextWindow()
+        self._text_window.textview.set_name('MergerTextView')
 
         self._merge_btn = Gtk.Button()
         self._merge_btn.set_label(_('Merge'))
@@ -102,7 +97,7 @@ class Merger(ItemsProcessorBase):
         self.grid.attach(self._decorator_combo, 0, 3, 1, 1)
         self.grid.attach(self._separator_label, 1, 2, 1, 1)
         self.grid.attach(self._separator_combo, 1, 3, 1, 1)
-        self.grid.attach(self._scrolled_window, 0, 4, 2, 1)
+        self.grid.attach(self._text_window, 0, 4, 2, 1)
         self.grid.attach(buttons_box, 0, 5, 2, 1)
 
         common.SETTINGS.connect(
@@ -229,4 +224,4 @@ class Merger(ItemsProcessorBase):
 
     @property
     def buffer(self):
-        return self._textview.props.buffer
+        return self._text_window.textview.props.buffer
