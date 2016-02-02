@@ -18,6 +18,7 @@
 import os
 
 from gi.repository import Gtk
+from gi.repository import Gio
 
 from draobpilc import common
 from draobpilc.lib import gpaste_client
@@ -50,10 +51,11 @@ class Previewer(ItemsProcessorBase):
             Gtk.EntryIconPosition.PRIMARY,
             'system-file-manager-symbolic'
         )
-        self._path_entry.set_icon_activatable(
+        self._path_entry.set_icon_tooltip_text(
             Gtk.EntryIconPosition.PRIMARY,
-            False
+            _('Locate on disk')
         )
+        self._path_entry.connect('icon-release', self._on_icon_release)
         self._path_entry.props.margin = ItemsProcessorBase.MARGIN
 
         self._text_window = TextWindow()
@@ -66,6 +68,14 @@ class Previewer(ItemsProcessorBase):
         self.grid.attach(self._path_entry, 0, 0, 2, 1)
         self.grid.attach(self._thumb, 0, 1, 2, 1)
         self.grid.attach(self._text_window, 0, 1, 2, 1)
+
+    def _on_icon_release(self, entry, icon_pos, event):
+        if icon_pos != Gtk.EntryIconPosition.PRIMARY: return
+
+        app_info = Gio.AppInfo.get_default_for_type('inode/directory', True)
+        if not app_info: return
+        app_info.launch_uris(['file://%s' % self._path_entry.get_text()], None)
+        common.APPLICATION.hide()
 
     def _is_previewable_type(self, content_type):
         if content_type and content_type.startswith('text'):
