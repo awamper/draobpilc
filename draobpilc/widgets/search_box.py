@@ -46,9 +46,9 @@ class SearchBox(Gtk.Box):
         self.entry.set_hexpand(True)
         self.entry.set_halign(Gtk.Align.FILL)
         self.entry.set_placeholder_text(ENTRY_PLACE_HOLDER)
-        self.entry.set_icon_from_icon_name(
-            Gtk.EntryIconPosition.PRIMARY,
-            'edit-find-symbolic'
+        self.entry.connect(
+            'icon-release',
+            lambda *a, **kw: self.reset()
         )
         self.entry.set_tooltip_text(
             _('You can add "-{flags}" at the end to search for types.') +
@@ -72,6 +72,7 @@ class SearchBox(Gtk.Box):
 
         self.add(overlay)
         self.show_all()
+        self._update_icon()
 
     def _on_text_changed(self, buffer, *a, **kw):
         def on_timeout():
@@ -90,6 +91,7 @@ class SearchBox(Gtk.Box):
             GLib.source_remove(self._timeout_id)
             self._timeout_id = 0
 
+        self._update_icon()
         search_timeout = common.SETTINGS[common.SEARCH_TIMEOUT]
         self._timeout_id = GLib.timeout_add(search_timeout, on_timeout)
 
@@ -104,6 +106,26 @@ class SearchBox(Gtk.Box):
         if 'f' in flags: self.flags.append(gpaste_client.Kind.FILE)
         if 'i' in flags: self.flags.append(gpaste_client.Kind.IMAGE)
         if 't' in flags: self.flags.append(gpaste_client.Kind.TEXT)
+
+    def _update_icon(self):
+        if self.entry.get_text():
+            self.entry.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.PRIMARY,
+                'edit-clear-symbolic'
+            )
+            self.entry.set_icon_activatable(
+                Gtk.EntryIconPosition.PRIMARY,
+                True
+            )
+        else:
+            self.entry.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.PRIMARY,
+                'edit-find-symbolic'
+            )
+            self.entry.set_icon_activatable(
+                Gtk.EntryIconPosition.PRIMARY,
+                False
+            )
 
     def reset(self):
         self.entry.set_text('')
