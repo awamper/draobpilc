@@ -49,6 +49,7 @@ class ItemsProcessors(Gtk.Box):
         self.show_all()
 
         self._items = []
+        self._timeout_id = 0
 
     def __iter__(self):
         return iter(self.processors)
@@ -100,34 +101,46 @@ class ItemsProcessors(Gtk.Box):
                 processor.title
             )
 
-    def set_items(self, items):
+    def set_items(self, items, timeout=0):
+
+        def on_timeout():
+            self._timeout_id = 0
+
+            if not items:
+                self._items.clear()
+            else:
+                self._items = items
+
+            for processor in self:
+                if items is None:
+                    processor.clear()
+                    processor.set_sensitive(False)
+                else:
+                    if processor.can_process(items):
+                        processor.set_sensitive(True)
+                        processor.set_items(items)
+                    else:
+                        processor.set_sensitive(False)
+                        processor.clear()
+
+            processor = self._get_for_items(self._items)
+
+            if processor:
+                self._stack.set_visible_child(processor)
+            else:
+                self._stack.set_visible_child(self.default)
+
+            self._update_switcher()
+
+        if self._timeout_id:
+            GLib.source_remove(self._timeout_id)
+            self._timeout_id = 0
         if self._items == items: return
 
-        if not items:
-            self._items.clear()
+        if timeout:
+            self._timeout_id = GLib.timeout_add(timeout, on_timeout)
         else:
-            self._items = items
-
-        for processor in self:
-            if items is None:
-                processor.clear()
-                processor.set_sensitive(False)
-            else:
-                if processor.can_process(items):
-                    processor.set_sensitive(True)
-                    processor.set_items(items)
-                else:
-                    processor.set_sensitive(False)
-                    processor.clear()
-
-        processor = self._get_for_items(self._items)
-
-        if processor:
-            self._stack.set_visible_child(processor)
-        else:
-            self._stack.set_visible_child(self.default)
-
-        self._update_switcher()
+            on_timeout()
 
     @property
     def processors(self):

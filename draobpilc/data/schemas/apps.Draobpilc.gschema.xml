@@ -151,5 +151,9 @@
             <default>true</default>
         </key>
 
+        <key type="i" name="set-items-timeout">
+            <default>300</default>
+        </key>
+
     </schema>
 </schemalist>

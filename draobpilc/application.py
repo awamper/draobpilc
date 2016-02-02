@@ -155,8 +155,12 @@ class Application(Gtk.Application):
         self.hide()
 
     def _on_item_entered(self, items_view, item):
-        if self._items_view.n_selected == 1:
-            self._items_processors.set_items([item])
+        if self._items_view.n_selected != 1: return
+
+        self._items_processors.set_items(
+            [item],
+            timeout=common.SETTINGS[common.SET_ITEMS_TIMEOUT]
+        )
 
     def _on_delete_action(self, action, param):
         selected_items = self._items_view.get_selected()
@@ -215,7 +219,10 @@ class Application(Gtk.Application):
 
     def selection_changed(self):
         selected = self._items_view.get_selected()
-        self._items_processors.set_items(selected)
+        self._items_processors.set_items(
+            selected,
+            timeout=common.SETTINGS[common.SET_ITEMS_TIMEOUT]
+        )
 
     def delete_items(self, items, resume_selection=True):
         delete_indexes = [item.index for item in items]
