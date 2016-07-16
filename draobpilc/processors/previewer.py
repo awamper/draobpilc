@@ -54,8 +54,10 @@ class Previewer(ItemsProcessorBase):
         self._path_entry.set_tooltip_text(
             _('Click to locate the file on disk')
         )
+        self._path_entry.connect(
+            'button-release-event',
+            self._on_path_entry_button
         )
-        self._path_entry.connect('icon-release', self._on_icon_release)
         self._path_entry.props.margin = ItemsProcessorBase.MARGIN
 
         self._text_window = TextWindow()
@@ -69,9 +71,7 @@ class Previewer(ItemsProcessorBase):
         self.grid.attach(self._thumb, 0, 1, 2, 1)
         self.grid.attach(self._text_window, 0, 1, 2, 1)
 
-    def _on_icon_release(self, entry, icon_pos, event):
-        if icon_pos != Gtk.EntryIconPosition.PRIMARY: return
-
+    def _on_path_entry_button(self, entry, event):
         app_info = Gio.AppInfo.get_default_for_type('inode/directory', True)
         if not app_info: return
         app_info.launch_uris(['file://%s' % self._path_entry.get_text()], None)
