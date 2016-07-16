@@ -42,6 +42,7 @@ class ItemsProcessors(Gtk.Box):
 
         self._switcher = Gtk.StackSwitcher()
         self._switcher.set_stack(self._stack)
+        self._switcher.set_halign(Gtk.Align.CENTER)
         self._switcher.props.margin = ItemsProcessors.MARGIN
 
         self.add(self._switcher)
