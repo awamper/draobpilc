@@ -58,3 +58,14 @@ class ItemsProcessorBase(Gtk.Bin):
 
     def can_process(self, items):
         return True
+
+    @property
+    def item(self):
+        item = None
+
+        try:
+            item = self.items[0]
+        except IndexError:
+            pass
+
+        return item

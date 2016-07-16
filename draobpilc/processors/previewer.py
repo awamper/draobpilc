@@ -152,14 +152,3 @@ class Previewer(ItemsProcessorBase):
             return True
         else:
             return False
-
-    @property
-    def item(self):
-        item = None
-
-        try:
-            item = self.items[0]
-        except IndexError:
-            pass
-
-        return item
