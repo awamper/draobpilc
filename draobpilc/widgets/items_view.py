@@ -36,6 +36,10 @@ class AlreadyBound(Exception):
 
 class ItemsView(Gtk.Box):
 
+    AUTOSCROLL_BORDER_OFFSET = 100
+    AUTOSCROLL_TIMEOUT_MS = 50
+    AUTOSCROLL_STEP = 10
+
     __gsignals__ = {
         'item-activated': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
         'item-selected': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
@@ -59,6 +63,7 @@ class ItemsView(Gtk.Box):
         self._last_search_string = ''
         self._filter_mode = False
         self._show_index = None
+        self._autoscroll_timeout_id = 0
 
         self._histories_manager = HistoriesManager()
         self._items_counter = ItemsCounter()
@@ -85,6 +90,7 @@ class ItemsView(Gtk.Box):
         self._listbox.connect('motion-notify-event', self._on_motion_event)
         self._listbox.connect('leave-notify-event', self._on_leave_event)
         self._listbox.connect('button-press-event', self._on_button_press_event)
+        self._listbox.connect('button-release-event', self._on_button_release_event)
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_name('ItemsViewScrolledWindow')
@@ -120,10 +126,38 @@ class ItemsView(Gtk.Box):
             self._last_entered_item = None
 
     def _on_motion_event(self, listbox, event):
-        
+
+        def do_autoscroll_and_selection():
+            adjustment = self._listbox.get_adjustment()
+            new_value = adjustment.get_value() + ItemsView.AUTOSCROLL_STEP
+            adjustment.set_value(new_value)
+            row = self._listbox.get_row_at_y(
+                new_value + adjustment.get_page_increment()
+            )
+            if not row.is_selected(): self._listbox.select_row(row)
+
+            return True
+
         def maybe_toggle_selection(row):
             if event.state == Gdk.ModifierType.BUTTON3_MASK:
                 self.toggle_selection(row)
+
+        if event.state == Gdk.ModifierType.BUTTON3_MASK:
+            adjustment = self._listbox.get_adjustment()
+            autoscroll_border = (
+                adjustment.get_value() +
+                adjustment.get_page_increment() -
+                ItemsView.AUTOSCROLL_BORDER_OFFSET
+            )
+            if event.y > autoscroll_border:
+                if not self._autoscroll_timeout_id:
+                    self._autoscroll_timeout_id = GLib.timeout_add(
+                        ItemsView.AUTOSCROLL_TIMEOUT_MS,
+                        do_autoscroll_and_selection
+                    )
+            elif event.y < autoscroll_border and self._autoscroll_timeout_id:
+                GLib.source_remove(self._autoscroll_timeout_id)
+                self._autoscroll_timeout_id = 0
 
         row = self._listbox.get_row_at_y(event.y)
         
@@ -147,6 +181,11 @@ class ItemsView(Gtk.Box):
         row = self._listbox.get_row_at_y(event.y)
         if not row or event.button != 3: return
         self.toggle_selection(row)
+
+    def _on_button_release_event(self, listbox, event):
+        if self._autoscroll_timeout_id:
+            GLib.source_remove(self._autoscroll_timeout_id)
+            self._autoscroll_timeout_id = 0
 
     def _on_row_selected(self, listbox, row):
         if row: self.emit('item-selected', row.get_child().item)
@@ -397,6 +436,10 @@ class ItemsView(Gtk.Box):
 
     def clear(self):
         self._listbox.unselect_all()
+
+        if self._autoscroll_timeout_id:
+            GLib.source_remove(self._autoscroll_timeout_id)
+            self._autoscroll_timeout_id = 0
 
         for row in self._listbox.get_children():
             child = row.get_child()
