@@ -33,6 +33,10 @@ DESKTOP_FILE_PATH = os.path.join(
     os.path.expanduser('~/.local/share/applications'),
     '%s.desktop' % version.APP_NAME
 )
+DESKTOP_PREFS_FILE_PATH =os.path.join(
+    os.path.expanduser('~/.local/share/applications'),
+    '%s_prefs.desktop' % version.APP_NAME
+)
 
 
 def check_gpaste_version():
@@ -87,21 +91,37 @@ def install_excepthook():
 
 def install_desktop_file():
     desktop_tpl = get_data_path('desktop_file.tpl')
+    prefs_tpl = get_data_path('preferences_desktop_file.tpl')
 
     if os.path.exists(DESKTOP_FILE_PATH):
         print(_('File "%s" already exists.' % DESKTOP_FILE_PATH))
-        return False
+    else:
+        print(_('Creating "%s".' % DESKTOP_FILE_PATH))
+        with open(desktop_tpl, encoding='utf-8') as tpl_file:
+            contents = tpl_file.read()
+            contents = contents.replace('{APP_VERSION}', str(version.APP_VERSION))
+            contents = contents.replace('{APP_NAME}', version.APP_NAME)
+            contents = contents.replace('{COMMENT}', version.APP_DESCRIPTION)
+            contents = contents.replace('{EXEC}', 'draobpilc')
+            contents = contents.replace('{ICON}', common.ICON_PATH)
 
-    with open(desktop_tpl, encoding='utf-8') as tpl_file:
-        contents = tpl_file.read()
-        contents = contents.replace('{APP_VERSION}', str(version.APP_VERSION))
-        contents = contents.replace('{APP_NAME}', version.APP_NAME)
-        contents = contents.replace('{COMMENT}', version.APP_DESCRIPTION)
-        contents = contents.replace('{EXEC}', 'draobpilc')
-        contents = contents.replace('{ICON}', common.ICON_PATH)
+            with open(DESKTOP_FILE_PATH, 'w', encoding='utf-8') as desktop_file:
+                desktop_file.write(contents)
 
-        with open(DESKTOP_FILE_PATH, 'w', encoding='utf-8') as desktop_file:
-            desktop_file.write(contents)
+    if os.path.exists(DESKTOP_PREFS_FILE_PATH):
+        print(_('File "%s" already exists.' % DESKTOP_PREFS_FILE_PATH))
+    else:
+        print(_('Creating "%s".' % DESKTOP_PREFS_FILE_PATH))
+        with open(prefs_tpl, encoding='utf-8') as tpl_file:
+            contents = tpl_file.read()
+            contents = contents.replace('{APP_VERSION}', str(version.APP_VERSION))
+            contents = contents.replace('{APP_NAME}', version.APP_NAME)
+            contents = contents.replace('{COMMENT}', version.APP_DESCRIPTION)
+            contents = contents.replace('{EXEC}', 'draobpilc --preferences')
+            contents = contents.replace('{ICON}', common.ICON_PATH)
+
+            with open(DESKTOP_PREFS_FILE_PATH, 'w', encoding='utf-8') as desktop_file:
+                desktop_file.write(contents)
 
     return True
 
@@ -109,9 +129,14 @@ def install_desktop_file():
 def uninstall_desktop_file():
     if not os.path.exists(DESKTOP_FILE_PATH):
         print(_('File "%s" doesn\'t exits.' % DESKTOP_FILE_PATH))
-        return False
+    else:
+        os.remove(DESKTOP_FILE_PATH)
+    
+    if not os.path.exists(DESKTOP_PREFS_FILE_PATH):
+        print(_('File "%s" doesn\'t exits.' % DESKTOP_PREFS_FILE_PATH))
+    else:
+        os.remove(DESKTOP_PREFS_FILE_PATH)
 
-    os.remove(DESKTOP_FILE_PATH)
     return True
 
 
