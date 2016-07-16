@@ -138,6 +138,12 @@ def run():
         dest='uninstall_desktop_file',
         help=_('Remove "Draobpilc.desktop" from "~/.local/share/applications"')
     )
+    parser.add_argument('--preferences',
+        action='store_true',
+        default=False,
+        dest='show_preferences',
+        help=_('Show preferences dialog')
+    )
     parser.add_argument('--version',
         action='version',
         version=str(version.APP_VERSION_STRING)

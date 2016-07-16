@@ -50,7 +50,7 @@ class Application(Gtk.Application):
         super().__init__()
 
         self.set_application_id(version.APP_ID)
-        self.set_flags(Gio.ApplicationFlags.FLAGS_NONE)
+        self.set_flags(Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
 
         screen = Gdk.Screen.get_default()
         css_provider = Gtk.CssProvider()
@@ -66,7 +66,6 @@ class Application(Gtk.Application):
         gtk_settings.props.gtk_application_prefer_dark_theme = True
 
         self._window = None
-
         self._editor = editor.Editor()
         self._previewer = previewer.Previewer()
         self._merger = merger.Merger()
@@ -250,9 +249,21 @@ class Application(Gtk.Application):
         gpaste_client.add(merged_text)
         self.hide()
 
-    def do_activate(self):
+    def do_command_line(self, command_line):
+        Gtk.Application.do_command_line(self, command_line)
+
+        show_preferences = False
+        if '--preferences' in command_line.get_arguments():
+            show_preferences = True
+
+        self.do_activate(show_preferences)
+        
+        return 0
+
+    def do_activate(self, show_preferences_dialog=False):
         if self._window:
-            self.show()
+            if show_preferences_dialog: show_preferences()
+            else: self.show()
             return None
 
         self._window = Window(self)
@@ -260,6 +271,7 @@ class Application(Gtk.Application):
         self._window.grid.attach(self._items_processors, 0, 0, 1, 1)
         self._window.grid.attach(self._items_view, 1, 0, 1, 2)
         self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
+        if show_preferences_dialog: show_preferences()
 
     def do_startup(self):
         Gtk.Application.do_startup(self)
