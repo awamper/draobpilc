@@ -51,9 +51,9 @@ class Previewer(ItemsProcessorBase):
             Gtk.EntryIconPosition.PRIMARY,
             'system-file-manager-symbolic'
         )
-        self._path_entry.set_icon_tooltip_text(
-            Gtk.EntryIconPosition.PRIMARY,
-            _('Locate on disk')
+        self._path_entry.set_tooltip_text(
+            _('Click to locate the file on disk')
+        )
         )
         self._path_entry.connect('icon-release', self._on_icon_release)
         self._path_entry.props.margin = ItemsProcessorBase.MARGIN
