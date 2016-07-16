@@ -85,6 +85,11 @@ class Merger(ItemsProcessorBase):
             lambda b: self.emit('merge', self.items, True)
         )
 
+        self._reverse_order_btn = Gtk.CheckButton(_('Reverse order'))
+        self._reverse_order_btn.props.margin = ItemsProcessorBase.MARGIN
+        self._reverse_order_btn.set_active(False)
+        self._reverse_order_btn.connect('toggled', lambda b: self.update())
+
         buttons_box = Gtk.ButtonBox()
         buttons_box.set_layout(Gtk.ButtonBoxStyle.EXPAND)
         buttons_box.props.margin = ItemsProcessorBase.MARGIN
@@ -98,7 +103,8 @@ class Merger(ItemsProcessorBase):
         self.grid.attach(self._separator_label, 1, 2, 1, 1)
         self.grid.attach(self._separator_combo, 1, 3, 1, 1)
         self.grid.attach(self._text_window, 0, 4, 2, 1)
-        self.grid.attach(buttons_box, 0, 5, 2, 1)
+        self.grid.attach(self._reverse_order_btn, 0, 5, 2, 1)
+        self.grid.attach(buttons_box, 0, 6, 2, 1)
 
         common.SETTINGS.connect(
             'changed::' + common.MERGE_DEFAULT_DECORATOR,
@@ -189,11 +195,16 @@ class Merger(ItemsProcessorBase):
             return separator
 
         result = ''
+        merge_items = self.items
 
-        for item in self.items:
+        if self._reverse_order_btn.get_active():
+            merge_items = list(reversed(merge_items))
+
+        for i, item in enumerate(merge_items):
             decorator = get_decorator()
             separator = get_separator()
-            result += decorator + item.raw + decorator + separator
+            result += decorator + item.raw + decorator
+            if i < len(merge_items) - 1: result += separator
 
         return result
 
@@ -214,6 +225,7 @@ class Merger(ItemsProcessorBase):
 
     def clear(self):
         super().clear()
+        self._reverse_order_btn.set_active(False)
         self._update_merge_data()
         self.update()
 
