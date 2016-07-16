@@ -111,18 +111,8 @@ class HistoriesManagerItem(Gtk.Box):
         self.size = gpaste_client.get_history_size(self.name)
 
         self.link = Gtk.LinkButton()
-        self.link.set_no_show_all(True)
         self.link.set_label(NAME_TEMPLATE % (self.name, self.size))
         self.link.set_halign(Gtk.Align.START)
-
-        self._label = Gtk.Label()
-        self._label.set_no_show_all(True)
-        self._label.set_label(NAME_TEMPLATE % (self.name, self.size))
-        self._label.hide()
-        label_style_context = self._label.get_style_context()
-        label_style_context.add_class('flat')
-        label_style_context.add_class('text-button')
-        label_style_context.add_class('button')
 
         self.backup_btn = ItemButton(
             'document-save-symbolic',
@@ -163,7 +153,6 @@ class HistoriesManagerItem(Gtk.Box):
         self._box.set_orientation(Gtk.Orientation.HORIZONTAL)
         self._box.set_halign(Gtk.Align.FILL)
         self._box.add(self.link)
-        self._box.add(self._label)
         self._box.add(self.backup_btn)
         self._box.add(self.empty_btn)
         self._box.add(self.delete_btn)
@@ -223,12 +212,7 @@ class HistoriesManagerItem(Gtk.Box):
         self._show_confirm_dialog()
 
     def set_active(self, active=False):
-        if active:
-            self.link.hide()
-            self._label.show()
-        else:
-            self._label.hide()
-            self.link.show()
+        self.link.set_sensitive(not active)
 
 
 class HistoriesManager(Gtk.Box):
