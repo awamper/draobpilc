@@ -73,8 +73,8 @@ class Application(Gtk.Application):
         self._merger.connect('merge', self.merge_items)
         self._items_processors = ItemsProcessors()
         self._items_processors.add_processor(self._editor)
-        self._items_processors.add_processor(self._merger)
         self._items_processors.add_processor(self._previewer)
+        self._items_processors.add_processor(self._merger)
 
         self._main_toolbox = MainToolbox()
         self._main_toolbox.prefs_btn.connect('clicked',
