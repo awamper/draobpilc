@@ -84,6 +84,7 @@ class ItemsView(Gtk.Box):
         self._listbox.connect('row-activated', self._on_row_activated)
         self._listbox.connect('motion-notify-event', self._on_motion_event)
         self._listbox.connect('leave-notify-event', self._on_leave_event)
+        self._listbox.connect('button-press-event', self._on_button_press_event)
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_name('ItemsViewScrolledWindow')
@@ -119,6 +120,11 @@ class ItemsView(Gtk.Box):
             self._last_entered_item = None
 
     def _on_motion_event(self, listbox, event):
+        
+        def maybe_toggle_selection(row):
+            if event.state == Gdk.ModifierType.BUTTON3_MASK:
+                self.toggle_selection(row)
+
         row = self._listbox.get_row_at_y(event.y)
         
         if row:
@@ -126,14 +132,21 @@ class ItemsView(Gtk.Box):
 
             if not self._last_entered_item:
                 self._last_entered_item = item
+                maybe_toggle_selection(row)
                 self.emit('item-entered', item)
             elif self._last_entered_item != item:
+                maybe_toggle_selection(row)
                 self.emit('item-left', self._last_entered_item)
                 self.emit('item-entered', item)
                 self._last_entered_item = item
         elif self._last_entered_item:
             self.emit('item-left', self._last_entered_item)
             self._last_entered_item = None
+
+    def _on_button_press_event(self, listbox, event):
+        row = self._listbox.get_row_at_y(event.y)
+        if not row or event.button != 3: return
+        self.toggle_selection(row)
 
     def _on_row_selected(self, listbox, row):
         if row: self.emit('item-selected', row.get_child().item)
@@ -396,6 +409,10 @@ class ItemsView(Gtk.Box):
         adjustment = self._listbox.get_adjustment()
         lower = adjustment.get_lower()
         adjustment.set_value(lower)
+
+    def toggle_selection(self, row):
+        if row.is_selected(): self._listbox.unselect_row(row)
+        else: self._listbox.select_row(row) 
 
     @property
     def histories_manager(self):
