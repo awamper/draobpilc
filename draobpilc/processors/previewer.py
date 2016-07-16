@@ -78,7 +78,10 @@ class Previewer(ItemsProcessorBase):
         common.APPLICATION.hide()
 
     def _is_previewable_type(self, content_type):
-        if content_type and content_type.startswith('text'):
+        if (
+            content_type and content_type.startswith('text') or
+            'bash' in content_type
+        ):
             return True
         else:
             return False
