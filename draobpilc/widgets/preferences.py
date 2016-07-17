@@ -347,7 +347,6 @@ class Preferences(Gtk.Window):
         self._need_restart = False
 
         requires_restart = [
-            common.WIDTH_PERCENTS,
             common.ITEM_MAX_LINES,
             common.ITEM_MAX_HEIGHT,
             common.KIND_INDICATOR_WIDTH,
