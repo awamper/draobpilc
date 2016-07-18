@@ -545,6 +545,18 @@ class Preferences(Gtk.Window):
         page.add_separator()
 
         spin_props = {}
+        spin_props['lower'] = 5
+        spin_props['upper'] = 100
+        spin_props['step_increment'] = 5
+        page.add_spin(
+            _('Max filter results:'),
+            common.MAX_FILTER_RESULTS,
+            spin_props,
+            int
+        )
+
+        page.add_separator()
+
         spin_props['lower'] = 10
         spin_props['upper'] = 60
         spin_props['step_increment'] = 5
