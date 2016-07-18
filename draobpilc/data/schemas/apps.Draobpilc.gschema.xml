@@ -155,5 +155,9 @@
             <default>300</default>
         </key>
 
+        <key type="i" name="max-filter-results">
+            <default>30</default>
+        </key>
+
     </schema>
 </schemalist>

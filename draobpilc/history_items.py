@@ -41,7 +41,15 @@ class HistoryItems(Emitter):
         self.reload_history()
 
     def __len__(self):
-        return len(self.items)
+        if self._filter_mode:
+            result = min(
+                len(self._filter_result),
+                common.SETTINGS[common.MAX_FILTER_RESULTS]
+            )
+        else:
+            result = len(self._items)
+
+        return result
 
     def __iter__(self):
         return iter(self.items)
@@ -205,7 +213,7 @@ class HistoryItems(Emitter):
     def items(self):
         if self._filter_mode:
             self._filter_result.sort(key=lambda e: e.sort_score, reverse=True)
-            return self._filter_result
+            return self._filter_result[:common.SETTINGS[common.MAX_FILTER_RESULTS]]
         else:
             self._items.sort(key=lambda e: e.index)
             return self._items
