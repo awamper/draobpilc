@@ -23,11 +23,8 @@ from gi.repository import GObject
 from draobpilc import common
 from draobpilc.lib import utils
 from draobpilc.lib import fuzzy
-from draobpilc.widgets.search_box import SearchBox
 from draobpilc.widgets.histories_manager import HistoriesManager
 from draobpilc.widgets.items_counter import ItemsCounter
-
-HIGHLIGHT_TEMPLATE = '<span bgcolor="yellow" fgcolor="black"><b>%s</b></span>'
 
 
 class AlreadyBound(Exception):
@@ -52,25 +49,19 @@ class ItemsView(Gtk.Box):
 
         self.set_orientation(Gtk.Orientation.VERTICAL)
         self.set_valign(Gtk.Align.FILL)
-        self.set_halign(Gtk.Align.END)
+        self.set_halign(Gtk.Align.FILL)
         self.set_vexpand(True)
-        self.set_hexpand(False)
+        self.set_hexpand(True)
         self.set_name('ItemsViewBox')
 
         self._bound_history = None
         self._last_entered_item = None
         self._last_selected_index = None
-        self._last_search_string = ''
-        self._filter_mode = False
         self._show_index = None
         self._autoscroll_timeout_id = 0
 
         self._histories_manager = HistoriesManager()
         self._items_counter = ItemsCounter()
-        self.search_box = SearchBox()
-        self.search_box.connect('search-changed', self.filter)
-        self.search_box.connect('search-index', self.search_index)
-        self.search_box.entry.connect('activate', self._on_entry_activated)
 
         placeholder = Gtk.Label()
         placeholder.set_markup(
@@ -83,8 +74,6 @@ class ItemsView(Gtk.Box):
         self._listbox.set_selection_mode(Gtk.SelectionMode.MULTIPLE)
         self._listbox.set_activate_on_single_click(False)
         self._listbox.set_placeholder(placeholder)
-        self._listbox.set_sort_func(self._sort_rows)
-        self._listbox.set_filter_func(self._filter_row)
         self._listbox.connect('row-selected', self._on_row_selected)
         self._listbox.connect('row-activated', self._on_row_activated)
         self._listbox.connect('motion-notify-event', self._on_motion_event)
@@ -94,7 +83,6 @@ class ItemsView(Gtk.Box):
 
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_name('ItemsViewScrolledWindow')
-        scrolled.set_margin_top(10)
         scrolled.set_vexpand(True)
         scrolled.set_hexpand(True)
         scrolled.add(self._listbox)
@@ -104,13 +92,8 @@ class ItemsView(Gtk.Box):
         bottom_box.add(self._items_counter)
         bottom_box.add(self._histories_manager)
 
-        box_margin = 10
         box = Gtk.Box()
         box.set_orientation(Gtk.Orientation.VERTICAL)
-        box.set_margin_top(box_margin)
-        box.set_margin_left(box_margin)
-        box.set_margin_right(box_margin)
-        box.add(self.search_box)
         box.add(scrolled)
         box.add(bottom_box)
 
@@ -193,13 +176,7 @@ class ItemsView(Gtk.Box):
     def _on_row_activated(self, listbox, row):
         if row: self.emit('item-activated', row.get_child().item)
 
-    def _on_entry_activated(self, entry):
-        item = self.get_selected()
-        if item: self.emit('item-activated', item[0])
-        return True
-
     def _on_changed(self, history_items):
-        self.search_box.reset()
         self.load_all()
         self.resume_selection() or self.select_first()
         self._last_selected_index = 0
@@ -227,88 +204,13 @@ class ItemsView(Gtk.Box):
 
         return result
 
-    def _sort_rows(self, row1, row2):
-        def compare_index(index1, index2):
-            result = 0
-
-            if index1 < index2:
-                result = -1
-            elif index1 > index2:
-                result = 1
-
-            return result
-
-        def compare_score(score1, score2):
-            result = 0
-            if score1 is None: score1 = 9999999
-            if score2 is None: score2 = 9999999
-
-            if score1 < score2:
-                result = -1
-            elif score1 > score2:
-                result = 1
-
-            return result
-
-        item1 = row1.get_child().item
-        item2 = row2.get_child().item
-
-        result = compare_score(item1.sort_score, item2.sort_score)
-
-        if not result:
-            result = compare_index(item1.index, item2.index)
-
-        return result
-
-    def _filter_row(self, row):
-        result = True
-        history_item = row.get_child().item
-
-        if self._show_index:
-            if history_item.index == self._show_index: return True
-            else: return False
-
-        if self._filter_mode and not row.get_mapped():
-            return False
-
-        if (
-            self.search_box.flags and
-            history_item.kind not in self.search_box.flags
-        ):
-            return False
-
-        if not self.search_box.search_text:
-            history_item.markup = None
-            history_item.sort_score = None
-            return result
-
-        match = fuzzy.match(
-            self.search_box.search_text,
-            history_item.text,
-            common.SETTINGS[common.FUZZY_SEARCH_MAX_DISTANCE]
-        )
-
-        if match:
-            history_item.markup = match.get_highlighted(
-                escape_func=GLib.markup_escape_text,
-                highlight_template=HIGHLIGHT_TEMPLATE
-            )
-            history_item.sort_score = match.score
-            result = True
-        else:
-            history_item.markup = None
-            history_item.sort_score = None
-            result = False
-
-        return result
-
     def save_selection(self):
 
         def get_current_index(child):
             result = None
 
             for i, ch in enumerate(self._listbox.get_children()):
-                if not ch.get_mapped() or ch != child: continue
+                if ch != child: continue
                 result = i
                 break
 
@@ -324,17 +226,8 @@ class ItemsView(Gtk.Box):
         self._last_selected_index = get_current_index(selected_row)
 
     def resume_selection(self):
-
-        def get_mapped_children():
-            children = []
-
-            for child in self._listbox.get_children():
-                if child.get_mapped(): children.append(child)
-
-            return children
-
         if not self._last_selected_index: return False
-        children = get_mapped_children()
+        children = self._listbox.get_children()
 
         if len(children) == self._last_selected_index:
             self._last_selected_index -= 1
@@ -389,28 +282,6 @@ class ItemsView(Gtk.Box):
         clipboard = Gtk.Clipboard.get_default(Gdk.Display.get_default())
         text = clipboard.wait_for_text()
         on_clipboard(clipboard, text)
-
-    def search_index(self, search_box, index):
-        self._show_index = index
-        self._listbox.invalidate_filter()
-
-    def filter(self, search_box):
-        self._show_index = None
-
-        if len(self.search_box.search_text) > len(self._last_search_string):
-            self._filter_mode = True
-        else:
-            self._filter_mode = False
-
-        self._listbox.invalidate_filter()
-        self._listbox.invalidate_sort()
-        self.select_first(grab_focus=False)
-        self._items_counter.update()
-
-        if self.search_box.search_text:
-            self._last_search_string = self.search_box.search_text
-        else:
-            self._last_search_string = ''
 
     def select_first(self, grab_focus=False):
         self._listbox.unselect_all()

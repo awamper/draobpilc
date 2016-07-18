@@ -15,9 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from draobpilc.history_item import HistoryItem
+from gi.repository import GLib
+
+from draobpilc import common
+from draobpilc.lib import fuzzy
 from draobpilc.lib import gpaste_client
 from draobpilc.lib.signals import Emitter
+from draobpilc.history_item import HistoryItem
 
 
 class HistoryItems(Emitter):
@@ -26,6 +30,8 @@ class HistoryItems(Emitter):
         super().__init__()
 
         self._items = []
+        self._filter_result = []
+        self._filter_mode = False
         self._raw_history = []
 
         self.add_signal('removed')
@@ -35,10 +41,10 @@ class HistoryItems(Emitter):
         self.reload_history()
 
     def __len__(self):
-        return len(self._items)
+        return len(self.items)
 
     def __iter__(self):
-        return iter(self._items)
+        return iter(self.items)
 
     def _on_update(self, action, target, position):
         self._raw_history = gpaste_client.get_raw_history()
@@ -81,7 +87,7 @@ class HistoryItems(Emitter):
     def get(self, index):
         result = None
 
-        for item in self._items:
+        for item in self.items:
             if item.index != index: continue
 
             result = item
@@ -100,12 +106,13 @@ class HistoryItems(Emitter):
         item = self.get(index)
         if not item: return False
 
-        self._items.remove(item)
+        self.items.remove(item)
         self._sync_index()
         self.emit('removed', item=item)
         self.emit('changed')
 
-    def reload_history(self):
+    def reload_history(self, emit_signal=True):
+        self.reset_filter(emit_signal=False)
         self._raw_history = gpaste_client.get_raw_history()
 
         if len(self._raw_history) == 0:
@@ -125,13 +132,14 @@ class HistoryItems(Emitter):
                 new_items.append(new_item)
 
         new_list.extend(new_items)
-        self._items = new_list
         self._sync_index()
-        self.emit('changed')
+        self._items = sorted(new_list, key=lambda e: e.index)
+        if emit_signal: self.emit('changed')
 
     def clear(self):
         self._raw_history.clear()
         self._items.clear()
+        self.reset_filter(emit_signal=False)
         self.emit('changed')
 
     def freeze(self, freeze):
@@ -145,3 +153,67 @@ class HistoryItems(Emitter):
                 'Update',
                 self._on_update
             )
+
+    def filter(self, term='', kinds=None, index=None):
+        if not any([term, kinds, index]):
+            self.reset_filter(emit_signal=True)
+            return
+        else:
+            self.reset_filter(emit_signal=False)
+
+        self._filter_mode = True
+
+        for item in self._items:
+            if index and item.index == index:
+                self._filter_result.append(item)
+                break
+
+            if kinds and item.kind not in kinds: continue
+
+            match = fuzzy.match(
+                term,
+                item.text,
+                common.SETTINGS[common.FUZZY_SEARCH_MAX_DISTANCE]
+            )
+
+            if match:
+                item.markup = match.get_highlighted(
+                    escape_func=GLib.markup_escape_text,
+                    highlight_template=HistoryItem.FILTER_HIGHLIGHT_TPL
+                )
+                item.sort_score = match.score
+                self._filter_result.append(item)
+            else:
+                item.markup = None
+                item.sort_score = None
+
+        self._filter_result.sort(key=lambda e: e.sort_score, reverse=True)
+        self.emit('changed')
+
+    def reset_filter(self, emit_signal=True):
+        if not self._filter_mode: return
+
+        for filtered in self._filter_result:
+            filtered.markup = None
+            filtered.sort_score = None
+
+        self._filter_result.clear()
+        self._filter_mode = False
+        if emit_signal: self.emit('changed')
+
+    @property
+    def items(self):
+        if self._filter_mode:
+            self._filter_result.sort(key=lambda e: e.sort_score, reverse=True)
+            return self._filter_result
+        else:
+            self._items.sort(key=lambda e: e.index)
+            return self._items
+    
+    @property
+    def n_total(self):
+        return len(self._items)
+    
+    @property
+    def filter_mode(self):
+        return self._filter_mode

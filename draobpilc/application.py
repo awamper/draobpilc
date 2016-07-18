@@ -36,6 +36,7 @@ from draobpilc.lib import gpaste_client
 from draobpilc.history_item import HistoryItem
 from draobpilc.history_items import HistoryItems
 from draobpilc.widgets.window import Window
+from draobpilc.widgets.search_box import SearchBox
 from draobpilc.widgets.items_view import ItemsView
 from draobpilc.widgets.main_toolbox import MainToolbox
 from draobpilc.widgets.about_dialog import AboutDialog
@@ -102,6 +103,17 @@ class Application(Gtk.Application):
 
         self._history_items = HistoryItems()
 
+        self._search_box = SearchBox()
+        self._search_box.connect('search-changed',
+            self._on_search_changed
+        )
+        self._search_box.connect('search-index',
+            lambda sb, i: self._on_search_changed(sb, search_index=i)
+        )
+        self._search_box.entry.connect('activate',
+            self._on_entry_activated
+        )
+
         self._items_view = ItemsView()
         self._items_view.connect(
             'item-activated',
@@ -148,9 +160,21 @@ class Application(Gtk.Application):
             processors_height
         )
 
+    def _on_search_changed(self, search_box, search_index=None):
+        self._history_items.filter(
+            term=self._search_box.search_text,
+            kinds=self._search_box.flags,
+            index=search_index
+        )
+
+    def _on_entry_activated(self, entry):
+        items = self._items_view.get_selected()
+        if items: self._on_item_activated(self._items_view, items[0])
+        return True
+
     def _on_item_activated(self, items_view, history_item):
         gpaste_client.select(history_item.index)
-        self._items_view.search_box.entry.set_text('')
+        self._search_box.entry.set_text('')
         self.hide()
 
     def _on_item_entered(self, items_view, item):
@@ -227,7 +251,6 @@ class Application(Gtk.Application):
         delete_indexes = [item.index for item in items]
         delete_indexes = sorted(delete_indexes)
 
-        self._items_view.set_sensitive(False)
         self._history_items.freeze(True)
         if resume_selection: self._items_view.save_selection()
 
@@ -237,8 +260,13 @@ class Application(Gtk.Application):
             gpaste_client.delete(delete_index)
 
         self._history_items.freeze(False)
-        self._history_items.reload_history()
-        self._items_view.set_sensitive(True)
+        self._history_items.reload_history(
+            emit_signal=not bool(self._search_box.search_text)
+        )
+
+        if self._search_box.search_text:
+            self._on_search_changed(self._search_box)
+
         if resume_selection: self._items_view.resume_selection()
 
     def merge_items(self, merger, items, delete_merged):
@@ -266,11 +294,18 @@ class Application(Gtk.Application):
             else: self.show()
             return None
 
+        right_box = Gtk.Box()
+        right_box.set_name('RightBox')
+        right_box.set_orientation(Gtk.Orientation.VERTICAL)
+        right_box.add(self._search_box)
+        right_box.add(self._items_view)
+
         self._window = Window(self)
         self._window.connect('configure-event', self._resize)
         self._window.grid.attach(self._items_processors, 0, 0, 1, 1)
-        self._window.grid.attach(self._items_view, 1, 0, 1, 2)
         self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
+        self._window.grid.attach(right_box, 1, 0, 1, 2)
+
         if show_preferences_dialog: show_preferences()
 
     def do_startup(self):
@@ -293,7 +328,7 @@ class Application(Gtk.Application):
                 'focus_search',
                 'app.focus_search',
                 common.FOCUS_SEARCH,
-                lambda _, __: self._items_view.search_box.entry.grab_focus()
+                lambda _, __: self._search_box.entry.grab_focus()
             ],
             [
                 'editor_wrap_text',
@@ -371,14 +406,14 @@ class Application(Gtk.Application):
         grab_focus = True
 
         if (
-            self._items_view.search_box.entry.get_text() or
+            self._search_box.entry.get_text() or
             common.SETTINGS[common.FOCUS_SEARCH_ON_OPEN]
         ):
-            self._items_view.search_box.entry.grab_focus()
+            self._search_box.entry.grab_focus()
             grab_focus = False
 
         self._items_view.select_first(grab_focus=grab_focus)
 
     def hide(self, reset_search=True):
         self._window.hide()
-        if reset_search: self._items_view.search_box.reset()
+        if reset_search: self._search_box.reset()

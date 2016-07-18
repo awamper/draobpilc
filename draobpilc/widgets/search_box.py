@@ -40,11 +40,17 @@ class SearchBox(Gtk.Box):
     def __init__(self):
         super().__init__()
 
+        self.set_name('SearchBox')
+        self.set_valign(Gtk.Align.START)
+        self.set_halign(Gtk.Align.FILL)
+        self.set_vexpand(False)
+        self.set_hexpand(True)
         self.set_orientation(Gtk.Orientation.HORIZONTAL)
 
         self.entry = Gtk.Entry()
         self.entry.set_hexpand(True)
         self.entry.set_halign(Gtk.Align.FILL)
+        self.entry.set_valign(Gtk.Align.START)
         self.entry.set_placeholder_text(ENTRY_PLACE_HOLDER)
         self.entry.connect(
             'icon-release',

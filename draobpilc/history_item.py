@@ -31,6 +31,8 @@ from draobpilc.widgets.history_item_view import HistoryItemView
 
 class HistoryItem(Emitter):
 
+    FILTER_HIGHLIGHT_TPL = '<span bgcolor="yellow" fgcolor="black"><b>%s</b></span>'
+
     def __init__(self, index):
         super().__init__()
 
@@ -39,6 +41,7 @@ class HistoryItem(Emitter):
         self._kind = None
         self._text = None
         self._markup = None
+        self._source_markup = None
         self._sort_score = None
         self._n_lines = None
         self._link = None
@@ -212,7 +215,16 @@ class HistoryItem(Emitter):
 
     @index.setter
     def index(self, value):
+        if not self._index is None: update_label = True
+        else: update_label = False
+
         self._index = value
+
+        if update_label:
+            if self._source_markup:
+                self.markup = self._source_markup
+            else:
+                self.markup = None
 
     @property
     def raw(self):
@@ -241,8 +253,10 @@ class HistoryItem(Emitter):
     def markup(self, value):
         if not value:
             self._markup = None
+            self._source_markup = None
             self.widget.set_label(self.display_text)
         else:
+            self._source_markup = value
             self._markup = self._get_display_text(value, False)
             self.widget.set_label(self.markup)
 

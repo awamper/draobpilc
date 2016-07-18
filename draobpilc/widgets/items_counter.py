@@ -47,15 +47,12 @@ class ItemsCounter(Gtk.Label):
             self.set_markup(LABEL_TEMPLATE % 0)
             return
 
-        shown = 0
-        total = len(self._history_items)
-
-        for item in self._history_items:
-            if item.widget.get_mapped(): shown += 1
-
-        if shown and shown < total:
-            label = LABEL_FILTER_TEMPLATE % (shown, total)
+        if self._history_items.filter_mode:
+            label = LABEL_FILTER_TEMPLATE % (
+                len(self._history_items),
+                self._history_items.n_total
+            )
         else:
-            label = LABEL_TEMPLATE % total
+            label = LABEL_TEMPLATE % self._history_items.n_total
 
         self.set_markup(label)

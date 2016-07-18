@@ -17,8 +17,21 @@
     padding: 10px;
 }
 
-#ItemsViewBox {
+#RightBox {
     background-color: rgba(0, 0, 0, 0.5);
+}
+
+#SearchBox {
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
+    font-size: 1.1em;
+}
+
+#ItemsViewBox {
+    margin-top: 10px;
+    margin-left: 10px;
+    margin-right: 10px;
 }
 
 #ItemsViewList {
