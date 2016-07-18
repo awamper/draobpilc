@@ -700,6 +700,7 @@ class Preferences(Gtk.Window):
             common.SHOW_HISTORIES: _('Show histories'),
             common.DELETE_ITEM: _('Delete an item'),
             common.FOCUS_SEARCH: _('Focus search entry'),
+            common.RESET_SEARCH: _('Reset search'),
             common.EDITOR_WRAP_TEXT_SHORTCUT: _('Toggle text wrap in the editor'),
             common.OPEN_ITEM: _('Open item(file, image, url)'),
             common.BACKUP_HISTORY: _('Backup current history'),
