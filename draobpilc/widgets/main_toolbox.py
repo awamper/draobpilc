@@ -17,7 +17,9 @@
 
 from gi.repository import Gtk
 
+from draobpilc import common
 from draobpilc.lib import gpaste_client
+from draobpilc.widgets import shortcuts_window
 
 
 class MainToolbox(Gtk.Box):
@@ -78,6 +80,16 @@ class MainToolbox(Gtk.Box):
             ))
         )
 
+        self.help_btn = Gtk.Button.new_from_icon_name(
+            'help-browser-symbolic',
+            Gtk.IconSize.LARGE_TOOLBAR
+        )
+        self.help_btn.set_relief(Gtk.ReliefStyle.NONE)
+        self.help_btn.set_tooltip_text(
+            _('Show help (%s)' % common.SETTINGS[common.SHOW_HELP])
+        )
+
+        if shortcuts_window.is_supported(): self.add(self.help_btn)
         self.add(self.about_btn)
         self.add(self.quit_btn)
         self.add(self.restart_btn)

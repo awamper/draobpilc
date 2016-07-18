@@ -36,6 +36,7 @@ from draobpilc.lib import gpaste_client
 from draobpilc.history_item import HistoryItem
 from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.history_items import HistoryItems
+from draobpilc.widgets import shortcuts_window
 from draobpilc.widgets.window import Window
 from draobpilc.widgets.search_box import SearchBox
 from draobpilc.widgets.items_view import ItemsView
@@ -100,6 +101,10 @@ class Application(Gtk.Application):
         )
         self._main_toolbox.track_btn.set_active(
             gpaste_client.get_prop('Active')
+        )
+        self._main_toolbox.help_btn.connect(
+            'clicked',
+            lambda b: shortcuts_window.show_or_false(self._window)
         )
 
         self._history_items = HistoryItems()
