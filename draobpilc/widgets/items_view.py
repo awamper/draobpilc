@@ -178,6 +178,7 @@ class ItemsView(Gtk.Box):
 
     def _on_changed(self, history_items):
         self.load_all()
+        self.set_active_item()
         self.resume_selection() or self.select_first()
         self._last_selected_index = 0
 
