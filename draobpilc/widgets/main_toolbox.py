@@ -48,6 +48,7 @@ class MainToolbox(Gtk.Box):
             'application-exit-symbolic',
             Gtk.IconSize.LARGE_TOOLBAR
         )
+        self.quit_btn.set_name('QuitButton')
         self.quit_btn.set_relief(Gtk.ReliefStyle.NONE)
         self.quit_btn.set_tooltip_text(_('Quit'))
 
@@ -57,6 +58,7 @@ class MainToolbox(Gtk.Box):
         )
         self._track_img.set_name('TrackImg')
         self.track_btn = Gtk.ToggleButton()
+        self.track_btn.set_name('TrackButton')
         self.track_btn.set_image(self._track_img)
         self.track_btn.set_relief(Gtk.ReliefStyle.NONE)
         self.track_btn.set_tooltip_text(_('Track clipboard changes'))
@@ -89,13 +91,17 @@ class MainToolbox(Gtk.Box):
             _('Show help (%s)' % common.SETTINGS[common.SHOW_HELP])
         )
 
+        separator = Gtk.Separator()
+        separator.set_name('MainToolboxSeparator')
+
         if shortcuts_window.is_supported(): self.add(self.help_btn)
         self.add(self.about_btn)
-        self.add(self.quit_btn)
         self.add(self.restart_btn)
         self.add(self.prefs_btn)
         self.add(self.track_btn)
         self.add(self.close_btn)
+        self.add(separator)
+        self.add(self.quit_btn)
         self.show_all()
 
     def _on_toggled(self, button):

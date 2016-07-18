@@ -71,10 +71,27 @@
 }
 
 #TrackImg.active {
-    color: green;
+    color: #2987FF;
+}
+
+#TrackButton {
+    border: none;
+}
+
+#TrackButton:checked {
+    background-color: transparent;
+    border: none;
 }
 
 #HistoriesManagerConfirmationLabel {
     font-weight: bold;
     padding-right: 10px;
+}
+
+#MainToolboxSeparator {
+    background-color: grey;
+}
+
+#QuitButton {
+    color: #FF0040;
 }
