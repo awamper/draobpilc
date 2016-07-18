@@ -73,3 +73,8 @@
 #TrackImg.active {
     color: green;
 }
+
+#HistoriesManagerConfirmationLabel {
+    font-weight: bold;
+    padding-right: 10px;
+}

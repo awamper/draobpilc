@@ -67,10 +67,8 @@ class ItemConfirmation(Gtk.Revealer):
         self.set_transition_type(Gtk.RevealerTransitionType.SLIDE_UP)
 
         self.label = Gtk.Label()
+        self.label.set_name('HistoriesManagerConfirmationLabel')
         style_context = self.label.get_style_context()
-        style_context.add_class('flat')
-        style_context.add_class('text-button')
-        style_context.add_class('button')
 
         self.yes_btn = ItemButton(
             'emblem-ok-symbolic',
