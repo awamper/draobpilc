@@ -69,3 +69,16 @@ QUIT_APP = 'quit-app'
 FOCUS_SEARCH_ON_OPEN = 'focus-search-on-open'
 SET_ITEMS_TIMEOUT = 'set-items-timeout'
 MAX_FILTER_RESULTS = 'max-filter-results'
+SHOW_HELP = 'show-help'
+
+SHORTCUTS_KEYS = {
+    SHOW_HISTORIES: _('Show histories'),
+    DELETE_ITEM: _('Delete an item'),
+    FOCUS_SEARCH: _('Focus search entry'),
+    RESET_SEARCH: _('Reset search'),
+    EDITOR_WRAP_TEXT_SHORTCUT: _('Toggle text wrap in the editor'),
+    OPEN_ITEM: _('Open selected item(file, image, url)'),
+    BACKUP_HISTORY: _('Backup current history'),
+    KEEP_SEARCH_AND_CLOSE: _('Keep search and close window'),
+    QUIT_APP: _('Quit app')
+}

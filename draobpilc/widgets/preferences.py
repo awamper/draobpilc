@@ -695,20 +695,7 @@ class Preferences(Gtk.Window):
     def _get_keybindings_page(self):
         name = _('Shortcuts')
         page = PrefsGrid(common.SETTINGS)
-
-        keybindings = {
-            common.SHOW_HISTORIES: _('Show histories'),
-            common.DELETE_ITEM: _('Delete an item'),
-            common.FOCUS_SEARCH: _('Focus search entry'),
-            common.RESET_SEARCH: _('Reset search'),
-            common.EDITOR_WRAP_TEXT_SHORTCUT: _('Toggle text wrap in the editor'),
-            common.OPEN_ITEM: _('Open item(file, image, url)'),
-            common.BACKUP_HISTORY: _('Backup current history'),
-            common.KEEP_SEARCH_AND_CLOSE: _('Keep search and close window'),
-            common.QUIT_APP: _('Quit app')
-        }
-
-        keybindings_widget = KeybindingsWidget(keybindings)
+        keybindings_widget = KeybindingsWidget(common.SHORTCUTS_KEYS)
         page.add_item(keybindings_widget)
 
         result = dict(page=page, name=name)

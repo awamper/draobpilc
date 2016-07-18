@@ -163,5 +163,9 @@
             <default>30</default>
         </key>
 
+        <key type="s" name="show-help">
+            <default><![CDATA['<Ctrl>h']]></default>
+        </key>
+
     </schema>
 </schemalist>

@@ -375,6 +375,12 @@ class Application(Gtk.Application):
                 'app.quit',
                 common.QUIT_APP,
                 lambda _, __: self.quit()
+            ],
+            [
+                'show_help',
+                'app.show_help',
+                common.SHOW_HELP,
+                lambda _, __: shortcuts_window.show_or_false(self._window)
             ]
         ]
 
