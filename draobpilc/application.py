@@ -264,12 +264,11 @@ class Application(Gtk.Application):
             if delete_index < 0: continue
             gpaste_client.delete(delete_index)
 
+        filter_active = self._search_box.search_text or self._search_box.flags
         self._history_items.freeze(False)
-        self._history_items.reload_history(
-            emit_signal=not bool(self._search_box.search_text)
-        )
+        self._history_items.reload_history(emit_signal=not filter_active)
 
-        if self._search_box.search_text:
+        if filter_active:
             self._on_search_changed(self._search_box)
 
         if resume_selection: self._items_view.resume_selection()
