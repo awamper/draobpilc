@@ -223,6 +223,10 @@ class Application(Gtk.Application):
         dialog = BackupHistoryDialog(self._window)
         dialog.run()
 
+    def _on_reset_search_action(self, action, param):
+        self._search_box.reset()
+        self._search_box.entry.grab_focus()
+
     def _bind_action(self, name, target, settings_key, callback):
         def on_settings_change(settings, key, target):
             self.set_accels_for_action(target, [settings[key]])
@@ -330,6 +334,12 @@ class Application(Gtk.Application):
                 'app.focus_search',
                 common.FOCUS_SEARCH,
                 lambda _, __: self._search_box.entry.grab_focus()
+            ],
+            [
+                'reset_search',
+                'app.reset_search',
+                common.RESET_SEARCH,
+                self._on_reset_search_action
             ],
             [
                 'editor_wrap_text',

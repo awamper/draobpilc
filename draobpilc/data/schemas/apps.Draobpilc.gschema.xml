@@ -111,6 +111,10 @@
             <default><![CDATA['<Ctrl>F']]></default>
         </key>
 
+        <key type="s" name="reset-search">
+            <default><![CDATA['<Ctrl>Z']]></default>
+        </key>
+
         <key type="s" name="editor-wrap-text-shortcut">
             <default><![CDATA['<Ctrl>W']]></default>
         </key>
