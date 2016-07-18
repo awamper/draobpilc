@@ -65,6 +65,7 @@ class ItemConfirmation(Gtk.Revealer):
         self.set_reveal_child(False)
         self.set_transition_duration(TRANSITION_TIME_MS)
         self.set_transition_type(Gtk.RevealerTransitionType.SLIDE_UP)
+        self.set_halign(Gtk.Align.END)
 
         self.label = Gtk.Label()
         self.label.set_name('HistoriesManagerConfirmationLabel')
