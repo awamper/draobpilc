@@ -343,7 +343,7 @@ class Preferences(Gtk.Window):
 
         switcher_margin = 5
         stack_margin = 10
-        self._transition_duration = 500
+        self._transition_duration = 300
         self._need_restart = False
 
         requires_restart = [
