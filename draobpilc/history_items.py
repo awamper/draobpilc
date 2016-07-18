@@ -195,7 +195,7 @@ class HistoryItems(Emitter):
                 item.markup = None
                 item.sort_score = None
 
-        self._filter_result.sort(key=lambda e: e.sort_score, reverse=True)
+        self._filter_result.sort(key=lambda e: e.sort_score)
         self.emit('changed')
 
     def reset_filter(self, emit_signal=True):
@@ -212,7 +212,7 @@ class HistoryItems(Emitter):
     @property
     def items(self):
         if self._filter_mode:
-            self._filter_result.sort(key=lambda e: e.sort_score, reverse=True)
+            self._filter_result.sort(key=lambda e: e.sort_score)
             return self._filter_result[:common.SETTINGS[common.MAX_FILTER_RESULTS]]
         else:
             self._items.sort(key=lambda e: e.index)
