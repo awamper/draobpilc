@@ -80,5 +80,6 @@ SHORTCUTS_KEYS = {
     OPEN_ITEM: _('Open selected item(file, image, url)'),
     BACKUP_HISTORY: _('Backup current history'),
     KEEP_SEARCH_AND_CLOSE: _('Keep search and close window'),
-    QUIT_APP: _('Quit app')
+    QUIT_APP: _('Quit app'),
+    SHOW_HELP: _('Show help')
 }

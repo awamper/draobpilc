@@ -63,6 +63,11 @@ SHORTCUTS = [
         (
             common.SETTINGS[common.QUIT_APP],
             common.SHORTCUTS_KEYS[common.QUIT_APP]
+        ),
+
+        (
+            common.SETTINGS[common.SHOW_HELP],
+            common.SHORTCUTS_KEYS[common.SHOW_HELP]
         )
     ])
 ]
