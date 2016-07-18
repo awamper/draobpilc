@@ -19,58 +19,13 @@ from gi.repository import Gtk
 
 from draobpilc import common
 
-SHORTCUTS = [
-    (_('Main Window'), [
-        (
-            common.SETTINGS[common.SHOW_HISTORIES],
-            common.SHORTCUTS_KEYS[common.SHOW_HISTORIES]
-        ),
-        (
-            common.SETTINGS[common.DELETE_ITEM],
-            common.SHORTCUTS_KEYS[common.DELETE_ITEM]
-        ),
+SHORTCUTS_LIST = []
+SHORTCUTS = (
+    (_('Main Window'), SHORTCUTS_LIST),
+)
 
-        (
-            common.SETTINGS[common.FOCUS_SEARCH],
-            common.SHORTCUTS_KEYS[common.FOCUS_SEARCH]
-        ),
-
-        (
-            common.SETTINGS[common.RESET_SEARCH],
-            common.SHORTCUTS_KEYS[common.RESET_SEARCH]
-        ),
-
-        (
-            common.SETTINGS[common.EDITOR_WRAP_TEXT_SHORTCUT],
-            common.SHORTCUTS_KEYS[common.EDITOR_WRAP_TEXT_SHORTCUT]
-        ),
-
-        (
-            common.SETTINGS[common.OPEN_ITEM],
-            common.SHORTCUTS_KEYS[common.OPEN_ITEM]
-        ),
-
-        (
-            common.SETTINGS[common.BACKUP_HISTORY],
-            common.SHORTCUTS_KEYS[common.BACKUP_HISTORY]
-        ),
-
-        (
-            common.SETTINGS[common.KEEP_SEARCH_AND_CLOSE],
-            common.SHORTCUTS_KEYS[common.KEEP_SEARCH_AND_CLOSE]
-        ),
-
-        (
-            common.SETTINGS[common.QUIT_APP],
-            common.SHORTCUTS_KEYS[common.QUIT_APP]
-        ),
-
-        (
-            common.SETTINGS[common.SHOW_HELP],
-            common.SHORTCUTS_KEYS[common.SHOW_HELP]
-        )
-    ])
-]
+for key, value in common.SHORTCUTS_KEYS.items():
+    SHORTCUTS_LIST.append((common.SETTINGS[key], value))
 
 
 def _build_shortcut_window(data):
