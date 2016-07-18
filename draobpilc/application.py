@@ -34,6 +34,7 @@ from draobpilc.processors import (
 from draobpilc.lib import utils
 from draobpilc.lib import gpaste_client
 from draobpilc.history_item import HistoryItem
+from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.history_items import HistoryItems
 from draobpilc.widgets.window import Window
 from draobpilc.widgets.search_box import SearchBox
@@ -198,7 +199,7 @@ class Application(Gtk.Application):
         if not item.app_info: return
 
         uri = item.raw.strip()
-        if item.kind != gpaste_client.Kind.LINK:
+        if item.kind != HistoryItemKind.LINK:
             uri = 'file://%s' % item.raw
 
         item.app_info.launch_uris([uri])

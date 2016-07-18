@@ -23,6 +23,7 @@ from gi.repository import GLib
 from gi.repository import GdkPixbuf
 
 from draobpilc import common
+from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.lib import utils
 from draobpilc.lib import gpaste_client
 from draobpilc.lib.signals import Emitter
@@ -74,10 +75,10 @@ class HistoryItem(Emitter):
         self._raw = gpaste_client.get_raw_element(self.index)
         self._kind = gpaste_client.get_element_kind(self.index)
 
-        if (self.kind == gpaste_client.Kind.TEXT and
+        if (self.kind == HistoryItemKind.TEXT and
             utils.is_url(self.raw)
         ):
-            self._kind = gpaste_client.Kind.LINK
+            self._kind = HistoryItemKind.LINK
 
         self._n_lines = len(self.raw.split('\n'))
         self._links = self._get_links()
@@ -95,9 +96,9 @@ class HistoryItem(Emitter):
         text = text.strip()
         if escape: text = GLib.markup_escape_text(text)
 
-        if self.kind == gpaste_client.Kind.FILE:
+        if self.kind == HistoryItemKind.FILE:
             text = text.replace('[Files]', '', 1)
-        if self.kind == gpaste_client.Kind.IMAGE:
+        if self.kind == HistoryItemKind.IMAGE:
             text = text.replace('[Image]', '', 1)
 
         if common.SETTINGS[common.SHOW_INDEXES]:
@@ -108,8 +109,8 @@ class HistoryItem(Emitter):
     def _get_thumb_path(self):
         result = None
         if (
-            self.kind != gpaste_client.Kind.FILE and
-            self.kind != gpaste_client.Kind.IMAGE
+            self.kind != HistoryItemKind.FILE and
+            self.kind != HistoryItemKind.IMAGE
         ): return result
         filename = os.path.expanduser(self._raw)
         if not os.path.exists(filename): return result
@@ -152,11 +153,11 @@ class HistoryItem(Emitter):
         if (
             self.n_lines > 1 or (
                 not self.content_type and
-                self.kind != gpaste_client.Kind.LINK
+                self.kind != HistoryItemKind.LINK
             )
         ): return app_info
 
-        if self.kind == gpaste_client.Kind.LINK:
+        if self.kind == HistoryItemKind.LINK:
             uri_scheme = self.raw.split(':')[0].strip()
             app_info = Gio.AppInfo.get_default_for_uri_scheme(uri_scheme)
         else:
@@ -181,12 +182,12 @@ class HistoryItem(Emitter):
         result = ''
 
         if (
-            self.kind != gpaste_client.Kind.FILE and
-            self.kind != gpaste_client.Kind.IMAGE and
+            self.kind != HistoryItemKind.FILE and
+            self.kind != HistoryItemKind.IMAGE and
             not self.content_type
         ):
             if (
-                self.kind != gpaste_client.Kind.LINK and
+                self.kind != HistoryItemKind.LINK and
                 common.SETTINGS[common.SHOW_TEXT_INFO]
             ):
                 result = '%i chars, %i lines' % (len(self.raw), self.n_lines)

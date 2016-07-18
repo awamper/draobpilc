@@ -22,7 +22,7 @@ from gi.repository import GLib
 from gi.repository import GObject
 
 from draobpilc import common
-from draobpilc.lib import gpaste_client
+from draobpilc.history_item_kind import HistoryItemKind
 
 ENTRY_PLACE_HOLDER = _('Filter items (%s to focus)')
 ENTRY_PLACE_HOLDER = ENTRY_PLACE_HOLDER % common.SETTINGS[common.FOCUS_SEARCH]
@@ -108,10 +108,10 @@ class SearchBox(Gtk.Box):
         if not flags: return
         else: flags = flags[0][1]
 
-        if 'l' in flags: self.flags.append(gpaste_client.Kind.LINK)
-        if 'f' in flags: self.flags.append(gpaste_client.Kind.FILE)
-        if 'i' in flags: self.flags.append(gpaste_client.Kind.IMAGE)
-        if 't' in flags: self.flags.append(gpaste_client.Kind.TEXT)
+        if 'l' in flags: self.flags.append(HistoryItemKind.LINK)
+        if 'f' in flags: self.flags.append(HistoryItemKind.FILE)
+        if 'i' in flags: self.flags.append(HistoryItemKind.IMAGE)
+        if 't' in flags: self.flags.append(HistoryItemKind.TEXT)
 
     def _update_icon(self):
         if self.entry.get_text():

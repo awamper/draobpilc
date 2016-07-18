@@ -19,6 +19,7 @@ import os
 
 from gi.repository import Gtk
 
+from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.lib import gpaste_client
 from draobpilc.processors.processor_textwindow import TextWindow
 from draobpilc.widgets.items_processor_base import (
@@ -66,8 +67,8 @@ class Editor(ItemsProcessorBase):
     def can_process(self, items):
         if (
             len(items) == 1 and (
-                items[0].kind == gpaste_client.Kind.TEXT or
-                items[0].kind == gpaste_client.Kind.LINK
+                items[0].kind == HistoryItemKind.TEXT or
+                items[0].kind == HistoryItemKind.LINK
             )
         ):
             return True

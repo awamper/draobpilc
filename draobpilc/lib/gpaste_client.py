@@ -34,13 +34,6 @@ class Target():
     POSITION = 'POSITION'
 
 
-class Kind():
-    TEXT = 'Text'
-    IMAGE = 'Image'
-    FILE = 'Uris'
-    LINK = 'Link'
-
-
 SCHEMA_ID = common.SETTINGS[common.GPASTE_SCHEMA_ID]
 try:
     SETTINGS = utils.get_settings(SCHEMA_ID)

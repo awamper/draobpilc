@@ -21,7 +21,7 @@ from gi.repository import Gtk
 from gi.repository import Gio
 
 from draobpilc import common
-from draobpilc.lib import gpaste_client
+from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.widgets.item_thumb import ItemThumb
 from draobpilc.processors.processor_textwindow import TextWindow
 from draobpilc.widgets.items_processor_base import (
@@ -87,8 +87,8 @@ class Previewer(ItemsProcessorBase):
 
     def _preview_supported(self, item):
         if (
-            item.kind == gpaste_client.Kind.FILE or
-            item.kind == gpaste_client.Kind.IMAGE
+            item.kind == HistoryItemKind.FILE or
+            item.kind == HistoryItemKind.IMAGE
         ):
             return True
         elif (

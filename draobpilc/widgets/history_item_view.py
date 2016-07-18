@@ -23,7 +23,7 @@ from gi.repository import GLib
 from gi.repository import Pango
 
 from draobpilc import common
-from draobpilc.lib import gpaste_client
+from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.widgets.item_thumb import ItemThumb
 
 INFOSTRING_TEMPLATE = '<span size="x-small"><b>▶ %s</b></span>'
@@ -45,11 +45,11 @@ class ItemKindIndicator(Gtk.Box):
         for class_ in style_context.list_classes():
             style_context.remove_class(class_)
 
-        if kind == gpaste_client.Kind.FILE:
+        if kind == HistoryItemKind.FILE:
             style_context.add_class('file')
-        elif kind == gpaste_client.Kind.IMAGE:
+        elif kind == HistoryItemKind.IMAGE:
             style_context.add_class('image')
-        elif kind == gpaste_client.Kind.LINK:
+        elif kind == HistoryItemKind.LINK:
             style_context.add_class('link')
         else:
             style_context.add_class('text')
@@ -120,7 +120,7 @@ class Infobox(Gtk.Box):
 
     def _on_activate_link(self, link_button):
         uri = self.item.raw.strip()
-        if self.item.kind != gpaste_client.Kind.LINK:
+        if self.item.kind != HistoryItemKind.LINK:
             uri = 'file://%s' % self.item.raw
 
         self.item.app_info.launch_uris([uri])
@@ -234,11 +234,11 @@ class HistoryItemView(Gtk.Box):
         self._label = ItemLabel()
 
         if (
-            self.item.kind == gpaste_client.Kind.TEXT and self.item.links
+            self.item.kind == HistoryItemKind.TEXT and self.item.links
         ):
             self._infobox = LinksButton(self.item)
         elif (
-            self.item.kind == gpaste_client.Kind.FILE and
+            self.item.kind == HistoryItemKind.FILE and
             self.item.n_lines > 1
         ):
             self._infobox = FilesButton(self.item)
