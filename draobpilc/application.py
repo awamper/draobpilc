@@ -165,6 +165,7 @@ class Application(Gtk.Application):
             processors_width,
             processors_height
         )
+        self._previewer.set_max_size(processors_width, processors_height)
 
     def _on_search_changed(self, search_box, search_index=None):
         self._history_items.filter(

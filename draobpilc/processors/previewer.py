@@ -32,8 +32,14 @@ from draobpilc.widgets.items_processor_base import (
 
 class Previewer(ItemsProcessorBase):
 
+    THUMB_MAX_WIDTH = 200
+    THUMB_MAX_HEIGHT = 200
+
     def __init__(self):
         super().__init__(_('Preview'), ItemsProcessorPriority.HIGH)
+
+        self._thumb_max_width = Previewer.THUMB_MAX_WIDTH
+        self._thumb_max_height = Previewer.THUMB_MAX_HEIGHT
 
         self._thumb = ItemThumb()
         self._thumb.set_vexpand(True)
@@ -108,6 +114,10 @@ class Previewer(ItemsProcessorBase):
         self._text_window.buffer.set_text('')
         self._thumb.clear()
 
+    def set_max_size(self, width, height):
+        self._thumb_max_width = width or Previewer.THUMB_MAX_WIDTH
+        self._thumb_max_height = height or Previewer.THUMB_MAX_HEIGHT
+
     def set_items(self, items):
         self.items = items
         self._path_entry.set_text(self.item.raw)
@@ -127,11 +137,10 @@ class Previewer(ItemsProcessorBase):
                 self._text_window.set_filename(self.item.raw)
                 self._text_window.buffer.set_text(contents)
         elif self.item.thumb_path:
-            allocation = self.get_allocation()
             self._thumb.set_filename(
                 self.item.thumb_path,
-                allocation.width * 0.8,
-                allocation.height * 0.8
+                self._thumb_max_width * 0.8,
+                self._thumb_max_height * 0.8
             )
             self._text_window.hide()
             self._thumb.show()
