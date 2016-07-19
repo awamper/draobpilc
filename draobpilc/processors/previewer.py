@@ -19,6 +19,7 @@ import os
 
 from gi.repository import Gtk
 from gi.repository import Gio
+from gi.repository import Gdk
 
 from draobpilc import common
 from draobpilc.history_item_kind import HistoryItemKind
@@ -50,19 +51,26 @@ class Previewer(ItemsProcessorBase):
         self._thumb.set_no_show_all(True)
         self._thumb.hide()
 
+        self._thumb_eventbox = Gtk.EventBox()
+        self._thumb_eventbox.add(self._thumb)
+        self._thumb_eventbox.connect(
+            'realize',
+            self._change_cursor
+        )
+        self._thumb_eventbox.connect(
+            'button-release-event',
+            self._on_thumb_button_release
+        )
+        self._thumb_eventbox.set_tooltip_text(
+            _('Click to locate the file on disk')
+        )
+
         self._path_entry = Gtk.Entry()
         self._path_entry.set_editable(False)
         self._path_entry.set_hexpand(True)
         self._path_entry.set_icon_from_icon_name(
             Gtk.EntryIconPosition.PRIMARY,
             'system-file-manager-symbolic'
-        )
-        self._path_entry.set_tooltip_text(
-            _('Click to locate the file on disk')
-        )
-        self._path_entry.connect(
-            'button-release-event',
-            self._on_path_entry_button
         )
         self._path_entry.props.margin = ItemsProcessorBase.MARGIN
 
@@ -74,10 +82,18 @@ class Previewer(ItemsProcessorBase):
 
         self.grid.set_name('PreviwerGrid')
         self.grid.attach(self._path_entry, 0, 0, 2, 1)
-        self.grid.attach(self._thumb, 0, 1, 2, 1)
+        self.grid.attach(self._thumb_eventbox, 0, 1, 2, 1)
         self.grid.attach(self._text_window, 0, 1, 2, 1)
 
-    def _on_path_entry_button(self, entry, event):
+    def _change_cursor(self, sender):
+        window = sender.get_window()
+        if not window: return
+
+        display = Gdk.Display.get_default()
+        cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.HAND1)
+        window.set_cursor(cursor)
+
+    def _on_thumb_button_release(self, event_box, event):
         app_info = Gio.AppInfo.get_default_for_type('inode/directory', True)
         if not app_info: return
         app_info.launch_uris(['file://%s' % self._path_entry.get_text()], None)
