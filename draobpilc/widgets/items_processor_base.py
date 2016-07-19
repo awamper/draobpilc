@@ -60,7 +60,7 @@ class ItemsProcessorBase(Gtk.Bin):
         return True
 
     def reload(self):
-        self.set_items(self.items)
+        if self.items: self.set_items(self.items)
 
     @property
     def item(self):
