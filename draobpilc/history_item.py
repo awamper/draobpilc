@@ -53,7 +53,8 @@ class HistoryItem(Emitter):
         self._app_info = None
 
         self.add_signal('changed')
-        self.load_data(index)
+
+        if index >= 0: self.load_data(index)
 
     def __repr__(self):
         text = 'Data not loaded'
@@ -209,6 +210,32 @@ class HistoryItem(Emitter):
                     result += ', Type: %s' % self._content_type
 
         return result
+
+    @classmethod
+    def new_from_raw(cls, raw_content, kind=HistoryItemKind.TEXT):
+        item = cls(-1)
+        item._index = -1
+        item._raw = raw_content
+        item._kind = kind
+
+        if (item.kind == HistoryItemKind.TEXT and
+            utils.is_url(item.raw)
+        ):
+            item._kind = HistoryItemKind.LINK
+
+        item._n_lines = len(item.raw.split('\n'))
+        item._links = item._get_links()
+        item._thumb_path = item._get_thumb_path()
+        item._app_info = item._get_app_info()
+        item._info_string = item._get_info()
+
+        if not item._widget: item._widget = HistoryItemView(item)
+
+        if item.kind == HistoryItemKind.FILE: text = '[Files] ' + raw_content
+        else: text = raw_content
+
+        item.text = text
+        return item
 
     @property
     def index(self):

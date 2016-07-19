@@ -41,9 +41,11 @@ class ItemsProcessors(Gtk.Box):
         self._stack.props.margin = ItemsProcessors.MARGIN
 
         self._switcher = Gtk.StackSwitcher()
+        self._switcher.set_no_show_all(True)
         self._switcher.set_stack(self._stack)
         self._switcher.set_halign(Gtk.Align.CENTER)
         self._switcher.props.margin = ItemsProcessors.MARGIN
+        self._switcher.show()
 
         self.add(self._switcher)
         self.add(self._stack)
@@ -51,6 +53,7 @@ class ItemsProcessors(Gtk.Box):
 
         self._items = []
         self._timeout_id = 0
+        self._show_switcher = True
 
     def __iter__(self):
         return iter(self.processors)
@@ -160,3 +163,17 @@ class ItemsProcessors(Gtk.Box):
                 result = processor
 
         return result
+
+    @property
+    def show_switcher(self):
+        return self._show_switcher
+
+    @show_switcher.setter
+    def show_switcher(self, value):
+        if value:
+            self._show_switcher = True
+            self._switcher.show()
+        else:
+            self._show_switcher = False
+            self._switcher.hide()
+            self._stack.hide()

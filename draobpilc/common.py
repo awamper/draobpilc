@@ -70,6 +70,7 @@ FOCUS_SEARCH_ON_OPEN = 'focus-search-on-open'
 SET_ITEMS_TIMEOUT = 'set-items-timeout'
 MAX_FILTER_RESULTS = 'max-filter-results'
 SHOW_HELP = 'show-help'
+SHOW_CLIPBOARD_PREVIEW = 'show-clipboard-preview'
 
 SHORTCUTS_KEYS = {
     SHOW_HISTORIES: _('Show histories'),
@@ -81,5 +82,6 @@ SHORTCUTS_KEYS = {
     BACKUP_HISTORY: _('Backup current history'),
     KEEP_SEARCH_AND_CLOSE: _('Keep search and close window'),
     QUIT_APP: _('Quit app'),
-    SHOW_HELP: _('Show help')
+    SHOW_HELP: _('Show help'),
+    SHOW_CLIPBOARD_PREVIEW: _('Show clipboard preview')
 }

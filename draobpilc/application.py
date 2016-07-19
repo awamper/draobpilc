@@ -23,6 +23,8 @@ from gi.repository import Gdk
 from gi.repository import GLib
 from gi.repository import GdkPixbuf
 
+from keybinder.keybinder_gtk import KeybinderGtk
+
 from draobpilc import get_data_path
 from draobpilc import common
 from draobpilc import version
@@ -45,6 +47,7 @@ from draobpilc.widgets.about_dialog import AboutDialog
 from draobpilc.widgets.preferences import show_preferences
 from draobpilc.widgets.items_processors import ItemsProcessors
 from draobpilc.widgets.backup_history_dialog import BackupHistoryDialog
+from draobpilc.widgets import clipboard_preview
 
 
 class Application(Gtk.Application):
@@ -144,6 +147,13 @@ class Application(Gtk.Application):
             lambda t: self._main_toolbox.track_btn.set_active(t)
         )
         common.APPLICATION = self
+
+        keybinder = KeybinderGtk()
+        keybinder.register(
+            common.SETTINGS[common.SHOW_CLIPBOARD_PREVIEW],
+            lambda *_, **__: GLib.idle_add(clipboard_preview.toggle)
+        )
+        keybinder.start()
 
     def _resize(self, window, event):
         size = window.get_size()

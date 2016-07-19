@@ -167,5 +167,9 @@
             <default><![CDATA['<Ctrl>h']]></default>
         </key>
 
+        <key type="s" name="show-clipboard-preview">
+            <default><![CDATA['<Ctrl>space']]></default>
+        </key>
+
     </schema>
 </schemalist>

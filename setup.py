@@ -18,7 +18,9 @@ from draobpilc import version
 
 requirements = [
     'humanize',
-    'blinker'
+    'blinker',
+    'python3-keybinder',
+    'python3-xlib'
 ]
 #here = path.abspath(path.dirname(__file__))
 

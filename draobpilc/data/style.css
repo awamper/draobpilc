@@ -95,3 +95,21 @@
 #QuitButton {
     color: #FF0040;
 }
+
+#ClipboardPreview {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+#ClipboardPreviewTitle {
+    background-color: rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    font-size: 1em;
+    padding-top: 10px; 
+}
+
+#ClipboardPreviewEmptyLabel {
+    background-color: rgba(0, 0, 0, 0.5);
+    font-weight: bold;
+    font-size: 2em;
+    padding: 10px; 
+}
