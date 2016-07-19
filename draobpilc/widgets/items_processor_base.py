@@ -59,6 +59,9 @@ class ItemsProcessorBase(Gtk.Bin):
     def can_process(self, items):
         return True
 
+    def reload(self):
+        self.set_items(self.items)
+
     @property
     def item(self):
         item = None
