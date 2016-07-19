@@ -21,7 +21,7 @@ from draobpilc import common
 
 SHORTCUTS_LIST = []
 SHORTCUTS = (
-    (_('Main Window'), SHORTCUTS_LIST),
+    (_('All Shortcuts'), SHORTCUTS_LIST),
 )
 
 for key, value in common.SHORTCUTS_KEYS.items():
