@@ -23,6 +23,11 @@ from draobpilc.history_item import HistoryItem
 from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.processors import editor, previewer
 from draobpilc.widgets.items_processors import ItemsProcessors
+from draobpilc.widgets.history_item_view import (
+    LinksButton,
+    FilesButton,
+    Infobox
+)
 
 _clipboard_preview = None
 
@@ -86,8 +91,50 @@ class ClipboardPreview(PreviewWindow):
         self._items_processors.add_processor(self._previewer)
         self._items_processors.set_items([history_item])
 
+        button = None
+        show_infobox = True
+
+        if (
+            len(history_item.links) > 1 or (
+                history_item.kind == HistoryItemKind.FILE and
+                history_item.n_lines > 1
+            )
+        ):
+            if history_item.kind == HistoryItemKind.FILE:
+                button = FilesButton(history_item)
+                show_infobox = False
+            else:
+                button = LinksButton(history_item)
+                show_infobox = False
+
+        if show_infobox:
+            infobox = Infobox(history_item)
+            infobox.set_hexpand(False)
+            infobox.set_halign(Gtk.Align.START)
+        else:
+            infobox = None
+
+        bottom_box = Gtk.Box()
+        bottom_box.set_name('ClipboardPreviewBottom')
+        bottom_box.set_hexpand(True)
+        bottom_box.set_halign(Gtk.Align.FILL)
+        bottom_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+        if infobox: bottom_box.add(infobox)
+
+        if button:
+            if infobox:
+                button.set_halign(Gtk.Align.END)
+            else:
+                button.set_halign(Gtk.Align.START)
+
+            button.set_hexpand(True)
+            bottom_box.add(button)
+
+        bottom_box.show_all()
+
         self.box.add(self._title)
         self.box.add(self._items_processors)
+        self.box.add(bottom_box)
 
     def _resize(self, window, event):
         size = window.get_size()

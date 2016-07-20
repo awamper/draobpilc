@@ -273,7 +273,15 @@ class HistoryItemView(Gtk.Box):
         ):
             self._infobox = FilesButton(self.item)
         else:
-            self._infobox = Infobox(self.item)
+            if (
+                self.item.kind == HistoryItemKind.LINK or
+                self.item.kind == HistoryItemKind.FILE or
+                common.SETTINGS[common.SHOW_TEXT_INFO]
+            ):
+                self._infobox = Infobox(self.item)
+            else:
+                # dummy
+                self._infobox = Gtk.Box()
 
         self._grid = Gtk.Grid()
         self._grid.attach(self._kind_indicator, 1, 1, 1, 2)

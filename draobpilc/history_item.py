@@ -187,10 +187,7 @@ class HistoryItem(Emitter):
             self.kind != HistoryItemKind.IMAGE and
             not self.content_type
         ):
-            if (
-                self.kind != HistoryItemKind.LINK and
-                common.SETTINGS[common.SHOW_TEXT_INFO]
-            ):
+            if self.kind != HistoryItemKind.LINK:
                 result = '%i chars, %i lines' % (len(self.raw), self.n_lines)
 
             return result

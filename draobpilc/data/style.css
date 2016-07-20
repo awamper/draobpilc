@@ -102,11 +102,15 @@
     background-color: rgba(0, 0, 0, 0.8);
 }
 
-#ClipboardPreviewTitle {
+#ClipboardPreviewTitle, #ClipboardPreviewBottom {
     background-color: rgba(0, 0, 0, 0.5);
     font-weight: bold;
     font-size: 1em;
     padding-top: 10px; 
+}
+
+#ClipboardPreviewBottom {
+    padding-top: 0px;
 }
 
 #ClipboardPreviewEmptyLabel {
