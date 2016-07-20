@@ -20,12 +20,20 @@ from gi.repository import Gtk
 from draobpilc import common
 
 SHORTCUTS_LIST = []
-SHORTCUTS = (
+SHORTCUTS = [
     (_('All Shortcuts'), SHORTCUTS_LIST),
-)
+]
 
 for key, value in common.SHORTCUTS_KEYS.items():
     SHORTCUTS_LIST.append((common.SETTINGS[key], value))
+
+NUMBERS_LIST = []
+SHORTCUTS.append(
+    (_('Activate item'), NUMBERS_LIST),
+)
+
+for i in range(1, 10):
+    NUMBERS_LIST.append(('<Ctrl>%s' % i, 'Activate item #%i' % i))
 
 
 def _build_shortcut_window(data):
