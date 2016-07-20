@@ -48,10 +48,10 @@ class Previewer(ItemsProcessorBase):
         self._thumb.set_valign(Gtk.Align.CENTER)
         self._thumb.set_halign(Gtk.Align.CENTER)
         self._thumb.props.margin = ItemsProcessorBase.MARGIN
-        self._thumb.set_no_show_all(True)
-        self._thumb.hide()
+        self._thumb.show()
 
         self._thumb_eventbox = Gtk.EventBox()
+        self._thumb_eventbox.set_no_show_all(True)
         self._thumb_eventbox.add(self._thumb)
         self._thumb_eventbox.connect(
             'realize',
@@ -64,6 +64,7 @@ class Previewer(ItemsProcessorBase):
         self._thumb_eventbox.set_tooltip_text(
             _('Click to locate the file on disk')
         )
+        self._thumb_eventbox.hide()
 
         self._path_entry = Gtk.Entry()
         self._path_entry.set_editable(False)
@@ -144,7 +145,7 @@ class Previewer(ItemsProcessorBase):
             self._preview_supported(self.item) and
             self._is_previewable_type(self.item.content_type)
         ):
-            self._thumb.hide()
+            self._thumb_eventbox.hide()
             self._text_window.show()
             self._path_entry.show()
 
@@ -159,11 +160,11 @@ class Previewer(ItemsProcessorBase):
                 self._thumb_max_height * 0.8
             )
             self._text_window.hide()
-            self._thumb.show()
+            self._thumb_eventbox.show()
             self._path_entry.show()
         else:
             self._path_entry.hide()
-            self._thumb.hide()
+            self._thumb_eventbox.hide()
 
             self._text_window.show()
             self._text_window.buffer.set_text(self.item.raw)
