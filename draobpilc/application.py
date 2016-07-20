@@ -244,6 +244,8 @@ class Application(Gtk.Application):
         self._search_box.entry.grab_focus()
 
     def _on_key_press(self, window, event):
+        if not common.SETTINGS[common.ENABLE_ACTIVATE_NUMBER_KB]: return
+
         result, keyval = event.get_keyval()
         is_control = event.get_state() == Gdk.ModifierType.CONTROL_MASK
         number_keyvals = [
@@ -267,6 +269,8 @@ class Application(Gtk.Application):
                 if item: self._items_view.activate_item(item)
 
     def _on_key_release(self, window, event):
+        if not common.SETTINGS[common.ENABLE_ACTIVATE_NUMBER_KB]: return
+
         result, keyval = event.get_keyval()
 
         if keyval == Gdk.KEY_Control_L:

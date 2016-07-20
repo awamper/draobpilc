@@ -73,6 +73,7 @@ SHOW_HELP = 'show-help'
 SHOW_CLIPBOARD_PREVIEW = 'show-clipboard-preview'
 ITEMS_VIEW_LIMIT = 'items-view-limit'
 LOAD_ALL_HISTORY = 'load-all-history'
+ENABLE_ACTIVATE_NUMBER_KB = 'enable-activate-number-kb'
 
 SHORTCUTS_KEYS = {
     SHOW_HISTORIES: _('Show histories'),

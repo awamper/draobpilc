@@ -179,5 +179,9 @@
             <default>50</default>
         </key>
 
+        <key type="b" name="enable-activate-number-kb">
+            <default>true</default>
+        </key>
+
     </schema>
 </schemalist>

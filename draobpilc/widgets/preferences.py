@@ -533,6 +533,10 @@ class Preferences(Gtk.Window):
             common.FOCUS_SEARCH_ON_OPEN
         )
         page.add_boolean(
+            _('Enable <Ctrl>1-9 shortcuts'),
+            common.ENABLE_ACTIVATE_NUMBER_KB
+        )
+        page.add_boolean(
             _('Show items index number:'),
             common.SHOW_INDEXES
         )
