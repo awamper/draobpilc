@@ -273,10 +273,10 @@ class ItemsView(Gtk.Box):
                 if item.raw != text:
                     row.set_activatable(True)
                     item_widget.set_sensitive(True)
-                    item_widget.get_style_context().remove_class('active')
+                    item_widget.set_active(False)
                 else:
                     row.set_activatable(False)
-                    item_widget.get_style_context().add_class('active')
+                    item_widget.set_active(True)
 
         if len(self) < 1: return
 

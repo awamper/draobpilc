@@ -29,15 +29,10 @@ from draobpilc.widgets.item_thumb import ItemThumb
 INFOSTRING_TEMPLATE = '<span size="x-small"><b>▶ %s</b></span>'
 
 
-class ItemKindIndicator(Gtk.Box):
+class IndicatorBase(Gtk.Box):
 
-    def __init__(self, kind):
+    def __init__(self):
         super().__init__()
-
-        self.set_name('HistoryItemKindIndicator')
-        self.set_size_request(common.SETTINGS[common.KIND_INDICATOR_WIDTH], -1)
-        self.set_kind(kind)
-        self.show()
 
     def set_kind(self, kind):
         style_context = self.get_style_context()
@@ -55,6 +50,19 @@ class ItemKindIndicator(Gtk.Box):
             style_context.add_class('text')
 
 
+class ItemKindIndicator(IndicatorBase):
+
+    def __init__(self, kind):
+        super().__init__()
+
+        self.set_name('HistoryItemKindIndicator')
+        self.set_halign(Gtk.Align.START)
+        self.set_hexpand(False)
+        self.set_size_request(common.SETTINGS[common.KIND_INDICATOR_WIDTH], -1)
+        self.set_kind(kind)
+        self.show()
+
+
 class ItemLabel(Gtk.Label):
 
     def __init__(self):
@@ -62,6 +70,9 @@ class ItemLabel(Gtk.Label):
 
         self.set_name('HistoryItemLabel')
         self.set_halign(Gtk.Align.START)
+        self.set_hexpand(True)
+        self.set_valign(Gtk.Align.CENTER)
+        self.set_vexpand(True)
         self.set_ellipsize(Pango.EllipsizeMode.END)
         self.set_line_wrap(True)
         self.set_line_wrap_mode(Pango.WrapMode.CHAR)
@@ -217,6 +228,23 @@ class FilesButton(LinksButton):
         self._box.show_all()
 
 
+class ActiveIndicator(IndicatorBase):
+
+    def __init__(self, kind):
+        super().__init__()
+
+        self.set_name('HistoryItemViewActiveIndicator')
+        self.set_hexpand(True)
+        self.set_vexpand(False)
+        self.set_halign(Gtk.Align.FILL)
+        self.set_valign(Gtk.Align.START)
+        self.set_no_show_all(True)
+        self.set_size_request(-1, 4)
+        self.hide()
+
+        self.set_kind(kind)
+
+
 class HistoryItemView(Gtk.Box):
 
     def __init__(self, history_item):
@@ -232,6 +260,8 @@ class HistoryItemView(Gtk.Box):
         self._preview = None
         self._kind_indicator = ItemKindIndicator(self.item.kind)
         self._label = ItemLabel()
+        self._active_indicator = ActiveIndicator(self.item.kind)
+        self.set_active(False)
 
         if (
             self.item.kind == HistoryItemKind.TEXT and self.item.links
@@ -246,9 +276,10 @@ class HistoryItemView(Gtk.Box):
             self._infobox = Infobox(self.item)
 
         self._grid = Gtk.Grid()
-        self._grid.attach(self._kind_indicator, 0, 0, 1, 2)
-        self._grid.attach(self._label, 2, 0, 1, 1)
-        self._grid.attach(self._infobox, 2, 1, 1, 1)
+        self._grid.attach(self._kind_indicator, 1, 1, 1, 2)
+        self._grid.attach(self._label, 2, 1, 1, 1)
+        self._grid.attach(self._infobox, 2, 2, 1, 1)
+        self._grid.attach(self._active_indicator, 0 , 0, 3, 1)
 
         if (
             self.item.thumb_path and
@@ -259,7 +290,7 @@ class HistoryItemView(Gtk.Box):
                 -1,
                 common.SETTINGS[common.ITEM_MAX_HEIGHT]
             )
-            self._grid.attach(self._preview, 1, 0, 1, 2)
+            self._grid.attach(self._preview, 1, 1, 1, 2)
 
         self.add(self._grid)
         self.show_all()
@@ -272,6 +303,12 @@ class HistoryItemView(Gtk.Box):
 
     def set_label(self, markup):
         self._label.set_markup(markup)
+
+    def set_active(self, active):
+        if active:
+            self._active_indicator.show()
+        else:
+            self._active_indicator.hide()
 
     @property
     def item(self):
