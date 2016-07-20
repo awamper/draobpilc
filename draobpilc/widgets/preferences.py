@@ -363,6 +363,7 @@ class Preferences(Gtk.Window):
             )
 
         main = self._get_main_page()
+        items = self._get_items_page()
         editor = self._get_editor_page()
         keybindings = self._get_keybindings_page()
 
@@ -375,6 +376,11 @@ class Preferences(Gtk.Window):
             main['page'],
             main['name'],
             main['name']
+        )
+        stack.add_titled(
+            items['page'],
+            items['name'],
+            items['name']
         )
         stack.add_titled(
             editor['page'],
@@ -546,59 +552,6 @@ class Preferences(Gtk.Window):
         page.add_separator()
 
         spin_props = {}
-        spin_props['lower'] = 5
-        spin_props['upper'] = 100
-        spin_props['step_increment'] = 5
-        page.add_spin(
-            _('Max filter results:'),
-            common.MAX_FILTER_RESULTS,
-            spin_props,
-            int
-        )
-
-        page.add_separator()
-
-        spin_props['lower'] = 10
-        spin_props['upper'] = 60
-        spin_props['step_increment'] = 5
-        page.add_spin(
-            _('Items list width(%):'),
-            common.WIDTH_PERCENTS,
-            spin_props,
-            int
-        )
-
-        spin_props['lower'] = 1
-        spin_props['upper'] = 10
-        spin_props['step_increment'] = 1
-        page.add_spin(
-            _('Item max lines:'),
-            common.ITEM_MAX_LINES,
-            spin_props,
-            int
-        )
-
-        spin_props['lower'] = 50
-        spin_props['upper'] = 150
-        spin_props['step_increment'] = 5
-        page.add_spin(
-            _('Item max height(px):'),
-            common.ITEM_MAX_HEIGHT,
-            spin_props,
-            int
-        )
-
-        page.add_separator()
-
-        spin_props['lower'] = 1
-        spin_props['upper'] = 10
-        spin_props['step_increment'] = 1
-        page.add_spin(
-            _('Kind indicator width(px):'),
-            common.KIND_INDICATOR_WIDTH,
-            spin_props,
-            int
-        )
         spin_props['lower'] = 200
         spin_props['upper'] = 500
         spin_props['step_increment'] = 50
@@ -616,6 +569,78 @@ class Preferences(Gtk.Window):
         button.set_hexpand(True)
         button.connect('clicked', self._on_button_clicked)
         page.add_item(button)
+
+        result = dict(page=page, name=name)
+        return result
+
+    def _get_items_page(self):
+        name = _('Items')
+        page = PrefsGrid(common.SETTINGS)     
+
+        spin_props = {}
+        spin_props['lower'] = 0
+        spin_props['upper'] = 300
+        spin_props['step_increment'] = 5
+        
+        page.add_spin(
+            _('Max displayed items(0 - no limit):'),
+            common.ITEMS_VIEW_LIMIT,
+            spin_props,
+            int
+        )
+        spin_props['lower'] = 5
+        spin_props['upper'] = 100
+        spin_props['step_increment'] = 5
+        page.add_spin(
+            _('Max filter results:'),
+            common.MAX_FILTER_RESULTS,
+            spin_props,
+            int
+        )
+
+        page.add_separator()
+
+        spin_props['lower'] = 10
+        spin_props['upper'] = 60
+        spin_props['step_increment'] = 5
+        page.add_spin(
+            _('Width(%):'),
+            common.WIDTH_PERCENTS,
+            spin_props,
+            int
+        )
+
+        spin_props['lower'] = 1
+        spin_props['upper'] = 10
+        spin_props['step_increment'] = 1
+        page.add_spin(
+            _('Max lines:'),
+            common.ITEM_MAX_LINES,
+            spin_props,
+            int
+        )
+
+        spin_props['lower'] = 50
+        spin_props['upper'] = 150
+        spin_props['step_increment'] = 5
+        page.add_spin(
+            _('Max height(px):'),
+            common.ITEM_MAX_HEIGHT,
+            spin_props,
+            int
+        )
+
+        page.add_separator()
+
+        spin_props['lower'] = 1
+        spin_props['upper'] = 10
+        spin_props['step_increment'] = 1
+        page.add_spin(
+            _('Kind indicator width(px):'),
+            common.KIND_INDICATOR_WIDTH,
+            spin_props,
+            int
+        )
 
         result = dict(page=page, name=name)
         return result
