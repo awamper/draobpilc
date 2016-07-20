@@ -72,6 +72,7 @@ MAX_FILTER_RESULTS = 'max-filter-results'
 SHOW_HELP = 'show-help'
 SHOW_CLIPBOARD_PREVIEW = 'show-clipboard-preview'
 ITEMS_VIEW_LIMIT = 'items-view-limit'
+LOAD_ALL_HISTORY = 'load-all-history'
 
 SHORTCUTS_KEYS = {
     SHOW_HISTORIES: _('Show histories'),
@@ -84,5 +85,6 @@ SHORTCUTS_KEYS = {
     KEEP_SEARCH_AND_CLOSE: _('Keep search and close window'),
     QUIT_APP: _('Quit app'),
     SHOW_HELP: _('Show help'),
-    SHOW_CLIPBOARD_PREVIEW: _('Show clipboard preview')
+    SHOW_CLIPBOARD_PREVIEW: _('Show clipboard preview'),
+    LOAD_ALL_HISTORY: _('Load all history')
 }

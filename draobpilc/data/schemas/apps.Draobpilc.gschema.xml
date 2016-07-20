@@ -171,6 +171,10 @@
             <default><![CDATA['<Ctrl>space']]></default>
         </key>
 
+        <key type="s" name="load-all-history">
+            <default><![CDATA['<Ctrl><Alt>A']]></default>
+        </key>
+
         <key type="i" name="items-view-limit">
             <default>50</default>
         </key>

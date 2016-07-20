@@ -397,6 +397,12 @@ class Application(Gtk.Application):
                 'app.show_help',
                 common.SHOW_HELP,
                 lambda _, __: shortcuts_window.show_or_false(self._window)
+            ],
+            [
+                'load_all_history',
+                'app.load_all_history',
+                common.LOAD_ALL_HISTORY,
+                lambda _, __: self._items_view.load_rest_items()
             ]
         ]
 
