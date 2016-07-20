@@ -199,3 +199,15 @@ def get_widget_screenshot(widget):
         return None
     else:
         return pixbuf
+
+
+def is_visible_on_scroll(adjustment, widget):
+    allocation_box = widget.get_allocation()
+
+    return (
+        widget.is_visible() and
+        allocation_box.y >= adjustment.get_value() and
+        allocation_box.y + allocation_box.height < (
+            adjustment.get_value() + adjustment.get_page_size()
+        )
+    )

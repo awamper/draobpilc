@@ -119,3 +119,12 @@
     font-size: 2em;
     padding: 10px; 
 }
+
+#HistoryItemViewShortcutHint {
+    background-color: rgba(255, 0, 64, 0.7);
+    border: 1px solid rgba(150, 0, 38, 1);
+    margin: 5px;
+    padding: 3px;
+    font-weight: bold;
+    color: white;
+}

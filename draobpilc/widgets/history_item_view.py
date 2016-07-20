@@ -245,6 +245,32 @@ class ActiveIndicator(IndicatorBase):
         self.set_kind(kind)
 
 
+class ShortcutHint(Gtk.Box):
+
+    def __init__(self):
+        super().__init__()
+
+        self.set_name('HistoryItemViewShortcutHint')
+        self.set_no_show_all(True)
+        self.set_vexpand(False)
+        self.set_hexpand(False)
+        self.set_valign(Gtk.Align.START)
+        self.set_halign(Gtk.Align.START)
+        self.set_size_request(40, 40)
+
+        self.label = Gtk.Label()
+        self.label.set_halign(Gtk.Align.CENTER)
+        self.label.set_valign(Gtk.Align.CENTER)
+        self.label.set_vexpand(False)
+        self.label.set_hexpand(True)
+        self.label.show()
+
+        self.add(self.label)
+
+    def set_hint(self, text):
+        self.label.set_label(text)
+
+
 class HistoryItemView(Gtk.Box):
 
     def __init__(self, history_item):
@@ -256,11 +282,11 @@ class HistoryItemView(Gtk.Box):
         self.connect('leave-notify-event', self._on_leave_event)
 
         self._weakref = weakref.ref(history_item, lambda w: self.destroy())
-
         self._preview = None
         self._kind_indicator = ItemKindIndicator(self.item.kind)
         self._label = ItemLabel()
         self._active_indicator = ActiveIndicator(self.item.kind)
+        self._shortcut_hint = ShortcutHint()
         self.set_active(False)
 
         if (
@@ -300,7 +326,11 @@ class HistoryItemView(Gtk.Box):
             )
             self._grid.attach(self._preview, 1, 1, 1, 2)
 
-        self.add(self._grid)
+        overlay = Gtk.Overlay()
+        overlay.add(self._grid)
+        overlay.add_overlay(self._shortcut_hint)
+
+        self.add(overlay)
         self.show_all()
 
     def _on_enter_event(self, box, event):
@@ -317,6 +347,13 @@ class HistoryItemView(Gtk.Box):
             self._active_indicator.show()
         else:
             self._active_indicator.hide()
+
+    def show_shortcut_hint(self, hint):
+        if hint is None:
+            self._shortcut_hint.hide()
+        else:
+            self._shortcut_hint.set_hint(str(hint))
+            self._shortcut_hint.show()
 
     @property
     def item(self):

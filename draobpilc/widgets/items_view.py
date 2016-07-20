@@ -184,7 +184,9 @@ class ItemsView(Gtk.Box):
         if row: self.emit('item-selected', row.get_child().item)
 
     def _on_row_activated(self, listbox, row):
-        if row: self.emit('item-activated', row.get_child().item)
+        if not row: return
+        item = row.get_child().item
+        if item: self.activate_item(item)
 
     def _on_changed(self, history_items):
         self.show_items()
@@ -354,6 +356,54 @@ class ItemsView(Gtk.Box):
     def toggle_selection(self, row):
         if row.is_selected(): self._listbox.unselect_row(row)
         else: self._listbox.select_row(row) 
+
+    def activate_item(self, item):
+        if item: self.emit('item-activated', item)
+
+    def get_by_number(self, number):
+        result = None
+        curr_index = None
+        children = self._listbox.get_children()
+
+        for index, row in enumerate(children):
+            visible = utils.is_visible_on_scroll(
+                self._listbox.get_adjustment(),
+                row
+            )
+            
+            if visible:
+                if curr_index is None:
+                    curr_index = 0
+                else:
+                    curr_index += 1
+
+            if not curr_index is None and curr_index == number:
+                result = row.get_child().item
+                break
+
+        return result
+
+    def show_shortcut_hints(self, show):
+        curr_index = None
+        children = self._listbox.get_children()
+
+        if show:
+            for index, row in enumerate(children):
+                visible = utils.is_visible_on_scroll(
+                    self._listbox.get_adjustment(),
+                    row
+                )
+                
+                if visible:
+                    if curr_index is None:
+                        curr_index = 0
+                    else:
+                        curr_index += 1
+
+                    row.get_child().show_shortcut_hint(curr_index + 1)
+        else:
+            for row in children:
+                row.get_child().show_shortcut_hint(None)
 
     @property
     def histories_manager(self):

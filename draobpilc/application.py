@@ -243,6 +243,34 @@ class Application(Gtk.Application):
         self._search_box.reset()
         self._search_box.entry.grab_focus()
 
+    def _on_key_press(self, window, event):
+        result, keyval = event.get_keyval()
+        is_control = event.get_state() == Gdk.ModifierType.CONTROL_MASK
+        number_keyvals = [
+            Gdk.KEY_1,
+            Gdk.KEY_2,
+            Gdk.KEY_3,
+            Gdk.KEY_4,
+            Gdk.KEY_5,
+            Gdk.KEY_6,
+            Gdk.KEY_7,
+            Gdk.KEY_8,
+            Gdk.KEY_9
+        ]
+
+        if keyval == Gdk.KEY_Control_L:
+            self._items_view.show_shortcut_hints(True)
+        else:
+            if is_control and keyval in number_keyvals:
+                item = self._items_view.get_by_number(number_keyvals.index(keyval))
+                if item: self._items_view.activate_item(item)
+
+    def _on_key_release(self, window, event):
+        result, keyval = event.get_keyval()
+
+        if keyval == Gdk.KEY_Control_L:
+            self._items_view.show_shortcut_hints(False)
+
     def _bind_action(self, name, target, settings_key, callback):
         def on_settings_change(settings, key, target):
             self.set_accels_for_action(target, [settings[key]])
@@ -322,6 +350,8 @@ class Application(Gtk.Application):
 
         self._window = Window(self)
         self._window.connect('configure-event', self._resize)
+        self._window.connect('key-press-event', self._on_key_press)
+        self._window.connect('key-release-event', self._on_key_release)
         self._window.grid.attach(self._items_processors, 0, 0, 1, 1)
         self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
         self._window.grid.attach(right_box, 1, 0, 1, 2)
