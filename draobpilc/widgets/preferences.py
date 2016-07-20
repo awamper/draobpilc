@@ -199,6 +199,7 @@ class PrefsGrid(Gtk.Grid):
 
     def add_boolean(self, text, key):
         item = Gtk.Switch()
+        item.set_halign(Gtk.Align.END)
         item.set_active(self._settings[key])
         self._settings.bind(key, item, 'active', Gio.SettingsBindFlags.DEFAULT)
 
