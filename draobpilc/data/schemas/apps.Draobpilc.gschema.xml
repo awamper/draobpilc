@@ -136,7 +136,7 @@
         </key>
 
         <key type="s" name="quit-app">
-            <default><![CDATA['<Ctrl>Q']]></default>
+            <default><![CDATA['<Ctrl><Alt>Q']]></default>
         </key>
 
         <key type="b" name="show-thumbnails">
