@@ -262,6 +262,7 @@ class Application(Gtk.Application):
             self._items_view.show_shortcut_hints(True)
         else:
             if is_control and keyval in number_keyvals:
+                self._items_view.show_shortcut_hints(False)
                 item = self._items_view.get_by_number(number_keyvals.index(keyval))
                 if item: self._items_view.activate_item(item)
 
