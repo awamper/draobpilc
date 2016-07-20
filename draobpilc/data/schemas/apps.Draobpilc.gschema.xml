@@ -171,5 +171,9 @@
             <default><![CDATA['<Ctrl>space']]></default>
         </key>
 
+        <key type="i" name="items-view-limit">
+            <default>50</default>
+        </key>
+
     </schema>
 </schemalist>

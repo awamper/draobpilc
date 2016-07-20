@@ -54,6 +54,9 @@ class HistoryItems(Emitter):
     def __iter__(self):
         return iter(self.items)
 
+    def __getitem__(self, key):
+        return self.items[key]
+
     def _on_update(self, action, target, position):
         self._raw_history = gpaste_client.get_raw_history()
 

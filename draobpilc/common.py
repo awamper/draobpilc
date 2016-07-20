@@ -71,6 +71,7 @@ SET_ITEMS_TIMEOUT = 'set-items-timeout'
 MAX_FILTER_RESULTS = 'max-filter-results'
 SHOW_HELP = 'show-help'
 SHOW_CLIPBOARD_PREVIEW = 'show-clipboard-preview'
+ITEMS_VIEW_LIMIT = 'items-view-limit'
 
 SHORTCUTS_KEYS = {
     SHOW_HISTORIES: _('Show histories'),

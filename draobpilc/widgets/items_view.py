@@ -61,7 +61,6 @@ class ItemsView(Gtk.Box):
         self._autoscroll_timeout_id = 0
 
         self._histories_manager = HistoriesManager()
-        self._items_counter = ItemsCounter()
 
         placeholder = Gtk.Label()
         placeholder.set_markup(
@@ -81,6 +80,16 @@ class ItemsView(Gtk.Box):
         self._listbox.connect('button-press-event', self._on_button_press_event)
         self._listbox.connect('button-release-event', self._on_button_release_event)
 
+        self._items_counter = ItemsCounter(self._listbox)
+        self._load_rest_btn = Gtk.LinkButton()
+        self._load_rest_btn.set_label('load all history')
+        self._load_rest_btn.set_no_show_all(True)
+        self._load_rest_btn.connect(
+            'activate-link',
+            lambda _: self.load_rest_items()
+        )
+        self._load_rest_btn.hide()
+
         scrolled = Gtk.ScrolledWindow()
         scrolled.set_name('ItemsViewScrolledWindow')
         scrolled.set_vexpand(True)
@@ -90,6 +99,7 @@ class ItemsView(Gtk.Box):
         bottom_box = Gtk.Box()
         bottom_box.set_orientation(Gtk.Orientation.HORIZONTAL)
         bottom_box.add(self._items_counter)
+        bottom_box.add(self._load_rest_btn)
         bottom_box.add(self._histories_manager)
 
         box = Gtk.Box()
@@ -177,7 +187,7 @@ class ItemsView(Gtk.Box):
         if row: self.emit('item-activated', row.get_child().item)
 
     def _on_changed(self, history_items):
-        self.load_all()
+        self.show_items()
         self.set_active_item()
         self.resume_selection() or self.select_first()
         self._last_selected_index = 0
@@ -249,19 +259,37 @@ class ItemsView(Gtk.Box):
         self._bound_history = history_items
         self._bound_history.connect('changed', self._on_changed)
         self._bound_history.connect('removed', self._remove)
-        self._items_counter.bind(self._bound_history)
+        self._items_counter.set_history_items(self._bound_history)
         self._items_counter.update()
 
-        self.load_all()
+        self.show_items()
 
-    def load_all(self):
+    def show_items(self):
+        limit = common.SETTINGS[common.ITEMS_VIEW_LIMIT]
+        items = self._bound_history
+        if limit: items = items[:limit]
         self.clear()
 
-        for item in self._bound_history:
+        for item in items:
             self._listbox.add(item.widget)
 
-        self._items_counter.update()
+        if len(items) < len(self._bound_history): 
+            self._load_rest_btn.show()
+        else:
+            self._load_rest_btn.hide()
+
         self.show_all()
+
+    def load_rest_items(self):
+        limit = common.SETTINGS[common.ITEMS_VIEW_LIMIT]
+        if not limit: return
+
+        for item in self._bound_history[limit:]:
+            self._listbox.add(item.widget)
+
+        self._load_rest_btn.hide()
+        self.show_all()
+        return True
 
     def set_active_item(self):
 
@@ -317,8 +345,6 @@ class ItemsView(Gtk.Box):
             child = row.get_child()
             if child: row.remove(child)
             row.destroy()
-
-        self._items_counter.update()
 
     def reset_scroll(self):
         adjustment = self._listbox.get_adjustment()

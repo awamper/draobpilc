@@ -17,40 +17,48 @@
 
 from gi.repository import Gtk
 
-from draobpilc.history_items import HistoryItems
-
-LABEL_TEMPLATE = _('Total: <b>%i</b>')
-LABEL_FILTER_TEMPLATE = _('Showing <b>%i</b> out of <b>%i</b> total')
+LABEL_TEMPLATE = _('<b>%i</b> items')
+LABEL_FILTER_TEMPLATE = _('Showing <b>%i</b> out of <b>%i</b>')
 
 
 class ItemsCounter(Gtk.Label):
 
-    def __init__(self, history_items=None):
+    def __init__(self, list_box, history_items=None):
         super().__init__()
 
         self.set_vexpand(False)
         self.set_hexpand(False)
 
+        self._list_box = None
         self._history_items = None
 
-        self.bind(history_items)
+        self.bind(list_box)
         self.show()
         self.update()
 
-    def bind(self, history_items):
-        if isinstance(history_items, HistoryItems):
-            self._history_items = history_items
-            history_items.connect('changed', self.update)
+    def set_history_items(self, items):
+        self._history_items = items
 
-    def update(self, history_items=None):
-        if not self._history_items:
+    def bind(self, list_box):
+        if isinstance(list_box, Gtk.ListBox):
+            self._list_box = list_box
+            list_box.connect('add', lambda _, __: self.update())
+            list_box.connect('remove', lambda _, __: self.update())
+
+    def update(self):
+        if not self._list_box or not self._history_items:
             self.set_markup(LABEL_TEMPLATE % 0)
             return
 
-        if self._history_items.filter_mode:
+        children = self._list_box.get_children()
+
+        if (
+            self._history_items.filter_mode or
+            len(children) < self._history_items.n_total
+        ):
             label = LABEL_FILTER_TEMPLATE % (
-                len(self._history_items),
-                self._history_items.n_total
+                len(children),
+                self._history_items.n_total,
             )
         else:
             label = LABEL_TEMPLATE % self._history_items.n_total
