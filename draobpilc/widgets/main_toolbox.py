@@ -93,15 +93,19 @@ class MainToolbox(Gtk.Box):
 
         separator = Gtk.Separator()
         separator.set_name('MainToolboxSeparator')
+        separator2 = Gtk.Separator()
+        separator2.set_name('MainToolboxSeparator')
 
+        self.add(self.track_btn)
+        self.add(self.prefs_btn)
+        self.add(self.restart_btn)
+        self.add(separator)
         if shortcuts_window.is_supported(): self.add(self.help_btn)
         self.add(self.about_btn)
-        self.add(self.restart_btn)
-        self.add(self.prefs_btn)
-        self.add(self.track_btn)
+        self.add(separator2)
         self.add(self.close_btn)
-        self.add(separator)
         self.add(self.quit_btn)
+
         self.show_all()
 
     def _on_toggled(self, button):
