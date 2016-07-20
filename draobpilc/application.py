@@ -357,6 +357,10 @@ class Application(Gtk.Application):
         self._window.connect('configure-event', self._resize)
         self._window.connect('key-press-event', self._on_key_press)
         self._window.connect('key-release-event', self._on_key_release)
+        self._window.connect(
+            'focus-out-event',
+            lambda _, __: self._items_view.show_shortcut_hints(False)
+        )
         self._window.grid.attach(self._items_processors, 0, 0, 1, 1)
         self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
         self._window.grid.attach(right_box, 1, 0, 1, 2)
