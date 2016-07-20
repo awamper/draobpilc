@@ -525,7 +525,7 @@ class Preferences(Gtk.Window):
         page = PrefsGrid(common.SETTINGS)
 
         page.add_boolean(
-            _('Show startup notification:'),
+            _('Show startup notification'),
             common.STARTUP_NOTIFICATION
         )
         page.add_boolean(
@@ -537,15 +537,15 @@ class Preferences(Gtk.Window):
             common.ENABLE_ACTIVATE_NUMBER_KB
         )
         page.add_boolean(
-            _('Show items index number:'),
+            _('Show items index number'),
             common.SHOW_INDEXES
         )
         page.add_boolean(
-            _('Show info for text items:'),
+            _('Show info for text items'),
             common.SHOW_TEXT_INFO
         )
         page.add_boolean(
-            _('Show thumbnails for file/image items:'),
+            _('Show thumbnails for file/image items'),
             common.SHOW_THUMBNAILS
         )
         page.add_boolean(
@@ -560,7 +560,7 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 500
         spin_props['step_increment'] = 50
         page.add_spin(
-            _('Search timeout:'),
+            _('Search timeout'),
             common.SEARCH_TIMEOUT,
             spin_props,
             int
@@ -587,7 +587,7 @@ class Preferences(Gtk.Window):
         spin_props['step_increment'] = 5
         
         page.add_spin(
-            _('Max displayed items(0 - no limit):'),
+            _('Max displayed items(0 - no limit)'),
             common.ITEMS_VIEW_LIMIT,
             spin_props,
             int
@@ -596,7 +596,7 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 100
         spin_props['step_increment'] = 5
         page.add_spin(
-            _('Max filter results:'),
+            _('Max filter results'),
             common.MAX_FILTER_RESULTS,
             spin_props,
             int
@@ -608,7 +608,7 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 60
         spin_props['step_increment'] = 5
         page.add_spin(
-            _('Width(%):'),
+            _('Width(%)'),
             common.WIDTH_PERCENTS,
             spin_props,
             int
@@ -618,7 +618,7 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 10
         spin_props['step_increment'] = 1
         page.add_spin(
-            _('Max lines:'),
+            _('Max lines'),
             common.ITEM_MAX_LINES,
             spin_props,
             int
@@ -628,7 +628,7 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 150
         spin_props['step_increment'] = 5
         page.add_spin(
-            _('Max height(px):'),
+            _('Max height(px)'),
             common.ITEM_MAX_HEIGHT,
             spin_props,
             int
@@ -640,7 +640,7 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 10
         spin_props['step_increment'] = 1
         page.add_spin(
-            _('Kind indicator width(px):'),
+            _('Kind indicator width(px)'),
             common.KIND_INDICATOR_WIDTH,
             spin_props,
             int
@@ -658,7 +658,7 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 1000
         spin_props['step_increment'] = 100
         page.add_spin(
-            _('Save changes timeout(ms):'),
+            _('Save changes timeout(ms)'),
             common.EDIT_TIMEOUT_MS,
             spin_props,
             int
@@ -668,14 +668,14 @@ class Preferences(Gtk.Window):
         page.add_label(_('Merger'))
 
         self._decorators_combo = page.add_combo(
-            _('Default decorator:'),
+            _('Default decorator'),
             common.MERGE_DEFAULT_DECORATOR,
             [],
             str
         )
 
         self._separators_combo = page.add_combo(
-            _('Default separator:'),
+            _('Default separator'),
             common.MERGE_DEFAULT_SEPARATOR,
             [],
             str
