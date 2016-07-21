@@ -1,6 +1,6 @@
 ## Draobpilc
 GPaste GUI  
-v0.2 beta
+v0.3 beta
 
 ## Requirements
 * Python 3
