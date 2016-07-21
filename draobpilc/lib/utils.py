@@ -40,24 +40,69 @@ class SettingsSchemaNotFound(Exception):
     """ """
 
 
+class NotifyAction():
+
+    def __init__(self, id_, label, user_data=None, callback=None):
+        if not isinstance(id_, str):
+            raise ValueError('id_ must be a string')
+        if not callable(callback):
+            raise ValueError('callback must be a function')
+
+        self._id_ = id_
+        self._label = label or id_
+        self._callback = callback
+        self._user_data = user_data
+
+    @property
+    def id_(self):
+        return self._id_
+
+    @property
+    def label(self):
+        return self._label
+    
+    @property
+    def callback(self):
+        return self._callback
+    
+    @property
+    def user_data(self):
+        return self._user_data
+
+
+# FixMe: actions dont work
+def notify(
+    summary=APP_NAME,
+    body=None,
+    timeout=Notify.EXPIRES_DEFAULT,
+    urgency=Notify.Urgency.NORMAL,
+    icon_name_or_path=get_data_path('draobpilc.png'),
+    actions=None
+):
+    notification = Notify.Notification.new(summary, body, icon_name_or_path)
+    notification.set_timeout(timeout)
+    notification.set_urgency(urgency)
+
+    if isinstance(actions, list):
+        for action in actions:
+            if not isinstance(action, NotifyAction): continue
+
+            notification.add_action(
+                action.id_,
+                action.label,
+                action.callback,
+                action.user_data
+            )
+
+    notification.show()
+    return notification
+
+
 def restart_app():
     from draobpilc.common import APPLICATION
     APPLICATION.quit()
     subprocess.Popen('draobpilc')
     sys.exit()
-
-
-def notify(summary=None, body=None, icon_name=None):
-    if not summary:
-        summary = APP_NAME
-
-    notification = Notify.Notification.new(summary, body, icon_name)
-
-    if not icon_name:
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file(get_data_path('draobpilc.png'))
-        notification.set_icon_from_pixbuf(pixbuf)
-
-    notification.show()
 
 
 def get_settings(schema_id, schema_dir=None):
