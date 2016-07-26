@@ -360,12 +360,14 @@ class ItemsView(Gtk.Box):
     def activate_item(self, item):
         if item: self.emit('item-activated', item)
 
-    def get_by_number(self, number):
+    def get_for_shortcut(self, number):
         result = None
         curr_index = None
         children = self._listbox.get_children()
 
         for index, row in enumerate(children):
+            if row.get_child().item.index == 0: continue
+
             visible = utils.is_visible_on_scroll(
                 self._listbox.get_adjustment(),
                 row
@@ -384,18 +386,21 @@ class ItemsView(Gtk.Box):
         return result
 
     def show_shortcut_hints(self, show):
-        curr_index = None
+        curr_index = -1
         children = self._listbox.get_children()
 
         if show:
             for index, row in enumerate(children):
+                if curr_index >= 8: break
+                if row.get_child().item.index == 0: continue
+
                 visible = utils.is_visible_on_scroll(
                     self._listbox.get_adjustment(),
                     row
                 )
                 
                 if visible:
-                    if curr_index is None:
+                    if curr_index == -1:
                         curr_index = 0
                     else:
                         curr_index += 1
