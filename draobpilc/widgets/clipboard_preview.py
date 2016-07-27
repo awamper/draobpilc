@@ -29,8 +29,6 @@ from draobpilc.widgets.history_item_view import (
     Infobox
 )
 
-_clipboard_preview = None
-
 
 class PreviewWindow(Gtk.Window):
 
@@ -70,7 +68,7 @@ class PreviewWindow(Gtk.Window):
 
 class ClipboardPreview(PreviewWindow):
 
-    def __init__(self, history_item):
+    def __init__(self, history_item=None):
         super().__init__()
 
         self._title = Gtk.Label('Clipboard Contents')
@@ -89,8 +87,39 @@ class ClipboardPreview(PreviewWindow):
         self._items_processors.show_switcher = False
         self._items_processors.add_processor(self._editor)
         self._items_processors.add_processor(self._previewer)
+
+        self._bottom_box = Gtk.Box()
+        self._bottom_box.set_name('ClipboardPreviewBottom')
+        self._bottom_box.set_hexpand(True)
+        self._bottom_box.set_halign(Gtk.Align.FILL)
+        self._bottom_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+
+        self.box.add(self._title)
+        self.box.add(self._items_processors)
+        self.box.add(self._bottom_box)
+
+        if history_item: self.set_item(history_item)
+
+    def _resize(self, window, event):
+        size = window.get_size()
+
+        processors_width = round(size[0] * 0.5)
+        processors_height = round(size[1] * 0.5)
+
+        self._items_processors.set_size_request(
+            processors_width,
+            processors_height
+        )
+        self._previewer.set_max_size(
+            processors_width,
+            processors_height
+        )
+        self._previewer.reload()
+
+    def set_item(self, history_item):
         self._items_processors.set_items([history_item])
 
+        for child in self._bottom_box.get_children(): child.destroy()
         button = None
         show_infobox = True
 
@@ -114,12 +143,7 @@ class ClipboardPreview(PreviewWindow):
         else:
             infobox = None
 
-        bottom_box = Gtk.Box()
-        bottom_box.set_name('ClipboardPreviewBottom')
-        bottom_box.set_hexpand(True)
-        bottom_box.set_halign(Gtk.Align.FILL)
-        bottom_box.set_orientation(Gtk.Orientation.HORIZONTAL)
-        if infobox: bottom_box.add(infobox)
+        if infobox: self._bottom_box.add(infobox)
 
         if button:
             if infobox:
@@ -128,34 +152,14 @@ class ClipboardPreview(PreviewWindow):
                 button.set_halign(Gtk.Align.START)
 
             button.set_hexpand(True)
-            bottom_box.add(button)
+            self._bottom_box.add(button)
 
-        bottom_box.show_all()
-
-        self.box.add(self._title)
-        self.box.add(self._items_processors)
-        self.box.add(bottom_box)
-
-    def _resize(self, window, event):
-        size = window.get_size()
-
-        processors_width = round(size[0] * 0.5)
-        processors_height = round(size[1] * 0.5)
-
-        self._items_processors.set_size_request(
-            processors_width,
-            processors_height
-        )
-        self._previewer.set_max_size(
-            processors_width,
-            processors_height
-        )
-        self._previewer.reload()
+        self._bottom_box.show_all()
 
 
 class ClipboardEmpty(PreviewWindow):
 
-    def __init__(self, __):
+    def __init__(self):
         super().__init__()
 
         self._title = Gtk.Label('Clipboard is empty')
@@ -165,6 +169,15 @@ class ClipboardEmpty(PreviewWindow):
         self._title.set_valign(Gtk.Align.CENTER)
         self._title.set_halign(Gtk.Align.CENTER)
         self.box.add(self._title)
+
+    def set_item(self, item):
+        pass
+
+
+EMPTY_WINDOW = ClipboardEmpty()
+PREVIEW_WINDOW = ClipboardPreview()
+PREVIEW_WINDOW.connect('key-release-event', lambda _, __: hide())
+_current_window = PREVIEW_WINDOW
 
 
 def get_history_item_for_clipboard():
@@ -187,40 +200,27 @@ def get_history_item_for_clipboard():
     return item
 
 
-def show():
-    global _clipboard_preview
-
-    if _clipboard_preview:
-        return
-    
+def show():    
     item = get_history_item_for_clipboard()
  
     if not item:
-        window = ClipboardEmpty
+        _current_window = EMPTY_WINDOW
     else:
-        window = ClipboardPreview
+        _current_window = PREVIEW_WINDOW
 
-    _clipboard_preview = window(item)
-    _clipboard_preview.connect(
-        'key-release-event',
-        lambda _, __: hide()
-    )
-    _clipboard_preview.show_all()
-    _clipboard_preview.maximize()
-    _clipboard_preview.get_window().focus(Gdk.CURRENT_TIME)
-    _clipboard_preview.present_with_time(Gdk.CURRENT_TIME)
+    _current_window.set_item(item)
+    _current_window.show_all()
+    _current_window.maximize()
+    _current_window.get_window().focus(Gdk.CURRENT_TIME)
+    _current_window.present_with_time(Gdk.CURRENT_TIME)
 
 
 def hide():
-    global _clipboard_preview
-
-    if _clipboard_preview:
-        _clipboard_preview.destroy()
-        _clipboard_preview = None
+    _current_window.hide()
 
 
 def toggle():
-    if _clipboard_preview:
+    if _current_window.is_visible():
         hide()
     else:
         show()
