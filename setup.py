@@ -101,6 +101,7 @@ setup(
     package_data={
         'draobpilc': [
             'data/desktop_file.tpl',
+            'data/preferences_desktop_file.tpl',
             'data/draobpilc.png',
             'data/style.css',
             'data/schemas/gschemas.compiled'
