@@ -299,10 +299,6 @@ class HistoriesManager(Gtk.Box):
         histories = gpaste_client.list_histories()
         current_name = gpaste_client.get_history_name()
 
-        if len(histories) <= 1:
-            self.link.set_sensitive(False)
-            return None
-
         for history_name in histories:
             histories_manager_item = HistoriesManagerItem(history_name)
             histories_manager_item.link.connect(
