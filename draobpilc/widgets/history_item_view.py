@@ -104,11 +104,12 @@ class Infobox(Gtk.Box):
                     16,
                     Gtk.IconLookupFlags.FORCE_SIZE
                 )
-                pixbuf = icon_info.load_icon()
-                icon = Gtk.Image()
-                icon.set_margin_right(5)
-                icon.set_from_pixbuf(pixbuf)
-                self.add(icon)
+                if icon_info:
+                    pixbuf = icon_info.load_icon()
+                    icon = Gtk.Image()
+                    icon.set_margin_right(5)
+                    icon.set_from_pixbuf(pixbuf)
+                    self.add(icon)
 
             if name:
                 app_name = Gtk.LinkButton()
