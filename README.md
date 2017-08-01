@@ -25,5 +25,14 @@ if you have .desktop file installed firstly remove it
 Then uninstall the app
 > pip3 uninstall draobpilc
 
-##Screenshots
+## Screenshots
 ![Draobpilc](/screenshots/1.png)
+
+## Troubleshooting
+
+### Command not found after install
+
+If `pip3 install` runs without any errors but running `draobpilc` gives `Command not found` error check that `~/.local/bin` is included to your path:
+```bash
+export PATH=$PATH:~/.local/bin
+```
