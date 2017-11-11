@@ -6,6 +6,7 @@ v0.3 beta
 * Python 3
 * GTK 3.16+
 * GPaste 3.18+
+* On Ubuntu: gir1.2-gpaste-X.0 (e.g. gir1.2-gpaste-4.0 or gir1.2-gpaste-6.0)
 * OPTIONAL: GtkSourceView3
 
 ## Installation
