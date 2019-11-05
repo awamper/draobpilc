@@ -1,6 +1,7 @@
 ## Draobpilc
-GPaste GUI  
-v0.3 beta
+This is GUI for GPaste clipboard manager for Gnome Shell. It allows to paste, edit and search through clipboard history. GUI display can be toggled with keyboard shortcut so is easy to use without mouse.  
+v0.3 beta  
+![Draobpilc](/screenshots/1.png)
 
 ## Requirements
 * Python 3
@@ -25,9 +26,6 @@ if you have .desktop file installed firstly remove it
 
 Then uninstall the app
 > pip3 uninstall draobpilc
-
-## Screenshots
-![Draobpilc](/screenshots/1.png)
 
 ## Troubleshooting
 
