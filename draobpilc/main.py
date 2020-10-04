@@ -23,7 +23,10 @@ import argparse
 from distutils.version import StrictVersion
 from dbus.exceptions import DBusException
 
+import gi
+gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
+
 from draobpilc import get_data_path
 from draobpilc import common
 from draobpilc import version
@@ -131,7 +134,7 @@ def uninstall_desktop_file():
         print(_('File "%s" doesn\'t exits.' % DESKTOP_FILE_PATH))
     else:
         os.remove(DESKTOP_FILE_PATH)
-    
+
     if not os.path.exists(DESKTOP_PREFS_FILE_PATH):
         print(_('File "%s" doesn\'t exits.' % DESKTOP_PREFS_FILE_PATH))
     else:
