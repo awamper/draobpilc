@@ -17,6 +17,7 @@ from draobpilc import version
 
 
 requirements = [
+    'pygobject',
     'humanize',
     'blinker',
     'python3-keybinder',
