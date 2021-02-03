@@ -18,10 +18,9 @@
 from gi.repository import GLib
 
 from draobpilc import common
-from draobpilc.lib import fuzzy
-from draobpilc.lib import gpaste_client
-from draobpilc.lib.signals import Emitter
 from draobpilc.history_item import HistoryItem
+from draobpilc.lib import fuzzy, gpaste_client
+from draobpilc.lib.signals import Emitter
 
 
 class HistoryItems(Emitter):
@@ -75,11 +74,11 @@ class HistoryItems(Emitter):
         else:
             pass
 
-    def _get_by_raw(self, raw):
+    def _get_by_uuid(self, uuid):
         result = None
 
         for item in self._items:
-            if item.raw != raw: continue
+            if item.uuid != uuid: continue
             result = item
             break
 
@@ -88,7 +87,7 @@ class HistoryItems(Emitter):
     def _sync_index(self):
         for item in self._items:
             try:
-                gpaste_index = self._raw_history.index(item.raw)
+                gpaste_index = self._raw_history.index((item.uuid, item.raw))
             except ValueError:
                 pass
             else:
@@ -134,12 +133,13 @@ class HistoryItems(Emitter):
         new_items = []
 
         for index, raw in enumerate(self._raw_history):
-            old_item = self._get_by_raw(raw)
+            uuid = raw[0]
+            old_item = self._get_by_uuid(uuid)
 
             if old_item:
                 new_list.append(old_item)
             else: 
-                new_item = HistoryItem(index)
+                new_item = HistoryItem(index, uuid)
                 new_items.append(new_item)
 
         new_list.extend(new_items)

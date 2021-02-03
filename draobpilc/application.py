@@ -16,38 +16,24 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from dbus.exceptions import DBusException
-
-from gi.repository import Gtk
-from gi.repository import Gio
-from gi.repository import Gdk
-from gi.repository import GLib
-from gi.repository import GdkPixbuf
-
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 from keybinder.keybinder_gtk import KeybinderGtk
 
-from draobpilc import get_data_path
-from draobpilc import common
-from draobpilc import version
-from draobpilc.processors import (
-    editor,
-    merger,
-    previewer
-)
-from draobpilc.lib import utils
-from draobpilc.lib import gpaste_client
+from draobpilc import common, get_data_path, version
 from draobpilc.history_item import HistoryItem
 from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.history_items import HistoryItems
-from draobpilc.widgets import shortcuts_window
-from draobpilc.widgets.window import Window
-from draobpilc.widgets.search_box import SearchBox
+from draobpilc.lib import gpaste_client, utils
+from draobpilc.processors import editor, merger, previewer
+from draobpilc.widgets import clipboard_preview, shortcuts_window
+from draobpilc.widgets.about_dialog import AboutDialog
+from draobpilc.widgets.backup_history_dialog import BackupHistoryDialog
+from draobpilc.widgets.items_processors import ItemsProcessors
 from draobpilc.widgets.items_view import ItemsView
 from draobpilc.widgets.main_toolbox import MainToolbox
-from draobpilc.widgets.about_dialog import AboutDialog
 from draobpilc.widgets.preferences import show_preferences
-from draobpilc.widgets.items_processors import ItemsProcessors
-from draobpilc.widgets.backup_history_dialog import BackupHistoryDialog
-from draobpilc.widgets import clipboard_preview
+from draobpilc.widgets.search_box import SearchBox
+from draobpilc.widgets.window import Window
 
 
 class Application(Gtk.Application):
@@ -190,7 +176,7 @@ class Application(Gtk.Application):
         return True
 
     def _on_item_activated(self, items_view, history_item):
-        gpaste_client.select(history_item.index)
+        gpaste_client.select(history_item.uuid)
         self._search_box.entry.set_text('')
         self.hide()
 
@@ -304,16 +290,16 @@ class Application(Gtk.Application):
         )
 
     def delete_items(self, items, resume_selection=True):
-        delete_indexes = [item.index for item in items]
+        delete_indexes = [(item.index, item.uuid) for item in items]
         delete_indexes = sorted(delete_indexes)
 
         self._history_items.freeze(True)
         if resume_selection: self._items_view.save_selection()
 
         for i, index in enumerate(delete_indexes):
-            delete_index = index - i
+            delete_index = index[0] - i
             if delete_index < 0: continue
-            gpaste_client.delete(delete_index)
+            gpaste_client.delete(index[1])
 
         filter_active = self._search_box.search_text or self._search_box.flags
         self._history_items.freeze(False)

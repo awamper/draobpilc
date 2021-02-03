@@ -22,10 +22,8 @@ from gi.repository import Gtk
 from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.lib import gpaste_client
 from draobpilc.processors.processor_textwindow import TextWindow
-from draobpilc.widgets.items_processor_base import (
-    ItemsProcessorBase,
-    ItemsProcessorPriority
-)
+from draobpilc.widgets.items_processor_base import (ItemsProcessorBase,
+                                                    ItemsProcessorPriority)
 
 
 class Editor(ItemsProcessorBase):
@@ -50,7 +48,7 @@ class Editor(ItemsProcessorBase):
         contents = self._text_window.buffer.props.text
 
         if contents and contents != self.item.raw:
-            gpaste_client.replace(self.item.index, contents)
+            gpaste_client.replace(self.item.uuid, contents)
 
     def clear(self):
         super().clear()

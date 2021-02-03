@@ -17,7 +17,6 @@
 
 import dbus
 import dbus.mainloop.glib
-
 from gi.repository import Gio
 
 from draobpilc import common
@@ -85,28 +84,28 @@ def get_raw_history():
     return _client.GetRawHistory()
 
 
-def get_element(index):
-    return _client.GetElement(index)
+def get_element(uuid):
+    return _client.GetElement(uuid)
 
 
-def get_raw_element(index):
-    return _client.GetRawElement(index)
+def get_raw_element(uuid):
+    return _client.GetRawElement(uuid)
 
 
-def select(index):
-    return _client.Select(index)
+def select(uuid):
+    return _client.Select(uuid)
 
 
-def get_element_kind(index):
-    return _client.GetElementKind(index)
+def get_element_kind(uuid):
+    return _client.GetElementKind(uuid)
 
 
-def replace(index, contents):
-    return _client.Replace(index, contents)
+def replace(uuid, contents):
+    return _client.Replace(uuid, contents)
 
 
-def delete(index):
-    return _client.Delete(index)
+def delete(uuid):
+    return _client.Delete(uuid)
 
 
 def list_histories():

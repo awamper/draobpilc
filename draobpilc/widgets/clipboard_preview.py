@@ -15,19 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
-from gi.repository import Gdk
+from gi.repository import Gdk, Gtk
 
 from draobpilc import common
 from draobpilc.history_item import HistoryItem
 from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.processors import editor, previewer
+from draobpilc.widgets.history_item_view import (FilesButton, Infobox,
+                                                 LinksButton)
 from draobpilc.widgets.items_processors import ItemsProcessors
-from draobpilc.widgets.history_item_view import (
-    LinksButton,
-    FilesButton,
-    Infobox
-)
 
 
 class PreviewWindow(Gtk.Window):
@@ -200,9 +196,9 @@ def get_history_item_for_clipboard():
     return item
 
 
-def show():    
+def show():
     item = get_history_item_for_clipboard()
- 
+
     if not item:
         _current_window = EMPTY_WINDOW
     else:

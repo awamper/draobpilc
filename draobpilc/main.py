@@ -15,22 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import sys
-import signal
-import logging
 import argparse
+import logging
+import os
+import signal
+import sys
 from distutils.version import StrictVersion
-from dbus.exceptions import DBusException
 
 import gi
-gi.require_version('Gtk', '3.0')
+from dbus.exceptions import DBusException
 from gi.repository import Gtk
 
-from draobpilc import get_data_path
-from draobpilc import common
-from draobpilc import version
+from draobpilc import common, get_data_path, version
 from draobpilc.lib import utils
+
+gi.require_version('Gtk', '3.0')
+
 
 DESKTOP_FILE_PATH = os.path.join(
     os.path.expanduser('~/.local/share/applications'),
