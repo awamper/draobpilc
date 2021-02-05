@@ -18,14 +18,11 @@
 import os
 
 import humanize
-from gi.repository import Gio
-from gi.repository import GLib
-from gi.repository import GdkPixbuf
+from gi.repository import GdkPixbuf, Gio, GLib
 
 from draobpilc import common
 from draobpilc.history_item_kind import HistoryItemKind
-from draobpilc.lib import utils
-from draobpilc.lib import gpaste_client
+from draobpilc.lib import gpaste_client, utils
 from draobpilc.lib.signals import Emitter
 from draobpilc.widgets.history_item_view import HistoryItemView
 
@@ -34,10 +31,11 @@ class HistoryItem(Emitter):
 
     FILTER_HIGHLIGHT_TPL = '<span bgcolor="yellow" fgcolor="black"><b>%s</b></span>'
 
-    def __init__(self, index):
+    def __init__(self, index, uuid):
         super().__init__()
 
         self._index = None
+        self._uuid = None
         self._raw = None
         self._kind = None
         self._text = None
@@ -54,7 +52,7 @@ class HistoryItem(Emitter):
 
         self.add_signal('changed')
 
-        if index >= 0: self.load_data(index)
+        if index >= 0: self.load_data(index, uuid)
 
     def __repr__(self):
         text = 'Data not loaded'
@@ -68,13 +66,14 @@ class HistoryItem(Emitter):
 
         return '<HistoryItem: index=%i, "%s">' % (self.index, text)
 
-    def load_data(self, index):
+    def load_data(self, index, uuid):
         emit_signal = False
         if self.index: emit_signal = True
 
         self.index = index
-        self._raw = gpaste_client.get_raw_element(self.index)
-        self._kind = gpaste_client.get_element_kind(self.index)
+        self._uuid = uuid
+        self._raw = gpaste_client.get_raw_element(self._uuid)
+        self._kind = gpaste_client.get_element_kind(self._uuid)
 
         if (self.kind == HistoryItemKind.TEXT and
             utils.is_url(self.raw)
@@ -89,7 +88,7 @@ class HistoryItem(Emitter):
 
         if not self._widget: self._widget = HistoryItemView(self)
 
-        self.text = gpaste_client.get_element(self.index)
+        self.text = gpaste_client.get_element(self._uuid)
         if emit_signal: self.emit('changed')
 
     def _get_display_text(self, text, escape=True):
@@ -210,7 +209,7 @@ class HistoryItem(Emitter):
 
     @classmethod
     def new_from_raw(cls, raw_content, kind=HistoryItemKind.TEXT):
-        item = cls(-1)
+        item = cls(-1, '')
         item._index = -1
         item._raw = raw_content
         item._kind = kind
@@ -250,6 +249,10 @@ class HistoryItem(Emitter):
                 self.markup = self._source_markup
             else:
                 self.markup = None
+
+    @property
+    def uuid(self):
+        return self._uuid
 
     @property
     def raw(self):
@@ -324,4 +327,3 @@ class HistoryItem(Emitter):
     @property
     def app_info(self):
         return self._app_info
-    

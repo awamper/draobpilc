@@ -92,7 +92,7 @@
         </key>
 
         <key type="s" name="gpaste-dbus-iface">
-            <default>'org.gnome.GPaste1'</default>
+            <default>'org.gnome.GPaste2'</default>
         </key>
 
         <key type="b" name="show-text-info">
