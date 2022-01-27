@@ -23,13 +23,13 @@ import sys
 from distutils.version import StrictVersion
 
 import gi
+gi.require_version('Gtk', '3.0')
+
 from dbus.exceptions import DBusException
 from gi.repository import Gtk
 
 from draobpilc import common, get_data_path, version
 from draobpilc.lib import utils
-
-gi.require_version('Gtk', '3.0')
 
 
 DESKTOP_FILE_PATH = os.path.join(
