@@ -17,7 +17,7 @@
 
 GPASTE_VERSION = '3.38'
 
-APP_VERSION = 0.3
+APP_VERSION = 0.4
 APP_NAME = 'Draobpilc'
 APP_VERSION_STRING = '%s %s' % (APP_NAME, APP_VERSION)
 APP_ID = 'org.Draobpilc'
