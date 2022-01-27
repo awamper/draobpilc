@@ -15,7 +15,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-GPASTE_VERSION = '3.18'
+GPASTE_VERSION = '3.38'
 
 APP_VERSION = 0.3
 APP_NAME = 'Draobpilc'
