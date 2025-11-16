@@ -28,18 +28,8 @@ gi.require_version('Gtk', '3.0')
 from dbus.exceptions import DBusException
 from gi.repository import Gtk
 
-from draobpilc import common, get_data_path, version
+from draobpilc import common, version
 from draobpilc.lib import utils
-
-
-DESKTOP_FILE_PATH = os.path.join(
-    os.path.expanduser('~/.local/share/applications'),
-    '%s.desktop' % version.APP_NAME
-)
-DESKTOP_PREFS_FILE_PATH =os.path.join(
-    os.path.expanduser('~/.local/share/applications'),
-    '%s_prefs.desktop' % version.APP_NAME
-)
 
 
 def check_gpaste_version():
@@ -92,57 +82,6 @@ def install_excepthook():
     sys.excepthook = new_hook
 
 
-def install_desktop_file():
-    desktop_tpl = get_data_path('desktop_file.tpl')
-    prefs_tpl = get_data_path('preferences_desktop_file.tpl')
-
-    if os.path.exists(DESKTOP_FILE_PATH):
-        print(_('File "%s" already exists.' % DESKTOP_FILE_PATH))
-    else:
-        print(_('Creating "%s".' % DESKTOP_FILE_PATH))
-        with open(desktop_tpl, encoding='utf-8') as tpl_file:
-            contents = tpl_file.read()
-            contents = contents.replace('{APP_VERSION}', str(version.APP_VERSION))
-            contents = contents.replace('{APP_NAME}', version.APP_NAME)
-            contents = contents.replace('{COMMENT}', version.APP_DESCRIPTION)
-            contents = contents.replace('{EXEC}', 'draobpilc')
-            contents = contents.replace('{ICON}', common.ICON_PATH)
-
-            with open(DESKTOP_FILE_PATH, 'w', encoding='utf-8') as desktop_file:
-                desktop_file.write(contents)
-
-    if os.path.exists(DESKTOP_PREFS_FILE_PATH):
-        print(_('File "%s" already exists.' % DESKTOP_PREFS_FILE_PATH))
-    else:
-        print(_('Creating "%s".' % DESKTOP_PREFS_FILE_PATH))
-        with open(prefs_tpl, encoding='utf-8') as tpl_file:
-            contents = tpl_file.read()
-            contents = contents.replace('{APP_VERSION}', str(version.APP_VERSION))
-            contents = contents.replace('{APP_NAME}', version.APP_NAME)
-            contents = contents.replace('{COMMENT}', version.APP_DESCRIPTION)
-            contents = contents.replace('{EXEC}', 'draobpilc --preferences')
-            contents = contents.replace('{ICON}', common.ICON_PATH)
-
-            with open(DESKTOP_PREFS_FILE_PATH, 'w', encoding='utf-8') as desktop_file:
-                desktop_file.write(contents)
-
-    return True
-
-
-def uninstall_desktop_file():
-    if not os.path.exists(DESKTOP_FILE_PATH):
-        print(_('File "%s" doesn\'t exits.' % DESKTOP_FILE_PATH))
-    else:
-        os.remove(DESKTOP_FILE_PATH)
-
-    if not os.path.exists(DESKTOP_PREFS_FILE_PATH):
-        print(_('File "%s" doesn\'t exits.' % DESKTOP_PREFS_FILE_PATH))
-    else:
-        os.remove(DESKTOP_PREFS_FILE_PATH)
-
-    return True
-
-
 def run():
     check_gpaste_version()
     from draobpilc.application import Application
@@ -153,18 +92,6 @@ def run():
         action='store_true',
         default=False,
         dest='debug'
-    )
-    parser.add_argument('--install-desktop-file',
-        action='store_true',
-        default=False,
-        dest='install_desktop_file',
-        help=_('Add "Draobpilc.desktop" to "~/.local/share/applications"')
-    )
-    parser.add_argument('--uninstall-desktop-file',
-        action='store_true',
-        default=False,
-        dest='uninstall_desktop_file',
-        help=_('Remove "Draobpilc.desktop" from "~/.local/share/applications"')
     )
     parser.add_argument('--preferences',
         action='store_true',
@@ -199,13 +126,6 @@ def run():
             format=msg_f,
             datefmt=time_f
         )
-
-    if args.install_desktop_file:
-        install_desktop_file()
-        sys.exit()
-    if args.uninstall_desktop_file:
-        uninstall_desktop_file()
-        sys.exit()
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     app = Application()

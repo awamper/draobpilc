@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=0.4
+Name=draobpilc
+Comment=GPaste clipboard manager GUI
+Exec=draobpilc
+Icon=draobpilc
+Terminal=false
+Type=Application
+Categories=Utility;
