@@ -22,7 +22,6 @@ dependencies = [
     "pygobject",
     "humanize",
     "blinker",
-    "python3-keybinder",
     "python3-xlib",
 ]
 

@@ -17,7 +17,6 @@
 
 from dbus.exceptions import DBusException
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
-from keybinder.keybinder_gtk import KeybinderGtk
 
 from draobpilc import common, get_data_path, version
 from draobpilc.history_item import HistoryItem
@@ -133,13 +132,6 @@ class Application(Gtk.Application):
             lambda t: self._main_toolbox.track_btn.set_active(t)
         )
         common.APPLICATION = self
-
-        keybinder = KeybinderGtk()
-        keybinder.register(
-            common.SETTINGS[common.SHOW_CLIPBOARD_PREVIEW],
-            lambda *_, **__: GLib.idle_add(clipboard_preview.toggle)
-        )
-        keybinder.start()
 
     def _resize(self, window, event):
         size = window.get_size()
