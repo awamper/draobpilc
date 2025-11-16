@@ -17,6 +17,8 @@
 
 import json
 
+import gi
+gi.require_version('GPaste', '2')
 from gi.repository import Gtk
 from gi.repository import Gio
 from gi.repository import Gdk
