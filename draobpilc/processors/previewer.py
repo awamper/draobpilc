@@ -140,7 +140,16 @@ class Previewer(ItemsProcessorBase):
         self._path_entry.set_text(self.item.raw)
         exists = os.path.exists(self.item.raw)
 
-        if (
+        if self.item.image_path:
+            self._thumb.set_filename(
+                self.item.image_path,
+                self._thumb_max_width * 0.8,
+                self._thumb_max_height * 0.8
+            )
+            self._text_window.hide()
+            self._thumb_eventbox.show()
+            self._path_entry.show()
+        elif (
             exists and
             self._preview_supported(self.item) and
             self._is_previewable_type(self.item.content_type)
@@ -174,7 +183,8 @@ class Previewer(ItemsProcessorBase):
         if (
             len(items) == 1 and (
                 self._preview_supported(items[0]) or
-                items[0].thumb_path
+                items[0].thumb_path or
+                items[0].image_path
             )
         ):
             return True

@@ -49,6 +49,7 @@ class HistoryItem(GObject.Object):
         self._link = None
         self._content_type = None
         self._thumb_path = None
+        self._image_path = None
         self._info_string = None
         self._widget = None
         self._app_info = None
@@ -80,6 +81,24 @@ class HistoryItem(GObject.Object):
             utils.is_url(self.raw)
         ):
             self._kind = HistoryItemKind.LINK
+
+        # Check if a FILE (Uris) item is actually an image
+        if self.kind == HistoryItemKind.FILE:
+            filename = os.path.expanduser(self._raw)
+            if os.path.exists(filename):
+                uri = 'file://%s' % filename
+                file_ = Gio.file_new_for_uri(uri)
+                try:
+                    info = file_.query_info(
+                        'standard::content-type',
+                        Gio.FileQueryInfoFlags.NONE
+                    )
+                    content_type = info.get_content_type()
+                    if content_type and content_type.startswith('image'):
+                        self._kind = HistoryItemKind.IMAGE
+                        self._image_path = filename
+                except GLib.Error:
+                    pass
 
         self._n_lines = len(self.raw.split('\n'))
         self._links = self._get_links()
@@ -126,24 +145,9 @@ class HistoryItem(GObject.Object):
             )
             path = info.get_attribute_byte_string('thumbnail::path')
             self._content_type = info.get_content_type()
-            is_image = self._content_type.startswith('image')
 
             if path:
                 result = path
-            elif is_image:
-                try:
-                    GdkPixbuf.Pixbuf.new_from_file_at_scale(
-                        filename,
-                        80,
-                        80,
-                        False
-                    )
-                except GLib.Error:
-                    pass
-                else:
-                    result = filename
-            else:
-                pass
         except GLib.Error:
             pass
         finally:
@@ -219,6 +223,9 @@ class HistoryItem(GObject.Object):
             utils.is_url(item.raw)
         ):
             item._kind = HistoryItemKind.LINK
+
+        if item.kind == HistoryItemKind.IMAGE:
+            item._image_path = os.path.expanduser(item._raw)
 
         item._n_lines = len(item.raw.split('\n'))
         item._links = item._get_links()
@@ -308,6 +315,10 @@ class HistoryItem(GObject.Object):
     @property
     def thumb_path(self):
         return self._thumb_path
+    
+    @property
+    def image_path(self):
+        return self._image_path
     
     @property
     def links(self):
