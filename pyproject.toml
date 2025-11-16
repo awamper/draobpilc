@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "draobpilc"
+version = "0.4"
+description = "GPaste clipboard manager GUI"
+readme = "README.md"
+authors = [
+    {name = "awamper", email = "awamper@gmail.com"},
+]
+license = {text = "GPL-3.0-or-later"}
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Programming Language :: Python :: 3.4",
+]
+keywords = ["gpaste", "gui", "clipboard"]
+dependencies = [
+    "pygobject",
+    "humanize",
+    "blinker",
+    "python3-keybinder",
+    "python3-xlib",
+]
+
+[project.urls]
+Homepage = "https://github.com/awamper/draobpilc"
+
+[project.gui-scripts]
+draobpilc = "draobpilc.main:run"
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+draobpilc = [
+    "data/desktop_file.tpl",
+    "data/preferences_desktop_file.tpl",
+    "data/draobpilc.png",
+    "data/style.css",
+    "data/schemas/gschemas.compiled",
+]
