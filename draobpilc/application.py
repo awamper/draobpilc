@@ -430,9 +430,8 @@ class Application(Gtk.Application):
 
         if common.SETTINGS[common.STARTUP_NOTIFICATION]:
             utils.notify(body=_(
-                '%s is now running, press <b>%s</b> to use it.' % (
-                    version.APP_NAME,
-                    gpaste_client.SETTINGS['show-history']
+                '%s is now running.' % (
+                    version.APP_NAME
                 )
             ))
 
