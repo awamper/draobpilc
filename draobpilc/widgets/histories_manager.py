@@ -72,13 +72,13 @@ class ItemConfirmation(Gtk.Revealer):
         style_context = self.label.get_style_context()
 
         self.yes_btn = ItemButton(
-            'emblem-ok-symbolic',
+            'object-select-symbolic',
             ITEM_BUTTON_SIZE,
             _('Yes'),
             expand=True
         )
         self.no_btn = ItemButton(
-            'process-stop-symbolic',
+            'edit-delete-symbolic',
             ITEM_BUTTON_SIZE,
             _('No'),
             expand=False
