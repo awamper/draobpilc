@@ -15,26 +15,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import GLib
+from gi.repository import GLib, GObject
 
 from draobpilc import common
 from draobpilc.history_item import HistoryItem
 from draobpilc.lib import fuzzy, gpaste_client
-from draobpilc.lib.signals import Emitter
 
 
-class HistoryItems(Emitter):
+class HistoryItems(GObject.Object):
+
+    __gsignals__ = {
+        'removed': (GObject.SignalFlags.RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
+        'changed': (GObject.SignalFlags.RUN_FIRST, None, ()),
+    }
 
     def __init__(self):
-        super().__init__()
+        GObject.Object.__init__(self)
 
         self._items = []
         self._filter_result = []
         self._filter_mode = False
         self._raw_history = []
-
-        self.add_signal('removed')
-        self.add_signal('changed')
 
         self._signal_match = gpaste_client.connect('Update', self._on_update)
         self.reload_history()
@@ -118,7 +119,7 @@ class HistoryItems(Emitter):
 
         self.items.remove(item)
         self._sync_index()
-        self.emit('removed', item=item)
+        self.emit('removed', item)
         self.emit('changed')
 
     def reload_history(self, emit_signal=True):

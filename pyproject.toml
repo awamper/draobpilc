@@ -21,7 +21,6 @@ keywords = ["gpaste", "gui", "clipboard"]
 dependencies = [
     "pygobject",
     "humanize",
-    "blinker",
     "python3-xlib",
 ]
 

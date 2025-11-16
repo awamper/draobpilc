@@ -18,21 +18,24 @@
 import os
 
 import humanize
-from gi.repository import GdkPixbuf, Gio, GLib
+from gi.repository import GdkPixbuf, Gio, GLib, GObject
 
 from draobpilc import common
 from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.lib import gpaste_client, utils
-from draobpilc.lib.signals import Emitter
 from draobpilc.widgets.history_item_view import HistoryItemView
 
 
-class HistoryItem(Emitter):
+class HistoryItem(GObject.Object):
+
+    __gsignals__ = {
+        'changed': (GObject.SignalFlags.RUN_FIRST, None, ()),
+    }
 
     FILTER_HIGHLIGHT_TPL = '<span bgcolor="yellow" fgcolor="black"><b>%s</b></span>'
 
     def __init__(self, index, uuid):
-        super().__init__()
+        GObject.Object.__init__(self)
 
         self._index = None
         self._uuid = None
@@ -49,8 +52,6 @@ class HistoryItem(Emitter):
         self._info_string = None
         self._widget = None
         self._app_info = None
-
-        self.add_signal('changed')
 
         if index >= 0: self.load_data(index, uuid)
 
