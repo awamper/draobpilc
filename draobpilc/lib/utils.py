@@ -20,6 +20,8 @@ import re
 import sys
 import subprocess
 
+import gi
+gi.require_version('Notify', '0.7')
 from gi.repository import Gio
 from gi.repository import Gdk
 from gi.repository import Notify
