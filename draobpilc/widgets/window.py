@@ -38,7 +38,7 @@ class Window(Gtk.ApplicationWindow):
         self.set_icon_from_file(common.ICON_PATH)
         self.set_keep_above(True)
         self.set_keep_below(False)
-        self.set_type_hint(Gdk.WindowTypeHint.NORMAL)
+        self.set_type_hint(Gdk.WindowTypeHint.UTILITY)
         self.stick()
         self.maximize()
 
