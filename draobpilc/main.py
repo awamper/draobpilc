@@ -20,7 +20,7 @@ import logging
 import os
 import signal
 import sys
-from distutils.version import StrictVersion
+from packaging.version import Version
 
 import gi
 gi.require_version('Gtk', '3.0')
@@ -60,8 +60,8 @@ def check_gpaste_version():
             current_version = gpaste_client.get_prop('Version')
 
             if (
-                StrictVersion(current_version) <
-                StrictVersion(version.GPASTE_VERSION)
+                Version(current_version) <
+                Version(version.GPASTE_VERSION)
             ):
                 result = False
 
