@@ -225,7 +225,7 @@ class Application(Gtk.Application):
         if not common.SETTINGS[common.ENABLE_ACTIVATE_NUMBER_KB]: return
 
         result, keyval = event.get_keyval()
-        is_control = event.get_state() == Gdk.ModifierType.CONTROL_MASK
+        is_control = bool(event.get_state() & Gdk.ModifierType.CONTROL_MASK)
         number_keyvals = [
             Gdk.KEY_1,
             Gdk.KEY_2,
