@@ -88,7 +88,7 @@ class MainToolbox(Gtk.Box):
         )
         self.help_btn.set_relief(Gtk.ReliefStyle.NONE)
         self.help_btn.set_tooltip_text(
-            _('Show help (%s)' % common.SETTINGS[common.SHOW_HELP])
+            _('Show shortcuts (%s)' % common.SETTINGS[common.SHOW_HELP])
         )
 
         separator = Gtk.Separator()
