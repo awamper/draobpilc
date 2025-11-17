@@ -53,7 +53,7 @@ class MainToolbox(Gtk.Box):
         self.quit_btn.set_tooltip_text(_('Quit'))
 
         self._track_img = Gtk.Image.new_from_icon_name(
-            'emblem-synchronizing-symbolic',
+            'view-refresh-symbolic',
             Gtk.IconSize.LARGE_TOOLBAR
         )
         self._track_img.set_name('TrackImg')
@@ -65,7 +65,7 @@ class MainToolbox(Gtk.Box):
         self.track_btn.connect('toggled', self._on_toggled)
 
         self.restart_btn = Gtk.Button.new_from_icon_name(
-            'view-refresh-symbolic',
+            'system-reboot-symbolic',
             Gtk.IconSize.LARGE_TOOLBAR
         )
         self.restart_btn.set_relief(Gtk.ReliefStyle.NONE)
@@ -83,7 +83,7 @@ class MainToolbox(Gtk.Box):
         )
 
         self.help_btn = Gtk.Button.new_from_icon_name(
-            'help-browser-symbolic',
+            'preferences-desktop-keyboard-shortcuts-symbolic',
             Gtk.IconSize.LARGE_TOOLBAR
         )
         self.help_btn.set_relief(Gtk.ReliefStyle.NONE)
