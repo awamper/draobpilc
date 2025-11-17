@@ -441,38 +441,21 @@ class Preferences(Gtk.Window):
             utils.restart_app()
 
     def _on_button_clicked(self, button):
-        dialog = Gtk.Dialog()
-        dialog.set_transient_for(self)
-
-        gpaste_settings = GPaste.SettingsUiWidget()
-
-        for child in gpaste_settings.get_children():
-            if isinstance(child, Gtk.StackSwitcher):
-                toplevel = dialog.get_toplevel()
-                if not toplevel: continue
-
-                gpaste_settings.remove(child)
-
-                header_bar = Gtk.HeaderBar()
-                header_bar.set_show_close_button(True)
-                header_bar.set_title(None)
-                header_bar.set_subtitle(None)
-                header_bar.set_custom_title(child)
-
-                toplevel.set_titlebar(header_bar)
-
-            if isinstance(child, Gtk.Stack):
-                child.set_transition_type(
-                    Gtk.StackTransitionType.SLIDE_LEFT_RIGHT
-                )
-                child.set_transition_duration(self._transition_duration)
-
-        content_area = dialog.get_content_area()
-        content_area.add(gpaste_settings)
-
-        dialog.show_all()
-        dialog.run()
-        dialog.destroy()
+        try:
+            bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+            bus.call_sync(
+                'org.gnome.GPaste.Preferences',  # Bus name
+                '/org/gnome/GPaste/Preferences', # Object path (common for singletons)
+                'org.freedesktop.Application',  # Interface name
+                'Activate',                     # Method name
+                GLib.Variant('(a{sv})', [{}]),   # Parameters (tuple containing empty dictionary)
+                None,                           # Reply type (none)
+                Gio.DBusCallFlags.NONE,
+                -1,                             # Timeout
+                None                            # Cancellable
+            )
+        except GLib.Error as e:
+            print(f"Error launching GPaste Preferences: {e}")
 
     def _on_settings_changed(self, settings, param):
         self._need_restart = True
