@@ -98,7 +98,7 @@ class HistoryItems(GObject.Object):
     def get(self, index):
         result = None
 
-        for item in self.items:
+        for item in self._items:
             if item.index != index: continue
 
             result = item
@@ -110,7 +110,8 @@ class HistoryItems(GObject.Object):
         item = self.get(index)
         if not item: return False
 
-        item.load_data(index)
+        new_uuid = self._raw_history[index][0]
+        item.load_data(index, new_uuid)
         return True
 
     def remove(self, index):
