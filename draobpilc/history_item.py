@@ -95,7 +95,6 @@ class HistoryItem(GObject.Object):
                     )
                     content_type = info.get_content_type()
                     if content_type and content_type.startswith('image'):
-                        self._kind = HistoryItemKind.IMAGE
                         self._image_path = filename
                 except GLib.Error:
                     pass
