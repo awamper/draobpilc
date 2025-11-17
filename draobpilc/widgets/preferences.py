@@ -527,27 +527,27 @@ class Preferences(Gtk.Window):
         page = PrefsGrid(common.SETTINGS)
 
         page.add_boolean(
-            _('Show startup notification'),
+            _('Enable startup notification'),
             common.STARTUP_NOTIFICATION
         )
         page.add_boolean(
-            _('Focus search entry when app is open'),
+            _('Auto-focus search on launch'),
             common.FOCUS_SEARCH_ON_OPEN
         )
         page.add_boolean(
-            _('Enable <Ctrl>1-9 shortcuts'),
+            _('Enable Ctrl+1-9 shortcuts'),
             common.ENABLE_ACTIVATE_NUMBER_KB
         )
         page.add_boolean(
-            _('Show items index number'),
+            _('Display item index numbers'),
             common.SHOW_INDEXES
         )
         page.add_boolean(
-            _('Show info for text items'),
+            _('Display text item information'),
             common.SHOW_TEXT_INFO
         )
         page.add_boolean(
-            _('Show thumbnails for file/image items'),
+            _('Display file/image thumbnails'),
             common.SHOW_THUMBNAILS
         )
         page.add_boolean(
@@ -589,7 +589,7 @@ class Preferences(Gtk.Window):
         spin_props['step_increment'] = 5
         
         page.add_spin(
-            _('Max displayed items(0 - no limit)'),
+            _('Maximum displayed items (0 = unlimited)'),
             common.ITEMS_VIEW_LIMIT,
             spin_props,
             int
@@ -610,7 +610,7 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 60
         spin_props['step_increment'] = 5
         page.add_spin(
-            _('Width(%)'),
+            _('Item width (%)'),
             common.WIDTH_PERCENTS,
             spin_props,
             int
@@ -620,7 +620,7 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 10
         spin_props['step_increment'] = 1
         page.add_spin(
-            _('Max lines'),
+            _('Max lines per item'),
             common.ITEM_MAX_LINES,
             spin_props,
             int
@@ -630,7 +630,7 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 150
         spin_props['step_increment'] = 5
         page.add_spin(
-            _('Max height(px)'),
+            _('Max height per item (px)'),
             common.ITEM_MAX_HEIGHT,
             spin_props,
             int
@@ -642,7 +642,7 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 10
         spin_props['step_increment'] = 1
         page.add_spin(
-            _('Kind indicator width(px)'),
+            _('Item type indicator width (px)'),
             common.KIND_INDICATOR_WIDTH,
             spin_props,
             int
