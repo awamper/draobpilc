@@ -313,12 +313,17 @@ class Application(Gtk.Application):
     def do_command_line(self, command_line):
         Gtk.Application.do_command_line(self, command_line)
 
+        arguments = command_line.get_arguments()
+        if '--toggle' in arguments:
+            self.toggle()
+            return 0
+
         show_preferences = False
-        if '--preferences' in command_line.get_arguments():
+        if '--preferences' in arguments:
             show_preferences = True
 
         self.do_activate(show_preferences)
-        
+
         return 0
 
     def do_activate(self, show_preferences_dialog=False):
@@ -436,10 +441,13 @@ class Application(Gtk.Application):
             ))
 
     def toggle(self):
-        if self._window.props.visible:
+        if self._window and self._window.props.visible:
             self.hide()
         else:
-            self.show()
+            if not self._window:
+                self.activate()
+            else:
+                self.show()
 
     def show_histories_manager(self, action, param):
         self._items_view.histories_manager.show()

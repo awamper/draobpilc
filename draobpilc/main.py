@@ -99,6 +99,12 @@ def run():
         dest='show_preferences',
         help=_('Show preferences dialog')
     )
+    parser.add_argument('--toggle',
+        action='store_true',
+        default=False,
+        dest='toggle',
+        help=_('Show/hide the window')
+    )
     parser.add_argument('--version',
         action='version',
         version=str(version.APP_VERSION_STRING)
