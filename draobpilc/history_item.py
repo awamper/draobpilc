@@ -142,7 +142,7 @@ class HistoryItem(GObject.Object):
                 Gio.FileQueryInfoFlags.NONE
             )
             content_type = info.get_content_type()
-            if content_type and (content_type.startswith('image') or content_type.startswith('video')):
+            if content_type and (content_type.startswith('image') or content_type.startswith('video') or content_type.startswith('audio')):
                 path = info.get_attribute_byte_string('thumbnail::path')
                 if path:
                     result = path

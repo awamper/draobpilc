@@ -343,6 +343,23 @@ class HistoryItemView(Gtk.Box):
             # Center the icon within its allocated space
             video_icon.set_halign(Gtk.Align.CENTER)
             video_icon.set_valign(Gtk.Align.CENTER)
+        elif (
+            self.item.kind == HistoryItemKind.FILE and
+            self.item.content_type and
+            self.item.content_type.startswith('audio/') and
+            common.SETTINGS[common.SHOW_THUMBNAILS]
+        ):
+            # Display a symbolic icon for audio files without thumbnails
+            audio_icon = Gtk.Image.new_from_icon_name(
+                "audio-x-generic-symbolic", Gtk.IconSize.DIALOG
+            )
+            audio_icon.set_pixel_size(common.SETTINGS[common.ITEM_MAX_HEIGHT])
+            audio_icon.set_margin_start(20)
+            audio_icon.set_margin_end(20)
+            self._grid.attach(audio_icon, 1, 1, 1, 2)
+            # Center the icon within its allocated space
+            audio_icon.set_halign(Gtk.Align.CENTER)
+            audio_icon.set_valign(Gtk.Align.CENTER)
 
 
         overlay = Gtk.Overlay()
