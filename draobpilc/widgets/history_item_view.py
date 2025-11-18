@@ -326,6 +326,24 @@ class HistoryItemView(Gtk.Box):
                 common.SETTINGS[common.ITEM_MAX_HEIGHT]
             )
             self._grid.attach(self._preview, 1, 1, 1, 2)
+        elif (
+            self.item.kind == HistoryItemKind.FILE and
+            self.item.content_type and
+            self.item.content_type.startswith('video/') and
+            common.SETTINGS[common.SHOW_THUMBNAILS]
+        ):
+            # Display a symbolic icon for video files without thumbnails
+            video_icon = Gtk.Image.new_from_icon_name(
+                "video-x-generic-symbolic", Gtk.IconSize.DIALOG
+            )
+            video_icon.set_pixel_size(common.SETTINGS[common.ITEM_MAX_HEIGHT])
+            video_icon.set_margin_start(20)
+            video_icon.set_margin_end(20)
+            self._grid.attach(video_icon, 1, 1, 1, 2)
+            # Center the icon within its allocated space
+            video_icon.set_halign(Gtk.Align.CENTER)
+            video_icon.set_valign(Gtk.Align.CENTER)
+
 
         overlay = Gtk.Overlay()
         overlay.add(self._grid)
