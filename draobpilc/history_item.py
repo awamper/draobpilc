@@ -127,12 +127,11 @@ class HistoryItem(GObject.Object):
 
     def _get_thumb_path(self):
         result = None
-        if (
-            self.kind != HistoryItemKind.FILE and
-            self.kind != HistoryItemKind.IMAGE
-        ): return result
+        if self.kind != HistoryItemKind.FILE:
+            return result
         filename = os.path.expanduser(self._raw)
-        if not os.path.exists(filename): return result
+        if not os.path.exists(filename):
+            return result
 
         uri = 'file://%s' % filename
         file_ = Gio.file_new_for_uri(uri)
@@ -142,11 +141,12 @@ class HistoryItem(GObject.Object):
                 'standard::content-type,thumbnail::path',
                 Gio.FileQueryInfoFlags.NONE
             )
-            path = info.get_attribute_byte_string('thumbnail::path')
-            self._content_type = info.get_content_type()
-
-            if path:
-                result = path
+            content_type = info.get_content_type()
+            if content_type and (content_type.startswith('image') or content_type.startswith('video')):
+                path = info.get_attribute_byte_string('thumbnail::path')
+                if path:
+                    result = path
+            self._content_type = content_type
         except GLib.Error:
             pass
         finally:
