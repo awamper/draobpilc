@@ -24,7 +24,7 @@ from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.history_items import HistoryItems
 from draobpilc.lib import gpaste_client, utils
 from draobpilc.processors import editor, merger, previewer
-from draobpilc.widgets import clipboard_preview, shortcuts_window
+from draobpilc.widgets import shortcuts_window
 from draobpilc.widgets.about_dialog import AboutDialog
 from draobpilc.widgets.backup_history_dialog import BackupHistoryDialog
 from draobpilc.widgets.items_processors import ItemsProcessors
