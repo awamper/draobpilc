@@ -25,8 +25,12 @@ from gi.repository import Pango
 from draobpilc import common
 from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.widgets.item_thumb import ItemThumb
+from draobpilc.widgets.link_widget import LinkWidget
 
 INFOSTRING_TEMPLATE = '<span size="x-small"><b>▶ %s</b></span>'
+MAX_LINKS_POPOVER_HEIGHT = 500
+MIN_LINKS_POPOVER_HEIGHT = 100
+LINKS_POPOVER_WIDTH = 400
 
 
 class IndicatorBase(Gtk.Box):
@@ -163,18 +167,18 @@ class LinksButton(Gtk.LinkButton):
 
         self._weakref = weakref.ref(item)
 
-        self._box = Gtk.Box()
-        self._box.set_orientation(Gtk.Orientation.VERTICAL)
+        self._list_box = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
 
-        height_request = 300
-        if len(self.item.links) <= 5: height_request = 150
+        n_links = len(self.item.links)
+        height_request = max(MIN_LINKS_POPOVER_HEIGHT, min(n_links * 50, MAX_LINKS_POPOVER_HEIGHT))
+
         scrolled_window = Gtk.ScrolledWindow()
         scrolled_window.set_policy(
             Gtk.PolicyType.NEVER,
             Gtk.PolicyType.AUTOMATIC
         )
-        scrolled_window.set_size_request(300, height_request)
-        scrolled_window.add(self._box)
+        scrolled_window.set_size_request(LINKS_POPOVER_WIDTH, height_request)
+        scrolled_window.add(self._list_box)
         scrolled_window.show_all()
 
         self._popover = Gtk.Popover()
@@ -189,15 +193,10 @@ class LinksButton(Gtk.LinkButton):
 
     def populate(self):
         for link in self.item.links:
-            button = Gtk.LinkButton()
-            button.set_halign(Gtk.Align.START)
-            button.set_label(link[0:40])
-            button.set_tooltip_text(link)
-            button.set_uri(link)
-            button.connect('activate-link', lambda b: common.APPLICATION.hide())
-            self._box.add(button)
+            link_widget = LinkWidget(link)
+            self._list_box.add(link_widget)
 
-        self._box.show_all()
+        self._list_box.show_all()
 
     @property
     def item(self):
@@ -224,9 +223,9 @@ class FilesButton(LinksButton):
             button.set_label(file_[0:40])
             button.set_tooltip_text(file_)
             button.connect('activate-link', self._on_activate_file_link, file_)
-            self._box.add(button)
+            self._list_box.add(button)
 
-        self._box.show_all()
+        self._list_box.show_all()
 
 
 class ActiveIndicator(IndicatorBase):
