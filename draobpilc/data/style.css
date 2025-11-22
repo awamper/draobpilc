@@ -144,3 +144,18 @@
     padding: 0px;
     border: 0px;
 }
+
+#DeletionProgressBar {
+    background-color: rgba(0, 0, 0, 0.6);
+    padding: 20px;
+    font-weight: bold;
+}
+
+#DeletionProgressBar progress {
+    min-height: 20px;
+}
+
+#DeletionProgressBar trough {
+    min-height: 20px;
+    margin-top: 5px;
+}

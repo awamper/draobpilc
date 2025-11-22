@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import threading
+
 from dbus.exceptions import DBusException
 from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
 
@@ -274,24 +276,34 @@ class Application(Gtk.Application):
             target
         )
 
-    def selection_changed(self):
-        selected = self._items_view.get_selected()
-        self._items_processors.set_items(
-            selected,
-            timeout=common.SETTINGS[common.SET_ITEMS_TIMEOUT]
-        )
+    def _update_deletion_progress(self, fraction, text):
+        self._deletion_progress_bar.set_fraction(fraction)
+        self._deletion_progress_bar.set_text(text)
+        return False
 
-    def delete_items(self, items, resume_selection=True):
-        delete_indexes = [(item.index, item.uuid) for item in items]
+    def _threaded_delete(self, items_to_delete, resume_selection):
+        total_items = len(items_to_delete)
+        delete_indexes = [(item.index, item.uuid) for item in items_to_delete]
         delete_indexes = sorted(delete_indexes)
-
-        self._history_items.freeze(True)
-        if resume_selection: self._items_view.save_selection()
 
         for i, index in enumerate(delete_indexes):
             delete_index = index[0] - i
             if delete_index < 0: continue
-            gpaste_client.delete(index[1])
+            try:
+                gpaste_client.delete(index[1])
+                fraction = (i + 1) / total_items
+                text = f"Deleting {i+1} of {total_items} items..."
+                GLib.idle_add(self._update_deletion_progress, fraction, text)
+            except DBusException as e:
+                print(f'Error deleting item {index[1]}: {e}')
+
+        GLib.idle_add(self._on_delete_finished, resume_selection)
+
+    def _on_delete_finished(self, resume_selection):
+        self._deletion_progress_bar.hide()
+        self._deletion_progress_bar.set_fraction(0)
+        self._items_view.set_sensitive(True)
+        self._items_processors.set_sensitive(True)
 
         filter_active = self._search_box.search_text or self._search_box.flags
         self._history_items.freeze(False)
@@ -300,7 +312,31 @@ class Application(Gtk.Application):
         if filter_active:
             self._on_search_changed(self._search_box)
 
-        if resume_selection: self._items_view.resume_selection()
+        if resume_selection:
+            self._items_view.resume_selection()
+        
+        return False
+
+    def delete_items(self, items, resume_selection=True):
+        self._deletion_progress_bar.show()
+        self._items_view.set_sensitive(False)
+        self._items_processors.set_sensitive(False)
+        
+        self._history_items.freeze(True)
+        if resume_selection:
+            self._items_view.save_selection()
+
+        thread = threading.Thread(target=self._threaded_delete, args=(items, resume_selection))
+        thread.daemon = True
+        thread.start()
+
+
+    def selection_changed(self):
+        selected = self._items_view.get_selected()
+        self._items_processors.set_items(
+            selected,
+            timeout=common.SETTINGS[common.SET_ITEMS_TIMEOUT]
+        )
 
     def merge_items(self, merger, items, delete_merged):
         merged_text = self._merger.buffer.props.text
@@ -327,6 +363,14 @@ class Application(Gtk.Application):
         return 0
 
     def do_activate(self, show_preferences_dialog=False):
+
+
+        def resize_progress_bar(widget, allocation):
+            parent_width = allocation.width
+            target_width = int(parent_width * 0.60)
+            self._deletion_progress_bar.set_size_request(target_width, -1)
+
+
         if self._window:
             if show_preferences_dialog: show_preferences()
             else: self.show()
@@ -337,6 +381,21 @@ class Application(Gtk.Application):
         right_box.set_orientation(Gtk.Orientation.VERTICAL)
         right_box.add(self._search_box)
         right_box.add(self._items_view)
+        right_box.connect('size-allocate', resize_progress_bar)
+
+        self._deletion_progress_bar = Gtk.ProgressBar()
+        self._deletion_progress_bar.set_name('DeletionProgressBar')
+        self._deletion_progress_bar.set_halign(Gtk.Align.CENTER)
+        self._deletion_progress_bar.set_valign(Gtk.Align.CENTER)
+        self._deletion_progress_bar.set_hexpand(True)
+        self._deletion_progress_bar.set_text('Progress')
+        self._deletion_progress_bar.set_show_text(True)
+        self._deletion_progress_bar.set_no_show_all(True)
+        self._deletion_progress_bar.hide()
+
+        right_overlay = Gtk.Overlay()
+        right_overlay.add(right_box)
+        right_overlay.add_overlay(self._deletion_progress_bar)
 
         self._window = Window(self)
         self._window.connect('configure-event', self._resize)
@@ -348,7 +407,7 @@ class Application(Gtk.Application):
         )
         self._window.grid.attach(self._items_processors, 0, 0, 1, 1)
         self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
-        self._window.grid.attach(right_box, 1, 0, 1, 2)
+        self._window.grid.attach(right_overlay, 1, 0, 1, 2)
 
         if show_preferences_dialog: show_preferences()
 
