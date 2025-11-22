@@ -76,6 +76,10 @@ def add(text):
     return _client.Add(text)
 
 
+def add_file(path):
+    return _client.AddFile(path)
+
+
 def get_history():
     return _client.GetHistory()
 

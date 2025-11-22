@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015-2025 Ivan awamper@gmail.com
+# Copyright 2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -33,20 +33,39 @@ class LinkWidget(Gtk.Box):
         super().__init__(orientation=Gtk.Orientation.HORIZONTAL)
         self.set_name('LinkWidget')
 
-        self.link = link
+        self._link = link
+        self._app_info = self._get_app_info(self._link)
 
+        browser_icon = self._get_icon(self._app_info)
+        link_button = self._get_link_button()
+        link_button.connect('activate-link', self._on_link_clicked)
+
+        copy_button = Gtk.Button.new_from_icon_name("edit-copy", Gtk.IconSize.BUTTON)
+        copy_button.set_relief(Gtk.ReliefStyle.NONE)
+        copy_button.set_tooltip_text('Copy')
+        copy_button.connect("clicked", self._on_copy_clicked)
+
+        self._action_box = self._get_action_box()
+        self._action_box.pack_start(copy_button, False, False, 0)
+
+        grid = Gtk.Grid()
+        grid.attach(browser_icon, 0, 0, 1, 1)
+        grid.attach(link_button, 1, 0, 1, 1)
+        grid.attach(self._action_box, 2, 0, 1, 1)
+        grid.set_column_spacing(3)
+        self.add(grid)
+
+    def _get_icon(self, app_info):
         # Get default browser icon
-        browser_icon = Gtk.Image.new_from_icon_name("web-browser", Gtk.IconSize.BUTTON)
-        browser_icon.set_margin_start(5) # Add left margin
+        browser_icon = Gtk.Image.new_from_icon_name(
+            'web-browser',
+            Gtk.IconSize.BUTTON
+        )
+        browser_icon.set_margin_start(5)
         browser_icon.set_margin_end(5)
 
-        parsed_uri = urllib.parse.urlparse(self.link)
-        scheme = parsed_uri.scheme
-        if not scheme: scheme = 'http'
-
-        self._app_info = Gio.AppInfo.get_default_for_uri_scheme(scheme)
-        if self._app_info:
-            gicon = self._app_info.get_icon()
+        if app_info:
+            gicon = app_info.get_icon()
             if gicon:
                 icon_theme = Gtk.IconTheme.get_default()
                 icon_info = icon_theme.lookup_by_gicon(
@@ -58,12 +77,14 @@ class LinkWidget(Gtk.Box):
                     pixbuf = icon_info.load_icon()
                     browser_icon.set_from_pixbuf(pixbuf)
 
+        return browser_icon
+
+    def _get_link_button(self):
         link_button = Gtk.LinkButton()
         link_button.set_name('LinkWidgetLink')
-        link_button.connect('activate-link', self._on_link_clicked)
-        link_button.set_label(self.link[0:MAX_LINK_LABEL_WIDTH])
-        link_button.set_uri(self.link)
-        link_button.set_tooltip_text(self.link)
+        link_button.set_label(self._link[0:MAX_LINK_LABEL_WIDTH])
+        link_button.set_uri(self._link)
+        link_button.set_tooltip_text(self._link)
         link_button.set_halign(Gtk.Align.START)
         link_button.set_hexpand(True)
         link_style_context = link_button.get_style_context()
@@ -76,29 +97,28 @@ class LinkWidget(Gtk.Box):
             link_label.set_max_width_chars(MAX_LINK_LABEL_WIDTH)
             link_label.set_single_line_mode(True)
 
+        return link_button
 
-        copy_button = Gtk.Button.new_from_icon_name("edit-copy", Gtk.IconSize.BUTTON)
-        copy_button.set_relief(Gtk.ReliefStyle.NONE)
-        copy_button.connect("clicked", self._on_copy_clicked)
-
+    def _get_action_box(self):
         action_box = Gtk.Box(
             orientation=Gtk.Orientation.HORIZONTAL
         )
         action_box.set_halign(Gtk.Align.END)
-        action_box.pack_start(copy_button, False, False, 0)
+        
+        return action_box
 
-        grid = Gtk.Grid()
-        grid.attach(browser_icon, 0, 0, 1, 1)
-        grid.attach(link_button, 1, 0, 1, 1)
-        grid.attach(action_box, 2, 0, 1, 1)
-        grid.set_column_spacing(3)
-        self.add(grid)
+    def _get_app_info(self, uri):
+        parsed_uri = urllib.parse.urlparse(uri)
+        scheme = parsed_uri.scheme
+        if not scheme: scheme = 'http'
+        app_info = Gio.AppInfo.get_default_for_uri_scheme(scheme)
+        return app_info
 
     def _on_link_clicked(self, button):
-        self._app_info.launch_uris([self.link])
+        self._app_info.launch_uris([self._link])
         common.APPLICATION.hide()
         return True
 
     def _on_copy_clicked(self, button):
-        gpaste_client.add(self.link)
+        gpaste_client.add(self._link)
         common.APPLICATION.hide()

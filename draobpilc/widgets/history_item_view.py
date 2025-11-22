@@ -26,10 +26,12 @@ from draobpilc import common
 from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.widgets.item_thumb import ItemThumb
 from draobpilc.widgets.link_widget import LinkWidget
+from draobpilc.widgets.file_link_widget import FileLinkWidget
 
 INFOSTRING_TEMPLATE = '<span size="x-small"><b>▶ %s</b></span>'
-MAX_LINKS_POPOVER_HEIGHT = 500
+MAX_LINKS_POPOVER_HEIGHT = 400
 MIN_LINKS_POPOVER_HEIGHT = 100
+LINKS_POPOVER_ITEM_HEIGHT = 50
 LINKS_POPOVER_WIDTH = 400
 
 
@@ -170,20 +172,20 @@ class LinksButton(Gtk.LinkButton):
         self._list_box = Gtk.ListBox(selection_mode=Gtk.SelectionMode.NONE)
 
         n_links = len(self.item.links)
-        height_request = max(MIN_LINKS_POPOVER_HEIGHT, min(n_links * 50, MAX_LINKS_POPOVER_HEIGHT))
+        height_request = max(MIN_LINKS_POPOVER_HEIGHT, min(n_links * LINKS_POPOVER_ITEM_HEIGHT, MAX_LINKS_POPOVER_HEIGHT))
 
-        scrolled_window = Gtk.ScrolledWindow()
-        scrolled_window.set_policy(
+        self._scrolled_window = Gtk.ScrolledWindow()
+        self._scrolled_window.set_policy(
             Gtk.PolicyType.NEVER,
             Gtk.PolicyType.AUTOMATIC
         )
-        scrolled_window.set_size_request(LINKS_POPOVER_WIDTH, height_request)
-        scrolled_window.add(self._list_box)
-        scrolled_window.show_all()
+        self._scrolled_window.set_size_request(LINKS_POPOVER_WIDTH, height_request)
+        self._scrolled_window.add(self._list_box)
+        self._scrolled_window.show_all()
 
         self._popover = Gtk.Popover()
         self._popover.set_relative_to(self)
-        self._popover.add(scrolled_window)
+        self._popover.add(self._scrolled_window)
 
         self.populate()
 
@@ -208,22 +210,20 @@ class FilesButton(LinksButton):
     def __init__(self, item):
         super().__init__(item)
 
-        self.set_label('%i files' % self.item.n_lines)
+        self._paths = self.item.raw.split('\n')
+        self.set_label('%i files' % len(self._paths))
 
-    def _on_activate_file_link(self, link_button, file_name):
-        uri = 'file://%s' % file_name
-        Gio.AppInfo.launch_default_for_uri(uri)
-        common.APPLICATION.hide()
-        return True
+        height_request = max(MIN_LINKS_POPOVER_HEIGHT, min(len(self._paths) * LINKS_POPOVER_ITEM_HEIGHT, MAX_LINKS_POPOVER_HEIGHT))
+        self._scrolled_window.set_size_request(LINKS_POPOVER_WIDTH, height_request)
+
+        self.populate()
 
     def populate(self):
-        for file_ in self.item.raw.split('\n'):
-            button = Gtk.LinkButton()
-            button.set_halign(Gtk.Align.START)
-            button.set_label(file_[0:40])
-            button.set_tooltip_text(file_)
-            button.connect('activate-link', self._on_activate_file_link, file_)
-            self._list_box.add(button)
+        if not hasattr(self, '_paths'): return None
+
+        for path in self._paths:
+            file_link_widget = FileLinkWidget(path)
+            self._list_box.add(file_link_widget)
 
         self._list_box.show_all()
 
