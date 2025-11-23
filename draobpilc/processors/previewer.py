@@ -68,9 +68,15 @@ class PreviewMessageWidget(Gtk.Box):
         self._details_label = Gtk.Label()
         self.add(self._details_label)
 
-    def set_message(self, title, message):
-        self._main_label.set_markup(f'<span font-size="xx-large">{title}</span>')
-        self._details_label.set_markup(f'<span font-size="large">{message}</span>')
+    def set_message(self, title, message=None):
+        if title:
+            self._main_label.set_markup(f'<span font-size="xx-large">{title}</span>')
+        if message:
+            self._details_label.set_markup(f'<span font-size="large">{message}</span>')
+
+    def clear(self):
+        self._main_label.set_markup('')
+        self._details_label.set_markup('')
 
 
 
@@ -211,6 +217,7 @@ class Previewer(ItemsProcessorBase):
         self._path_entry.set_text('')
         self._text_window.buffer.set_text('')
         self._thumb.clear()
+        self._message_widget.clear()
 
     def set_max_size(self, width, height):
         self._thumb_max_width = width or Previewer.THUMB_MAX_WIDTH
@@ -222,6 +229,7 @@ class Previewer(ItemsProcessorBase):
         self._thumb_eventbox.hide()
         self._text_window.hide()
         self._message_widget.hide()
+        self._message_widget.clear()
 
         self._path_entry.set_text(self.item.raw)
         exists = os.path.exists(self.item.raw)
