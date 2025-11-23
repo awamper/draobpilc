@@ -243,6 +243,21 @@ class Previewer(ItemsProcessorBase):
             self._thumb_eventbox.show()
             self._path_entry.show()
         elif (
+            self.item.kind == HistoryItemKind.FILE and
+            self.item.n_lines > 1
+        ):
+            self._path_entry.hide()
+            self._message_widget.set_message('Multiple file paths placeholder')
+            self._message_widget.show()
+        elif (
+            self.item.kind == HistoryItemKind.FILE and
+            self.item.n_lines == 1 and
+            not exists
+        ):
+            self._path_entry.show()
+            self._message_widget.set_message(_('File not found'))
+            self._message_widget.show()
+        elif (
             exists and
             self._preview_supported(self.item) and
             self._is_previewable_type(self.item.content_type)
