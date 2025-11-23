@@ -32,6 +32,24 @@ from draobpilc.widgets.items_processor_base import (
 )
 
 
+EDITABLE_TEXT_TYPES = [
+    'text/plain',
+    'text/html',
+    'text/css',
+    'text/csv',
+    'text/xml',
+    'text/javascript',
+    'text/markdown',
+    'text/rtf',
+    'application/json',
+    'application/xml',
+    'application/javascript',
+    'application/sql',
+    'application/x-shellscript',
+    'application/x-desktop'
+]
+
+
 class PreviewMessageWidget(Gtk.Box):
     def __init__(self):
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=10)
@@ -140,12 +158,12 @@ class Previewer(ItemsProcessorBase):
         self._open_file_location()
 
     def _is_previewable_type(self, content_type):
-        if not content_type: return False
-
-        if content_type.startswith('text') or 'bash' in content_type:
-            return True
-        else:
+        if not content_type:
             return False
+
+        content_type = content_type.strip()
+        result = content_type.startswith('text') or content_type in EDITABLE_TEXT_TYPES
+        return result
 
     def _preview_supported(self, item):
         if (
