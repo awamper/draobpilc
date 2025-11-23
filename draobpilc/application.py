@@ -109,6 +109,10 @@ class Application(Gtk.Application):
         self._search_box.entry.connect('activate',
             self._on_entry_activated
         )
+        self._search_box.entry.connect(
+            'key-press-event',
+            self._on_search_entry_key_press
+        )
 
         self._items_view = ItemsView()
         self._items_view.connect(
@@ -168,6 +172,12 @@ class Application(Gtk.Application):
         items = self._items_view.get_selected()
         if items: self._on_item_activated(self._items_view, items[0])
         return True
+
+    def _on_search_entry_key_press(self, widget, event):
+        if event.keyval == Gdk.KEY_Down:
+            self._items_view.select_first(grab_focus=True)
+            return True
+        return False
 
     def _on_item_activated(self, items_view, history_item):
         gpaste_client.select(history_item.uuid)
