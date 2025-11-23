@@ -98,7 +98,12 @@ class Previewer(ItemsProcessorBase):
             Gtk.EntryIconPosition.PRIMARY,
             'system-file-manager-symbolic'
         )
+        self._path_entry.set_icon_tooltip_text(
+            Gtk.EntryIconPosition.PRIMARY,
+            _('Click to locate the file on disk')
+        )
         self._path_entry.props.margin = ItemsProcessorBase.MARGIN
+        self._path_entry.connect('icon-release', self._on_path_entry_icon_release)
 
         self._text_window = TextWindow()
         self._text_window.set_no_show_all(True)
@@ -123,10 +128,16 @@ class Previewer(ItemsProcessorBase):
         window.set_cursor(cursor)
 
     def _on_thumb_button_release(self, event_box, event):
+        self._open_file_location()
+
+    def _open_file_location(self):
         app_info = Gio.AppInfo.get_default_for_type('inode/directory', True)
         if not app_info: return
         app_info.launch_uris(['file://%s' % self._path_entry.get_text()], None)
         common.APPLICATION.hide()
+
+    def _on_path_entry_icon_release(self, entry, icon_pos, event):
+        self._open_file_location()
 
     def _is_previewable_type(self, content_type):
         if not content_type: return False
