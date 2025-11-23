@@ -355,7 +355,8 @@ class Preferences(Gtk.Window):
             common.KIND_INDICATOR_WIDTH,
             common.SHOW_INDEXES,
             common.SHOW_TEXT_INFO,
-            common.SHOW_THUMBNAILS
+            common.SHOW_THUMBNAILS,
+            common.ITEM_MAX_DISPLAY_TEXT_CHARS
         ]
 
         for key in requires_restart:
@@ -615,6 +616,18 @@ class Preferences(Gtk.Window):
         page.add_spin(
             _('Max height per item (px)'),
             common.ITEM_MAX_HEIGHT,
+            spin_props,
+            int
+        )
+
+        page.add_separator()
+
+        spin_props['lower'] = 50
+        spin_props['upper'] = 1000
+        spin_props['step_increment'] = 50
+        page.add_spin(
+            _('Max display text characters'),
+            common.ITEM_MAX_DISPLAY_TEXT_CHARS,
             spin_props,
             int
         )

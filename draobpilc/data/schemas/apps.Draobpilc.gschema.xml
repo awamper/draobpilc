@@ -22,6 +22,11 @@
             <default>80</default>
         </key>
 
+        <key type="i" name="item-max-display-text-chars">
+            <range min="50" max="1000"/>
+            <default>500</default>
+        </key>
+
         <key type="i" name="item-preview-margin">
             <default>5</default>
         </key>

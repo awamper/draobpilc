@@ -112,6 +112,10 @@ class HistoryItem(GObject.Object):
 
     def _get_display_text(self, text, escape=True):
         text = ' '.join(text.split())
+
+        if len(text) > common.SETTINGS[common.ITEM_MAX_DISPLAY_TEXT_CHARS]:
+            text = text[0:common.SETTINGS[common.ITEM_MAX_DISPLAY_TEXT_CHARS]]
+
         text = text.strip()
         if escape: text = GLib.markup_escape_text(text)
 
