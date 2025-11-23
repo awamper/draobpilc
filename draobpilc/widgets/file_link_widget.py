@@ -19,6 +19,7 @@ import os
 
 from gi.repository import Gio
 from gi.repository import Gtk
+from gi.repository import GLib
 
 from draobpilc import common
 from draobpilc.lib import gpaste_client
@@ -30,9 +31,14 @@ class FileLinkWidget(LinkWidget):
         super().__init__(file_path)
 
         self._file_path = self._link
+        expanded_path = os.path.expanduser(self._file_path)
+        self._file_exists = os.path.exists(expanded_path)
+
+        if not self._file_exists:
+            self.set_sensitive(False)
 
         copy_content_button = Gtk.Button.new_from_icon_name('document-open-symbolic', Gtk.IconSize.BUTTON)
-        copy_content_button.set_tooltip_text('Copy file content')
+        copy_content_button.set_tooltip_text(_('Copy file content'))
         copy_content_button.set_relief(Gtk.ReliefStyle.NONE)
         copy_content_button.connect('clicked', self._on_copy_content_clicked)
         self._action_box.add(copy_content_button)
@@ -68,3 +74,26 @@ class FileLinkWidget(LinkWidget):
     def _on_copy_content_clicked(self, button):
         gpaste_client.add_file(self._file_path)
         common.APPLICATION.hide()
+
+    def _on_query_tooltip(self, widget, x, y, keyboard_mode, tooltip):
+        file_path = GLib.markup_escape_text(self._file_path, -1)
+
+        if not self._file_exists:
+            header_text = _('File Not Found')
+            tooltip_markup = _(f'<b>{header_text}</b>\n<i>{file_path}</i>')
+            icon_name = 'dialog-error-symbolic'
+        else:
+            header_text = _('Open')
+
+            app_name = self._app_info.get_display_name()
+            if app_name:
+                app_name = GLib.markup_escape_text(app_name, -1)
+                header_text += _(f' with {app_name}')
+
+            tooltip_markup = f'<b>{header_text}</b>\n<i>{file_path}</i>'
+            icon_name = 'dialog-information-symbolic'
+
+        tooltip.set_icon_from_icon_name(icon_name, Gtk.IconSize.LARGE_TOOLBAR)
+        tooltip.set_markup(tooltip_markup)
+
+        return True

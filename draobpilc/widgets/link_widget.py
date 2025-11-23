@@ -18,8 +18,10 @@
 import urllib.parse
 
 from gi.repository import Gtk
+from gi.repository import Gdk
 from gi.repository import Gio
 from gi.repository import Pango
+from gi.repository import GLib
 
 from draobpilc.lib import gpaste_client
 from draobpilc import common
@@ -35,31 +37,49 @@ class LinkWidget(Gtk.Box):
 
         self._link = link
         self._app_info = self._get_app_info(self._link)
-
-        browser_icon = self._get_icon(self._app_info)
+        self._icon = self._get_icon(self._app_info)
         link_button = self._get_link_button()
-        link_button.connect('activate-link', self._on_link_clicked)
+        link_button.connect('query-tooltip', self._on_query_tooltip)
+        link_button.connect('enter-notify-event', self._change_cursor)
+        link_button.connect('leave-notify-event', self._restore_cursor)
+        link_button.connect('clicked', self._on_link_clicked)
 
-        copy_button = Gtk.Button.new_from_icon_name("edit-copy", Gtk.IconSize.BUTTON)
+        copy_button = Gtk.Button.new_from_icon_name('edit-copy', Gtk.IconSize.BUTTON)
         copy_button.set_relief(Gtk.ReliefStyle.NONE)
         copy_button.set_tooltip_text('Copy')
-        copy_button.connect("clicked", self._on_copy_clicked)
+        copy_button.connect('clicked', self._on_copy_clicked)
 
         self._action_box = self._get_action_box()
         self._action_box.pack_start(copy_button, False, False, 0)
 
         grid = Gtk.Grid()
-        grid.attach(browser_icon, 0, 0, 1, 1)
+        grid.attach(self._icon, 0, 0, 1, 1)
         grid.attach(link_button, 1, 0, 1, 1)
         grid.attach(self._action_box, 2, 0, 1, 1)
         grid.set_column_spacing(3)
         self.add(grid)
 
+    def _change_cursor(self, widget, event):
+        window = widget.get_window()
+        if not window: return False
+
+        display = Gdk.Display.get_default()
+        cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.HAND2)
+        window.set_cursor(cursor)
+
+        return False
+
+    def _restore_cursor(self, widget, event):
+        window = widget.get_window()
+        if window: window.set_cursor(None)
+
+        return False
+
     def _get_icon(self, app_info):
         # Get default browser icon
         browser_icon = Gtk.Image.new_from_icon_name(
             'web-browser',
-            Gtk.IconSize.BUTTON
+            Gtk.IconSize.SMALL_TOOLBAR
         )
         browser_icon.set_margin_start(5)
         browser_icon.set_margin_end(5)
@@ -70,7 +90,7 @@ class LinkWidget(Gtk.Box):
                 icon_theme = Gtk.IconTheme.get_default()
                 icon_info = icon_theme.lookup_by_gicon(
                     gicon,
-                    16, # Size of the icon
+                    16,
                     Gtk.IconLookupFlags.FORCE_SIZE
                 )
                 if icon_info:
@@ -80,22 +100,24 @@ class LinkWidget(Gtk.Box):
         return browser_icon
 
     def _get_link_button(self):
-        link_button = Gtk.LinkButton()
+        link_button = Gtk.Button()
         link_button.set_name('LinkWidgetLink')
         link_button.set_label(self._link[0:MAX_LINK_LABEL_WIDTH])
-        link_button.set_uri(self._link)
-        link_button.set_tooltip_text(self._link)
+        link_button.set_has_tooltip(True)
         link_button.set_halign(Gtk.Align.START)
         link_button.set_hexpand(True)
+        link_button.set_relief(Gtk.ReliefStyle.NONE)
         link_style_context = link_button.get_style_context()
-        link_style_context.remove_class('text-button')
-        link_style_context.remove_class('button')
+        link_style_context.add_class('link-widget-button')
         
         link_label = link_button.get_child()
         if isinstance(link_label, Gtk.Label):
             link_label.set_ellipsize(Pango.EllipsizeMode.END)
             link_label.set_max_width_chars(MAX_LINK_LABEL_WIDTH)
             link_label.set_single_line_mode(True)
+
+            label_style = link_label.get_style_context()
+            label_style.add_class('link-widget-button-label')
 
         return link_button
 
@@ -122,3 +144,17 @@ class LinkWidget(Gtk.Box):
     def _on_copy_clicked(self, button):
         gpaste_client.add(self._link)
         common.APPLICATION.hide()
+        return True
+
+    def _on_query_tooltip(self, widget, x, y, keyboard_mode, tooltip):
+        header_text = _('Open url')
+        app_name = self._app_info.get_display_name()
+        if app_name:
+            app_name = GLib.markup_escape_text(app_name, -1)
+            header_text += _(f' with {app_name}')
+
+        link = GLib.markup_escape_text(self._link, -1)
+        tooltip.set_icon_from_icon_name('dialog-information-symbolic', Gtk.IconSize.LARGE_TOOLBAR)
+        tooltip.set_markup(f'<b>{header_text}</b>\n<i>{link}</i>')
+
+        return True

@@ -139,10 +139,28 @@
     padding: 3px;
 }
 
-#LinkWidgetLink {
+.link-widget-button {
     margin: 0px;
     padding: 0px;
     border: 0px;
+    background-image: none;
+    background-color: transparent;
+    border: none;
+    box-shadow: none;
+}
+
+.link-widget-button-label:disabled {
+    color: rgba(255, 255, 255, 0.6);
+    text-decoration-color: rgba(255, 255, 255, 0.6);
+}
+
+.link-widget-button-label {
+    text-shadow: none;
+    text-decoration-line: underline;
+    text-decoration-color: rgb(53, 132, 228);
+    text-decoration-style: solid;
+    color: rgb(53, 132, 228);
+    font-family: "Adwaita Sans";
 }
 
 #DeletionProgressBar {
