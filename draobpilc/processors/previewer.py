@@ -148,7 +148,7 @@ class Previewer(ItemsProcessorBase):
         if not window: return
 
         display = Gdk.Display.get_default()
-        cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.HAND1)
+        cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.HAND2)
         window.set_cursor(cursor)
 
     def _on_thumb_button_release(self, event_box, event):
