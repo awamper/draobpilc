@@ -46,7 +46,7 @@ class HistoryItem(GObject.Object):
         self._source_markup = None
         self._sort_score = None
         self._n_lines = None
-        self._link = None
+        self._links = None
         self._content_type = None
         self._thumb_path = None
         self._image_path = None
