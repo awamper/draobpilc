@@ -132,6 +132,10 @@ class Application(Gtk.Application):
             lambda iv: self.selection_changed()
         )
         self._items_view.bind(self._history_items)
+        self._items_view.connect(
+            'focus-search-requested',
+            self._on_items_view_focus_search
+        )
 
         gpaste_client.connect('ShowHistory', self.toggle)
         gpaste_client.connect('Tracking',
@@ -178,6 +182,9 @@ class Application(Gtk.Application):
             self._items_view.select_first(grab_focus=True)
             return True
         return False
+
+    def _on_items_view_focus_search(self, items_view):
+        self._search_box.entry.grab_focus()
 
     def _on_item_activated(self, items_view, history_item):
         gpaste_client.select(history_item.uuid)

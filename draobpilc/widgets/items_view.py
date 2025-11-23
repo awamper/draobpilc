@@ -41,7 +41,8 @@ class ItemsView(Gtk.Box):
         'item-activated': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
         'item-selected': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
         'item-entered': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        'item-left': (GObject.SIGNAL_RUN_FIRST, None, (object,))
+        'item-left': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        'focus-search-requested': (GObject.SIGNAL_RUN_FIRST, None, ())
     }
 
     def __init__(self):
@@ -79,6 +80,7 @@ class ItemsView(Gtk.Box):
         self._listbox.connect('leave-notify-event', self._on_leave_event)
         self._listbox.connect('button-press-event', self._on_button_press_event)
         self._listbox.connect('button-release-event', self._on_button_release_event)
+        self._listbox.connect('key-press-event', self._on_key_press)
 
         self._items_counter = ItemsCounter(self._listbox)
         self._load_rest_btn = Gtk.LinkButton()
@@ -187,6 +189,17 @@ class ItemsView(Gtk.Box):
         if not row: return
         item = row.get_child().item
         if item: self.activate_item(item)
+
+    def _on_key_press(self, listbox, event):
+        if event.keyval == Gdk.KEY_Up:
+            selected_rows = self._listbox.get_selected_rows()
+            if (
+                len(selected_rows) == 1 and
+                selected_rows[0] == self._listbox.get_children()[0]
+            ):
+                self.emit('focus-search-requested')
+                return True
+        return False
 
     def _on_changed(self, history_items):
         self.show_items()
