@@ -16,6 +16,7 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import humanize
 
 from gi.repository import Gtk
 from gi.repository import Gio
@@ -29,6 +30,30 @@ from draobpilc.widgets.items_processor_base import (
     ItemsProcessorBase,
     ItemsProcessorPriority
 )
+
+
+class PreviewMessageWidget(Gtk.Box):
+    def __init__(self):
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=10)
+        self.set_valign(Gtk.Align.CENTER)
+        self.set_halign(Gtk.Align.CENTER)
+        self.set_vexpand(True)
+        self.set_hexpand(True)
+        self.set_opacity(0.6)
+
+        icon = Gtk.Image.new_from_icon_name('dialog-warning', Gtk.IconSize.DIALOG)
+        self.add(icon)
+
+        self._main_label = Gtk.Label()
+        self.add(self._main_label)
+
+        self._details_label = Gtk.Label()
+        self.add(self._details_label)
+
+    def set_message(self, title, message):
+        self._main_label.set_markup(f'<span font-size="xx-large">{title}</span>')
+        self._details_label.set_markup(f'<span font-size="large">{message}</span>')
+
 
 
 class Previewer(ItemsProcessorBase):
@@ -81,10 +106,13 @@ class Previewer(ItemsProcessorBase):
         self._text_window.textview.set_editable(False)
         self._text_window.hide()
 
+        self._message_widget = PreviewMessageWidget()
+
         self.grid.set_name('PreviwerGrid')
         self.grid.attach(self._path_entry, 0, 0, 2, 1)
         self.grid.attach(self._thumb_eventbox, 0, 1, 2, 1)
         self.grid.attach(self._text_window, 0, 1, 2, 1)
+        self.grid.attach(self._message_widget, 0, 1, 2, 1)
 
     def _change_cursor(self, sender):
         window = sender.get_window()
@@ -124,6 +152,30 @@ class Previewer(ItemsProcessorBase):
 
         return True
 
+    def _preview_text_file(self, file_path):
+        self._message_widget.hide()
+        self._path_entry.show()
+
+        file_size = os.path.getsize(file_path)
+        max_size_bytes = common.SETTINGS[common.PREVIEW_TEXT_MAX_SIZE_BYTES]
+
+        if max_size_bytes > 0 and file_size > max_size_bytes:
+            human_file_size = humanize.naturalsize(file_size, binary=True)
+            human_max_size = humanize.naturalsize(max_size_bytes, binary=True)
+            
+            title = _("File is too large to preview")
+            message = _(f"File size ({human_file_size}) exceeds the preview limit ({human_max_size})")
+            
+            self._message_widget.set_message(title, message)
+            self._message_widget.show()
+            return
+
+        self._text_window.show()
+        with open(self.item.raw, 'r') as fp:
+            contents = fp.read()
+            self._text_window.set_filename(self.item.raw)
+            self._text_window.buffer.set_text(contents)
+
     def clear(self):
         super().clear()
 
@@ -137,6 +189,11 @@ class Previewer(ItemsProcessorBase):
 
     def set_items(self, items):
         self.items = items
+
+        self._thumb_eventbox.hide()
+        self._text_window.hide()
+        self._message_widget.hide()
+
         self._path_entry.set_text(self.item.raw)
         exists = os.path.exists(self.item.raw)
 
@@ -146,7 +203,6 @@ class Previewer(ItemsProcessorBase):
                 self._thumb_max_width * 0.8,
                 self._thumb_max_height * 0.8
             )
-            self._text_window.hide()
             self._thumb_eventbox.show()
             self._path_entry.show()
         elif (
@@ -154,26 +210,17 @@ class Previewer(ItemsProcessorBase):
             self._preview_supported(self.item) and
             self._is_previewable_type(self.item.content_type)
         ):
-            self._thumb_eventbox.hide()
-            self._text_window.show()
-            self._path_entry.show()
-
-            with open(self.item.raw, 'r') as fp:
-                contents = fp.read()
-                self._text_window.set_filename(self.item.raw)
-                self._text_window.buffer.set_text(contents)
+            self._preview_text_file(self.item.raw)
         elif self.item.thumb_path:
             self._thumb.set_filename(
                 self.item.thumb_path,
                 self._thumb_max_width * 0.8,
                 self._thumb_max_height * 0.8
             )
-            self._text_window.hide()
             self._thumb_eventbox.show()
             self._path_entry.show()
         else:
             self._path_entry.hide()
-            self._thumb_eventbox.hide()
 
             self._text_window.show()
             self._text_window.buffer.set_text(self.item.raw)

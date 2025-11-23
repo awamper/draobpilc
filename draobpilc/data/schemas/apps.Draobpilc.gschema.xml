@@ -156,6 +156,11 @@
             <default>true</default>
         </key>
 
+        <key type="i" name="preview-text-max-size-bytes">
+            <range min="0" max="10485760"/>
+            <default>307200</default>
+        </key>
+
         <key type="b" name="focus-search-on-open">
             <default>true</default>
         </key>
