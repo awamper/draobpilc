@@ -281,7 +281,7 @@ class HistoryItemView(Gtk.Box):
         self.connect('enter-notify-event', self._on_enter_event)
         self.connect('leave-notify-event', self._on_leave_event)
 
-        self._weakref = weakref.ref(history_item, lambda w: self.destroy())
+        self._weakref = weakref.ref(history_item, self._on_weakref)
         self._preview = None
         self._kind_indicator = ItemKindIndicator(self.item.kind)
         self._label = ItemLabel()
@@ -367,6 +367,9 @@ class HistoryItemView(Gtk.Box):
 
         self.add(overlay)
         self.show_all()
+
+    def _on_weakref(self, obj):
+        self.destroy()
 
     def _on_enter_event(self, box, event):
         pass
