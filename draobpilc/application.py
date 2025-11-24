@@ -45,104 +45,16 @@ class Application(Gtk.Application):
         self.set_application_id(version.APP_ID)
         self.set_flags(Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
 
-        screen = Gdk.Screen.get_default()
-        css_provider = Gtk.CssProvider()
-        css_provider.load_from_path(common.CSS_PATH)
-        style_context = Gtk.StyleContext()
-        style_context.add_provider_for_screen(
-            screen,
-            css_provider,
-            Gtk.STYLE_PROVIDER_PRIORITY_USER
-        )
-
-        gtk_settings = Gtk.Settings.get_default()
-        gtk_settings.props.gtk_application_prefer_dark_theme = True
-
         self._window = None
-        self._editor = editor.Editor()
-        self._previewer = previewer.Previewer()
-        self._merger = merger.Merger()
-        self._merger.connect('merge', self.merge_items)
-        self._merger.connect('delete', self._on_merger_delete)
-        self._items_processors = ItemsProcessors()
-        self._items_processors.add_processor(self._editor)
-        self._items_processors.add_processor(self._previewer)
-        self._items_processors.add_processor(self._merger)
-
-        self._main_toolbox = MainToolbox()
-        self._main_toolbox.prefs_btn.connect('clicked',
-            lambda b: self.show_prefs()
-        )
-        self._main_toolbox.about_btn.connect('clicked',
-            lambda b: self.show_about()
-        )
-        self._main_toolbox.quit_btn.connect('clicked',
-            lambda b: self.quit()
-        )
-        self._main_toolbox.restart_btn.connect(
-            'clicked',
-            self._restart_daemon
-        )
-        self._main_toolbox.close_btn.connect(
-            'clicked',
-            lambda b: self.hide(reset_search=True)
-        )
-        self._main_toolbox.track_btn.connect('clicked',
-            lambda b: gpaste_client.track(b.get_active())
-        )
-        self._main_toolbox.track_btn.set_active(
-            gpaste_client.get_prop('Active')
-        )
-        self._main_toolbox.help_btn.connect(
-            'clicked',
-            lambda b: shortcuts_window.show_or_false(self._window)
-        )
-
-        self._history_items = HistoryItems()
-
-        self._search_box = SearchBox()
-        self._search_box.connect('search-changed',
-            self._on_search_changed
-        )
-        self._search_box.connect('search-index',
-            lambda sb, i: self._on_search_changed(sb, search_index=i)
-        )
-        self._search_box.entry.connect('activate',
-            self._on_entry_activated
-        )
-        self._search_box.entry.connect(
-            'key-press-event',
-            self._on_search_entry_key_press
-        )
-
-        self._items_view = ItemsView()
-        self._items_view.connect(
-            'item-activated',
-            self._on_item_activated
-        )
-        self._items_view.connect(
-            'item-entered',
-            self._on_item_entered
-        )
-        self._items_view.connect(
-            'item-left',
-            lambda iv, i: self.selection_changed()
-        )
-        self._items_view.listbox.connect(
-            'selected-rows-changed',
-            lambda iv: self.selection_changed()
-        )
-        self._items_view.bind(self._history_items)
-        self._items_view.connect(
-            'focus-search-requested',
-            self._on_items_view_focus_search
-        )
-
-        gpaste_client.connect('ShowHistory', self.toggle)
-        gpaste_client.connect('Tracking',
-            lambda t: self._main_toolbox.track_btn.set_active(t)
-        )
-        common.APPLICATION = self
+        self._editor = None
+        self._previewer = None
+        self._merger = None
+        self._items_processors = None
+        self._main_toolbox = None
+        self._history_items = None
+        self._search_box = None
+        self._items_view = None
+        self._deletion_progress_bar = None
 
     def _resize(self, window, event):
         size = window.get_size()
@@ -435,6 +347,104 @@ class Application(Gtk.Application):
     def do_startup(self):
         Gtk.Application.do_startup(self)
 
+        screen = Gdk.Screen.get_default()
+        css_provider = Gtk.CssProvider()
+        css_provider.load_from_path(common.CSS_PATH)
+        style_context = Gtk.StyleContext()
+        style_context.add_provider_for_screen(
+            screen,
+            css_provider,
+            Gtk.STYLE_PROVIDER_PRIORITY_USER
+        )
+
+        gtk_settings = Gtk.Settings.get_default()
+        gtk_settings.props.gtk_application_prefer_dark_theme = True
+
+        self._editor = editor.Editor()
+        self._previewer = previewer.Previewer()
+        self._merger = merger.Merger()
+        self._merger.connect('merge', self.merge_items)
+        self._merger.connect('delete', self._on_merger_delete)
+        self._items_processors = ItemsProcessors()
+        self._items_processors.add_processor(self._editor)
+        self._items_processors.add_processor(self._previewer)
+        self._items_processors.add_processor(self._merger)
+
+        self._main_toolbox = MainToolbox()
+        self._main_toolbox.prefs_btn.connect('clicked',
+            lambda b: self.show_prefs()
+        )
+        self._main_toolbox.about_btn.connect('clicked',
+            lambda b: self.show_about()
+        )
+        self._main_toolbox.quit_btn.connect('clicked',
+            lambda b: self.quit()
+        )
+        self._main_toolbox.restart_btn.connect(
+            'clicked',
+            self._restart_daemon
+        )
+        self._main_toolbox.close_btn.connect(
+            'clicked',
+            lambda b: self.hide(reset_search=True)
+        )
+        self._main_toolbox.track_btn.connect('clicked',
+            lambda b: gpaste_client.track(b.get_active())
+        )
+        self._main_toolbox.track_btn.set_active(
+            gpaste_client.get_prop('Active')
+        )
+        self._main_toolbox.help_btn.connect(
+            'clicked',
+            lambda b: shortcuts_window.show_or_false(self._window)
+        )
+
+        self._history_items = HistoryItems()
+
+        self._search_box = SearchBox()
+        self._search_box.connect('search-changed',
+            self._on_search_changed
+        )
+        self._search_box.connect('search-index',
+            lambda sb, i: self._on_search_changed(sb, search_index=i)
+        )
+        self._search_box.entry.connect('activate',
+            self._on_entry_activated
+        )
+        self._search_box.entry.connect(
+            'key-press-event',
+            self._on_search_entry_key_press
+        )
+
+        self._items_view = ItemsView()
+        self._items_view.connect(
+            'item-activated',
+            self._on_item_activated
+        )
+        self._items_view.connect(
+            'item-entered',
+            self._on_item_entered
+        )
+        self._items_view.connect(
+            'item-left',
+            lambda iv, i: self.selection_changed()
+        )
+        self._items_view.listbox.connect(
+            'selected-rows-changed',
+            lambda iv: self.selection_changed()
+        )
+        self._items_view.bind(self._history_items)
+        self._items_view.connect(
+            'focus-search-requested',
+            self._on_items_view_focus_search
+        )
+
+        gpaste_client.connect('ShowHistory', self.toggle)
+        gpaste_client.connect('Tracking',
+            lambda t: self._main_toolbox.track_btn.set_active(t)
+        )
+        common.APPLICATION = self
+        
         actions = [
             [
                 'delete',
