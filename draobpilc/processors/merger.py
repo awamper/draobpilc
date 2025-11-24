@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -36,7 +36,8 @@ COMBOBOX_NONE_STRING = 'Draobpilc.Merger.ComboBoxText.Id == None'
 class Merger(ItemsProcessorBase):
 
     __gsignals__ = {
-        'merge': (GObject.SIGNAL_RUN_FIRST, None, (object, bool))
+        'merge': (GObject.SIGNAL_RUN_FIRST, None, (object, bool)),
+        'delete': (GObject.SIGNAL_RUN_FIRST, None, (object,))
     }
 
     def __init__(self):
@@ -85,6 +86,12 @@ class Merger(ItemsProcessorBase):
             lambda b: self.emit('merge', self.items, True)
         )
 
+        self._delete_btn = Gtk.Button()
+        self._delete_btn.set_label(_('Delete'))
+        self._delete_btn.set_tooltip_text(_('Delete selected items'))
+        self._delete_btn.get_style_context().add_class('destructive-action')
+        self._delete_btn.connect('clicked', lambda b: self.emit('delete', self.items))
+
         self._reverse_order_btn = Gtk.CheckButton(_('Reverse order'))
         self._reverse_order_btn.props.margin = ItemsProcessorBase.MARGIN
         self._reverse_order_btn.set_active(False)
@@ -95,6 +102,7 @@ class Merger(ItemsProcessorBase):
         buttons_box.props.margin = ItemsProcessorBase.MARGIN
         buttons_box.add(self._merge_del_btn)
         buttons_box.add(self._merge_btn)
+        buttons_box.add(self._delete_btn)
 
         self.grid.set_name('MergerBox')
         self.grid.attach(self._counter_label, 0, 1, 2, 1)

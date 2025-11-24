@@ -63,6 +63,7 @@ class Application(Gtk.Application):
         self._previewer = previewer.Previewer()
         self._merger = merger.Merger()
         self._merger.connect('merge', self.merge_items)
+        self._merger.connect('delete', self._on_merger_delete)
         self._items_processors = ItemsProcessors()
         self._items_processors.add_processor(self._editor)
         self._items_processors.add_processor(self._previewer)
@@ -362,6 +363,9 @@ class Application(Gtk.Application):
         if delete_merged: self.delete_items(items, resume_selection=False)
         gpaste_client.add(merged_text)
         self.hide()
+
+    def _on_merger_delete(self, merger, items):
+        self.delete_items(items, resume_selection=True)
 
     def do_command_line(self, command_line):
         Gtk.Application.do_command_line(self, command_line)
