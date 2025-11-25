@@ -20,12 +20,11 @@ from gi.repository import GdkPixbuf
 
 from draobpilc import common
 
-MARGIN = common.SETTINGS[common.ITEM_PREVIEW_MARGIN]
 DEFAULT_WIDTH = (
-    common.SETTINGS[common.ITEM_MAX_HEIGHT] - MARGIN
+    common.SETTINGS[common.ITEM_MAX_HEIGHT]
 )
 DEFAULT_HEIGHT = (
-    common.SETTINGS[common.ITEM_MAX_HEIGHT] - MARGIN * 2
+    common.SETTINGS[common.ITEM_MAX_HEIGHT]
 )
 
 
@@ -39,9 +38,7 @@ class ItemThumb(Gtk.Image):
         ratio=True
     ):
         super().__init__()
-        self.set_margin_left(MARGIN)
-        self.set_margin_top(MARGIN)
-        self.set_margin_bottom(MARGIN)
+        self.get_style_context().add_class('item-thumb')
 
         self._filename = None
         if filename: self.set_filename(filename, max_width, max_height, ratio)

@@ -27,10 +27,6 @@
             <default>500</default>
         </key>
 
-        <key type="i" name="item-preview-margin">
-            <default>5</default>
-        </key>
-
         <key type="i" name="kind-indicator-width">
             <default>3</default>
         </key>
