@@ -23,25 +23,66 @@ from gi.repository import GLib
 
 from draobpilc import common
 from draobpilc.lib import gpaste_client
-from draobpilc.widgets.link_widget import LinkWidget
+from draobpilc.widgets.base_link_widget import BaseLinkWidget
 
 
-class FileLinkWidget(LinkWidget):
+class FileLinkWidget(BaseLinkWidget):
     def __init__(self, file_path):
-        super().__init__(file_path)
-
-        self._file_path = self._link
+        self._file_path = file_path
         expanded_path = os.path.expanduser(self._file_path)
         self._file_exists = os.path.exists(expanded_path)
+        
+        super().__init__(file_path)
 
         if not self._file_exists:
             self.set_sensitive(False)
+
+        copy_path_button = Gtk.Button.new_from_icon_name('edit-copy', Gtk.IconSize.BUTTON)
+        copy_path_button.set_relief(Gtk.ReliefStyle.NONE)
+        copy_path_button.set_tooltip_text('Copy path')
+        copy_path_button.connect('clicked', self._on_copy_path_clicked)
+        self._action_box.pack_start(copy_path_button, False, False, 0)
 
         copy_content_button = Gtk.Button.new_from_icon_name('document-open-symbolic', Gtk.IconSize.BUTTON)
         copy_content_button.set_tooltip_text(_('Copy file content'))
         copy_content_button.set_relief(Gtk.ReliefStyle.NONE)
         copy_content_button.connect('clicked', self._on_copy_content_clicked)
         self._action_box.add(copy_content_button)
+
+    def _on_copy_path_clicked(self, button):
+        gpaste_client.add(self._file_path)
+        common.APPLICATION.hide()
+        return True
+
+    def _on_copy_content_clicked(self, button):
+        gpaste_client.add_file(self._file_path)
+        common.APPLICATION.hide()
+        return True
+
+    def _get_icon(self, app_info):
+        if not self._file_exists:
+            icon = Gtk.Image.new_from_icon_name('dialog-error-symbolic', Gtk.IconSize.SMALL_TOOLBAR)
+            icon.set_margin_start(5)
+            icon.set_margin_end(5)
+            return icon
+
+        if app_info:
+            gicon = app_info.get_icon()
+            if gicon:
+                icon_theme = Gtk.IconTheme.get_default()
+                icon_info = icon_theme.lookup_by_gicon(
+                    gicon,
+                    16,
+                    Gtk.IconLookupFlags.FORCE_SIZE
+                )
+                if icon_info:
+                    pixbuf = icon_info.load_icon()
+                    icon = Gtk.Image.new_from_pixbuf(pixbuf)
+                    icon.set_margin_start(5)
+                    icon.set_margin_end(5)
+                    return icon
+        
+        return Gtk.Image.new_from_icon_name('text-x-generic-symbolic', Gtk.IconSize.SMALL_TOOLBAR)
 
     def _get_app_info(self, file_path):
         app_info = False
@@ -70,10 +111,6 @@ class FileLinkWidget(LinkWidget):
         Gio.AppInfo.launch_default_for_uri(uri)
         common.APPLICATION.hide()
         return True
-
-    def _on_copy_content_clicked(self, button):
-        gpaste_client.add_file(self._file_path)
-        common.APPLICATION.hide()
 
     def _on_query_tooltip(self, widget, x, y, keyboard_mode, tooltip):
         file_path = GLib.markup_escape_text(self._file_path, -1)
