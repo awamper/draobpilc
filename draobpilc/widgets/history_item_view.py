@@ -205,29 +205,6 @@ class LinksButton(Gtk.LinkButton):
         return self._weakref()
 
 
-class FilesButton(LinksButton):
-
-    def __init__(self, item):
-        super().__init__(item)
-
-        self._paths = self.item.raw.split('\n')
-        self.set_label('%i files' % len(self._paths))
-
-        height_request = max(MIN_LINKS_POPOVER_HEIGHT, min(len(self._paths) * LINKS_POPOVER_ITEM_HEIGHT, MAX_LINKS_POPOVER_HEIGHT))
-        self._scrolled_window.set_size_request(LINKS_POPOVER_WIDTH, height_request)
-
-        self.populate()
-
-    def populate(self):
-        if not hasattr(self, '_paths'): return None
-
-        for path in self._paths:
-            file_link_widget = FileLinkWidget(path)
-            self._list_box.add(file_link_widget)
-
-        self._list_box.show_all()
-
-
 class ActiveIndicator(IndicatorBase):
 
     def __init__(self, kind):
