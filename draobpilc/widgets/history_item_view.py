@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -293,11 +293,6 @@ class HistoryItemView(Gtk.Box):
             self.item.kind == HistoryItemKind.TEXT and self.item.links
         ):
             self._infobox = LinksButton(self.item)
-        elif (
-            self.item.kind == HistoryItemKind.FILE and
-            self.item.n_lines > 1
-        ):
-            self._infobox = FilesButton(self.item)
         else:
             if (
                 self.item.kind == HistoryItemKind.LINK or

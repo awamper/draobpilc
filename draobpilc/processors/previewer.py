@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2016 Ivan awamper@gmail.com
+# Copyright 2016-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -30,6 +30,7 @@ from draobpilc.widgets.items_processor_base import (
     ItemsProcessorBase,
     ItemsProcessorPriority
 )
+from draobpilc.widgets.file_link_widget import FileLinkWidget
 
 
 EDITABLE_TEXT_TYPES = [
@@ -137,11 +138,22 @@ class Previewer(ItemsProcessorBase):
 
         self._message_widget = PreviewMessageWidget()
 
+        self._files_list = Gtk.ListBox()
+        self._files_list.set_selection_mode(Gtk.SelectionMode.NONE)
+
+        self._files_list_view = Gtk.ScrolledWindow()
+        self._files_list_view.set_vexpand(True)
+        self._files_list_view.set_hexpand(True)
+        self._files_list_view.add(self._files_list)
+        self._files_list_view.set_no_show_all(True)
+        self._files_list_view.hide()
+
         self.grid.set_name('PreviwerGrid')
         self.grid.attach(self._path_entry, 0, 0, 2, 1)
         self.grid.attach(self._thumb_eventbox, 0, 1, 2, 1)
         self.grid.attach(self._text_window, 0, 1, 2, 1)
         self.grid.attach(self._message_widget, 0, 1, 2, 1)
+        self.grid.attach(self._files_list_view, 0, 1, 2, 1)
 
     def _change_cursor(self, sender):
         window = sender.get_window()
@@ -218,6 +230,7 @@ class Previewer(ItemsProcessorBase):
         self._text_window.buffer.set_text('')
         self._thumb.clear()
         self._message_widget.clear()
+        self._files_list_view.hide()
 
     def set_max_size(self, width, height):
         self._thumb_max_width = width or Previewer.THUMB_MAX_WIDTH
@@ -230,6 +243,9 @@ class Previewer(ItemsProcessorBase):
         self._text_window.hide()
         self._message_widget.hide()
         self._message_widget.clear()
+        self._files_list_view.hide()
+        for child in self._files_list.get_children():
+            self._files_list.remove(child)
 
         self._path_entry.set_text(self.item.raw)
         exists = os.path.exists(self.item.raw)
@@ -247,8 +263,10 @@ class Previewer(ItemsProcessorBase):
             self.item.n_lines > 1
         ):
             self._path_entry.hide()
-            self._message_widget.set_message('Multiple file paths placeholder')
-            self._message_widget.show()
+            for path in self.item.raw.strip().split('\n'):
+                self._files_list.add(FileLinkWidget(path))
+            self._files_list.show_all()
+            self._files_list_view.show()
         elif (
             self.item.kind == HistoryItemKind.FILE and
             self.item.n_lines == 1 and
