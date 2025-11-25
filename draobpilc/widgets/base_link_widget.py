@@ -19,7 +19,7 @@ from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Pango
 
-MAX_LINK_LABEL_WIDTH = 50
+
 
 
 class BaseLinkWidget(Gtk.Box):
@@ -64,7 +64,7 @@ class BaseLinkWidget(Gtk.Box):
     def _get_link_button(self):
         link_button = Gtk.Button()
         link_button.set_name('LinkWidgetLink')
-        link_button.set_label(self._link[0:MAX_LINK_LABEL_WIDTH])
+        link_button.set_label(self._link)
         link_button.set_has_tooltip(True)
         link_button.set_halign(Gtk.Align.START)
         link_button.set_hexpand(True)
@@ -75,7 +75,7 @@ class BaseLinkWidget(Gtk.Box):
         link_label = link_button.get_child()
         if isinstance(link_label, Gtk.Label):
             link_label.set_ellipsize(Pango.EllipsizeMode.END)
-            link_label.set_max_width_chars(MAX_LINK_LABEL_WIDTH)
+
             link_label.set_single_line_mode(True)
 
             label_style = link_label.get_style_context()
