@@ -24,6 +24,7 @@ from gi.repository import GLib
 from draobpilc import common
 from draobpilc.lib import gpaste_client
 from draobpilc.widgets.base_link_widget import BaseLinkWidget
+from draobpilc.lib.utils import is_editable_text_file
 
 
 class FileLinkWidget(BaseLinkWidget):
@@ -43,11 +44,26 @@ class FileLinkWidget(BaseLinkWidget):
         copy_path_button.connect('clicked', self._on_copy_path_clicked)
         self._action_box.pack_start(copy_path_button, False, False, 0)
 
-        copy_content_button = Gtk.Button.new_from_icon_name('document-open-symbolic', Gtk.IconSize.BUTTON)
-        copy_content_button.set_tooltip_text(_('Copy file content'))
-        copy_content_button.set_relief(Gtk.ReliefStyle.NONE)
-        copy_content_button.connect('clicked', self._on_copy_content_clicked)
-        self._action_box.add(copy_content_button)
+        content_type = None
+        if self._file_exists:
+            uri = 'file://%s' % expanded_path
+            file_gio = Gio.file_new_for_uri(uri)
+            try:
+                info = file_gio.query_info(
+                    'standard::content-type',
+                    Gio.FileQueryInfoFlags.NONE,
+                    None # Cancellable
+                )
+                content_type = info.get_content_type()
+            except GLib.Error:
+                pass
+
+        if is_editable_text_file(content_type):
+            copy_content_button = Gtk.Button.new_from_icon_name('document-open-symbolic', Gtk.IconSize.BUTTON)
+            copy_content_button.set_tooltip_text(_('Copy file content'))
+            copy_content_button.set_relief(Gtk.ReliefStyle.NONE)
+            copy_content_button.connect('clicked', self._on_copy_content_clicked)
+            self._action_box.add(copy_content_button)
 
     def _on_copy_path_clicked(self, button):
         gpaste_client.add(self._file_path)
