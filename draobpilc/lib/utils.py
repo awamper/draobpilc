@@ -258,3 +258,30 @@ def is_visible_on_scroll(adjustment, widget):
             adjustment.get_value() + adjustment.get_page_size()
         )
     )
+
+
+def is_editable_text_file(content_type):
+    EDITABLE_TEXT_TYPES = [
+        'text/plain',
+        'text/html',
+        'text/css',
+        'text/csv',
+        'text/xml',
+        'text/javascript',
+        'text/markdown',
+        'text/rtf',
+        'application/json',
+        'application/xml',
+        'application/javascript',
+        'application/sql',
+        'application/x-shellscript',
+        'application/x-desktop',
+        'application/x-wine-extension-ini'
+    ]
+
+    if not content_type:
+        return False
+
+    content_type = content_type.strip()
+    result = content_type.startswith('text') or content_type in EDITABLE_TEXT_TYPES
+    return result

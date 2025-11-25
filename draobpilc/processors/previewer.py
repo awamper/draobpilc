@@ -31,24 +31,7 @@ from draobpilc.widgets.items_processor_base import (
     ItemsProcessorPriority
 )
 from draobpilc.widgets.file_link_widget import FileLinkWidget
-
-
-EDITABLE_TEXT_TYPES = [
-    'text/plain',
-    'text/html',
-    'text/css',
-    'text/csv',
-    'text/xml',
-    'text/javascript',
-    'text/markdown',
-    'text/rtf',
-    'application/json',
-    'application/xml',
-    'application/javascript',
-    'application/sql',
-    'application/x-shellscript',
-    'application/x-desktop'
-]
+from draobpilc.lib.utils import is_editable_text_file
 
 
 class PreviewMessageWidget(Gtk.Box):
@@ -175,14 +158,6 @@ class Previewer(ItemsProcessorBase):
     def _on_path_entry_icon_release(self, entry, icon_pos, event):
         self._open_file_location()
 
-    def _is_previewable_type(self, content_type):
-        if not content_type:
-            return False
-
-        content_type = content_type.strip()
-        result = content_type.startswith('text') or content_type in EDITABLE_TEXT_TYPES
-        return result
-
     def _preview_supported(self, item):
         if (
             item.kind == HistoryItemKind.FILE or
@@ -193,7 +168,7 @@ class Previewer(ItemsProcessorBase):
             not item or
             not os.path.exists(item.raw) or
             not common.SETTINGS[common.PREVIEW_TEXT_FILES] or
-            not self._is_previewable_type(item.content_type)
+            not is_editable_text_file(item.content_type)
         ):
             return False
 
@@ -278,7 +253,7 @@ class Previewer(ItemsProcessorBase):
         elif (
             exists and
             self._preview_supported(self.item) and
-            self._is_previewable_type(self.item.content_type)
+            is_editable_text_file(self.item.content_type)
         ):
             self._preview_text_file(self.item.raw)
         elif self.item.thumb_path:
