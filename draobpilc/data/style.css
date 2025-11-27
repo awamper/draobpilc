@@ -36,19 +36,19 @@
 }
 
 #HistoryItemKindIndicator.file {
-    background-color: red;
+    background-color: #ee6055;
 }
 
 #HistoryItemKindIndicator.image {
-    background-color: yellow;
+    background-color: #5bacef;
 }
 
 #HistoryItemKindIndicator.text {
-    background-color: grey;
+    background-color: #f2f5de;
 }
 
 #HistoryItemKindIndicator.link {
-    background-color: #FF2EE3;
+    background-color: #a070cf;
 }
 
 #ProcessorBox {
