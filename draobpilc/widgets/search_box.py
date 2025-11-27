@@ -24,8 +24,7 @@ from gi.repository import GObject
 from draobpilc import common
 from draobpilc.history_item_kind import HistoryItemKind
 
-ENTRY_PLACE_HOLDER = _('Filter items (%s to focus)')
-ENTRY_PLACE_HOLDER = ENTRY_PLACE_HOLDER % common.SETTINGS[common.FOCUS_SEARCH]
+ENTRY_PLACE_HOLDER = _('Type to filter or %s to focus search') % common.SETTINGS[common.FOCUS_SEARCH]
 SEARCH_INDEX_RE = re.compile(r'^#([0-9]+)$')
 FLAGS_RE = re.compile(r'^(.*?)\-([lfit]+)$')
 

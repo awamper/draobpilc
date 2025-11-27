@@ -96,8 +96,10 @@ class Application(Gtk.Application):
             return True
         return False
 
-    def _on_items_view_focus_search(self, items_view):
+    def _on_items_view_focus_search(self, items_view, event):
         self._search_box.entry.grab_focus()
+        if event.string:
+            self._search_box.entry.event(event)
 
     def _on_item_activated(self, items_view, history_item):
         gpaste_client.select(history_item.uuid)
@@ -341,6 +343,7 @@ class Application(Gtk.Application):
         self._window.grid.attach(self._items_processors, 0, 0, 1, 1)
         self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
         self._window.grid.attach(right_overlay, 1, 0, 1, 2)
+        self._window.set_focus(self._items_view.listbox)
 
         if show_preferences_dialog: show_preferences()
 
@@ -559,10 +562,7 @@ class Application(Gtk.Application):
 
         grab_focus = True
 
-        if (
-            self._search_box.entry.get_text() or
-            common.SETTINGS[common.FOCUS_SEARCH_ON_OPEN]
-        ):
+        if self._search_box.entry.get_text():
             self._search_box.entry.grab_focus()
             grab_focus = False
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -42,7 +42,7 @@ class ItemsView(Gtk.Box):
         'item-selected': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
         'item-entered': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
         'item-left': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        'focus-search-requested': (GObject.SIGNAL_RUN_FIRST, None, ())
+        'focus-search-requested': (GObject.SIGNAL_RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
     }
 
     def __init__(self):
@@ -191,14 +191,23 @@ class ItemsView(Gtk.Box):
         if item: self.activate_item(item)
 
     def _on_key_press(self, listbox, event):
+        # Ignore modifiers
+        if event.state & (Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.MOD1_MASK | Gdk.ModifierType.SUPER_MASK):
+            return False
+
         if event.keyval == Gdk.KEY_Up:
             selected_rows = self._listbox.get_selected_rows()
             if (
                 len(selected_rows) == 1 and
                 selected_rows[0] == self._listbox.get_children()[0]
             ):
-                self.emit('focus-search-requested')
+                self.emit('focus-search-requested', event)
                 return True
+
+        if event.string:
+            self.emit('focus-search-requested', event)
+            return True
+
         return False
 
     def _on_changed(self, history_items):

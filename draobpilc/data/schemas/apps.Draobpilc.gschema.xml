@@ -157,10 +157,6 @@
             <default>307200</default>
         </key>
 
-        <key type="b" name="focus-search-on-open">
-            <default>true</default>
-        </key>
-
         <key type="i" name="set-items-timeout">
             <default>300</default>
         </key>
