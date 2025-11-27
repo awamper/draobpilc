@@ -212,7 +212,6 @@ class ItemsView(Gtk.Box):
 
     def _on_changed(self, history_items):
         self.show_items()
-        self.set_active_item()
         self.resume_selection() or self.select_first()
         self._last_selected_index = 0
 
@@ -302,6 +301,7 @@ class ItemsView(Gtk.Box):
         else:
             self._load_rest_btn.hide()
 
+        self.set_active_item()
         self.show_all()
 
     def load_rest_items(self):
@@ -333,8 +333,7 @@ class ItemsView(Gtk.Box):
         if len(self) < 1: return
 
         clipboard = Gtk.Clipboard.get_default(Gdk.Display.get_default())
-        text = clipboard.wait_for_text()
-        on_clipboard(clipboard, text)
+        clipboard.request_text(on_clipboard)
 
     def select_first(self, grab_focus=False):
         self._listbox.unselect_all()

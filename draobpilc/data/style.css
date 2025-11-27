@@ -2,8 +2,12 @@
     background-color: rgba(0, 0, 0, 0.8);
 }
 
-#HistoryItemBox {
+.history-item-box {
     border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.history-item-box-active {
+    border: 2px dashed #77DD77;
 }
 
 #HistoryItemLabel {
@@ -45,13 +49,6 @@
 
 #HistoryItemKindIndicator.link {
     background-color: #FF2EE3;
-}
-
-#HistoryItemViewActiveIndicator.file,
-#HistoryItemViewActiveIndicator.image,
-#HistoryItemViewActiveIndicator.text,
-#HistoryItemViewActiveIndicator.link {
-    background-color: rgba(0, 255, 0, 1);
 }
 
 #ProcessorBox {

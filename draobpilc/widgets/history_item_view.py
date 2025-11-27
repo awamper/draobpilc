@@ -205,23 +205,6 @@ class LinksButton(Gtk.LinkButton):
         return self._weakref()
 
 
-class ActiveIndicator(IndicatorBase):
-
-    def __init__(self, kind):
-        super().__init__()
-
-        self.set_name('HistoryItemViewActiveIndicator')
-        self.set_hexpand(True)
-        self.set_vexpand(False)
-        self.set_halign(Gtk.Align.FILL)
-        self.set_valign(Gtk.Align.START)
-        self.set_no_show_all(True)
-        self.set_size_request(-1, 4)
-        self.hide()
-
-        self.set_kind(kind)
-
-
 class ShortcutHint(Gtk.Box):
 
     def __init__(self):
@@ -262,9 +245,7 @@ class HistoryItemView(Gtk.Box):
         self._preview = None
         self._kind_indicator = ItemKindIndicator(self.item.kind)
         self._label = ItemLabel()
-        self._active_indicator = ActiveIndicator(self.item.kind)
         self._shortcut_hint = ShortcutHint()
-        self.set_active(False)
 
         if (
             self.item.kind == HistoryItemKind.TEXT and self.item.links
@@ -282,10 +263,10 @@ class HistoryItemView(Gtk.Box):
                 self._infobox = Gtk.Box()
 
         self._grid = Gtk.Grid()
+        self._grid.get_style_context().add_class('history-item-box')
         self._grid.attach(self._kind_indicator, 1, 1, 1, 2)
         self._grid.attach(self._label, 2, 1, 1, 1)
         self._grid.attach(self._infobox, 2, 2, 1, 1)
-        self._grid.attach(self._active_indicator, 0 , 0, 3, 1)
 
         if (
             self.item.thumb_path and
@@ -333,6 +314,8 @@ class HistoryItemView(Gtk.Box):
             audio_icon.set_valign(Gtk.Align.CENTER)
 
 
+        self.set_active(False)
+
         overlay = Gtk.Overlay()
         overlay.add(self._grid)
         overlay.add_overlay(self._shortcut_hint)
@@ -353,10 +336,12 @@ class HistoryItemView(Gtk.Box):
         self._label.set_markup(markup)
 
     def set_active(self, active):
+        style_context = self._grid.get_style_context()
+
         if active:
-            self._active_indicator.show()
+            style_context.add_class('history-item-box-active')
         else:
-            self._active_indicator.hide()
+            style_context.remove_class('history-item-box-active')
 
     def show_shortcut_hint(self, hint):
         if hint is None:
