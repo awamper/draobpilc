@@ -343,7 +343,6 @@ class Application(Gtk.Application):
         self._window.grid.attach(self._items_processors, 0, 0, 1, 1)
         self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
         self._window.grid.attach(right_overlay, 1, 0, 1, 2)
-        self._window.set_focus(self._items_view.listbox)
 
         if show_preferences_dialog: show_preferences()
 
