@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -14,7 +14,9 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
+import logging
 
+import gi
 from gi.repository import Gtk
 from gi.repository import GdkPixbuf
 
@@ -72,16 +74,21 @@ class ItemThumb(Gtk.Image):
         max_height=DEFAULT_HEIGHT,
         ratio=True
     ):
+        pixbuf = None
+
         if (
             max_width < 1 and max_width != -1 or
             max_height < 1 and max_height != -1
-        ): return None
+        ): return pixbuf
 
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
-            filename,
-            max_width,
-            max_height,
-            ratio
-        )
+        try:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                filename,
+                max_width,
+                max_height,
+                ratio
+            )
+        except gi.repository.GLib.GError as e:
+            logging.error(e)
 
         return pixbuf
