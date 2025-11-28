@@ -22,73 +22,100 @@ from gi.repository import GdkPixbuf
 
 from draobpilc import common
 
-DEFAULT_WIDTH = (
-    common.SETTINGS[common.ITEM_MAX_HEIGHT]
-)
-DEFAULT_HEIGHT = (
-    common.SETTINGS[common.ITEM_MAX_HEIGHT]
-)
+
+DEFAULT_WIDTH = common.SETTINGS[common.ITEM_MAX_HEIGHT]
+DEFAULT_HEIGHT = common.SETTINGS[common.ITEM_MAX_HEIGHT]
+DEFAULT_RATIO = True
 
 
-class ItemThumb(Gtk.Image):
+class ItemThumb(Gtk.Box):
 
     def __init__(
         self,
-        filename=None,
+        file_path=None,
         max_width=DEFAULT_WIDTH,
         max_height=DEFAULT_HEIGHT,
-        ratio=True
+        ratio=DEFAULT_RATIO,
+        fallback_icon_name='image-missing'
     ):
         super().__init__()
         self.get_style_context().add_class('item-thumb')
 
-        self._filename = None
-        if filename: self.set_filename(filename, max_width, max_height, ratio)
+        self._image = Gtk.Image()
+        self.add(self._image)
 
-    def set_filename(self, filename, max_width, max_height, ratio=True):
-        self._filename = filename
-        pixbuf = ItemThumb.get_pixbuf(filename, max_width, max_height, ratio)
-        self.set_from_pixbuf(pixbuf)        
+        self._file_path = file_path
+        self._max_width = max_width
+        self._max_height = max_height
+        self._ratio = ratio
+        self._fallback_icon_name = fallback_icon_name
 
-    def resize(self, width, height):
-        old_pixbuf = self.props.pixbuf
+        if self._file_path:
+            self._try_set_image()
+        else:
+            self.set_default()
 
-        if (
-            old_pixbuf.props.width == width and
-            old_pixbuf.props.height == height
-        ): return None
-
-        if width > 0:
-            width = width - MARGIN
-        if height > 0:
-            height = height - MARGIN * 2
-
-        self.clear()
-        new_pixbuf = ItemThumb.get_pixbuf(self._filename, width, height)
-        if new_pixbuf: self.set_from_pixbuf(new_pixbuf)
-
-    @staticmethod
-    def get_pixbuf(
-        filename,
-        max_width=DEFAULT_WIDTH,
-        max_height=DEFAULT_HEIGHT,
-        ratio=True
-    ):
-        pixbuf = None
-
-        if (
-            max_width < 1 and max_width != -1 or
-            max_height < 1 and max_height != -1
-        ): return pixbuf
+    def _try_set_image(self):
+        result = False
+        if not self._max_width or not self._max_height:
+            return result
 
         try:
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
-                filename,
-                max_width,
-                max_height,
-                ratio
+                self._file_path,
+                self._max_width,
+                self._max_height,
+                self._ratio
             )
+            self._image.set_from_pixbuf(pixbuf)
+            result = True
         except gi.repository.GLib.GError as e:
             logging.error(e)
 
-        return pixbuf
+        if not result:
+            self.set_default()
+        else:
+            self.show_all()
+
+        return result
+
+    def set_default(self):
+        self.clear()
+        self._image.set_from_icon_name(self._fallback_icon_name, Gtk.IconSize.DIALOG)
+        self.show_all()
+
+    def clear(self):
+        self._file_path = None
+        self._max_width = DEFAULT_WIDTH
+        self._max_height = DEFAULT_HEIGHT
+        self._ratio = DEFAULT_RATIO
+
+        if self._image:
+            self._image.clear()
+            self._image.hide()
+
+    def change_image(self, file_path, max_width=None, max_height=None):
+        self.clear()
+        result = False
+
+        if not file_path:
+            return result
+
+        self._file_path = file_path
+        if max_width: self._max_width = max_width
+        if max_height: self._max_height = max_height
+
+        result = self._try_set_image()
+        return result
+
+    def resize(self, width, height, ratio=DEFAULT_RATIO):
+        result = False
+
+        if self._file_path and width and height:
+            self._max_width = width
+            self._max_height = height
+            self._ratio = ratio
+            self._try_set_image()
+            result = True
+
+        return result

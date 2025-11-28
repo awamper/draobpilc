@@ -159,20 +159,24 @@ class Previewer(ItemsProcessorBase):
         self._open_file_location()
 
     def _preview_supported(self, item):
+        result = True
+
         if (
             item.kind == HistoryItemKind.FILE or
             item.kind == HistoryItemKind.IMAGE
         ):
-            return True
+            result = True
         elif (
             not item or
             not os.path.exists(item.raw) or
             not common.SETTINGS[common.PREVIEW_TEXT_FILES] or
             not is_editable_text_file(item.content_type)
         ):
-            return False
+            result = False
+        else:
+            result = True
 
-        return True
+        return result
 
     def _preview_text_file(self, file_path):
         self._message_widget.hide()
@@ -226,7 +230,7 @@ class Previewer(ItemsProcessorBase):
         exists = os.path.exists(self.item.raw)
 
         if self.item.image_path:
-            self._thumb.set_filename(
+            self._thumb.change_image(
                 self.item.image_path,
                 self._thumb_max_width * 0.8,
                 self._thumb_max_height * 0.8
@@ -257,7 +261,7 @@ class Previewer(ItemsProcessorBase):
         ):
             self._preview_text_file(self.item.raw)
         elif self.item.thumb_path:
-            self._thumb.set_filename(
+            self._thumb.change_image(
                 self.item.thumb_path,
                 self._thumb_max_width * 0.8,
                 self._thumb_max_height * 0.8
