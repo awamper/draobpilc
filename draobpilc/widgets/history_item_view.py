@@ -264,9 +264,9 @@ class HistoryItemView(Gtk.Box):
 
         self._grid = Gtk.Grid()
         self._grid.get_style_context().add_class('history-item-box')
-        self._grid.attach(self._kind_indicator, 1, 1, 1, 2)
-        self._grid.attach(self._label, 2, 1, 1, 1)
-        self._grid.attach(self._infobox, 2, 2, 1, 1)
+        self._grid.attach(self._kind_indicator, 0, 0, 1, 2)
+        self._grid.attach(self._label, 2, 0, 1, 1)
+        self._grid.attach(self._infobox, 2, 1, 1, 1)
 
         if (
             self.item.thumb_path and
@@ -277,7 +277,7 @@ class HistoryItemView(Gtk.Box):
                 -1,
                 common.SETTINGS[common.ITEM_MAX_HEIGHT]
             )
-            self._grid.attach(self._preview, 1, 1, 1, 2)
+            self._grid.attach(self._preview, 1, 0, 1, 2)
         elif (
             self.item.kind == HistoryItemKind.FILE and
             self.item.content_type and
@@ -291,7 +291,7 @@ class HistoryItemView(Gtk.Box):
             video_icon.set_pixel_size(common.SETTINGS[common.ITEM_MAX_HEIGHT])
             video_icon.set_margin_start(20)
             video_icon.set_margin_end(20)
-            self._grid.attach(video_icon, 1, 1, 1, 2)
+            self._grid.attach(video_icon, 1, 0, 1, 2)
             # Center the icon within its allocated space
             video_icon.set_halign(Gtk.Align.CENTER)
             video_icon.set_valign(Gtk.Align.CENTER)
@@ -308,7 +308,7 @@ class HistoryItemView(Gtk.Box):
             audio_icon.set_pixel_size(common.SETTINGS[common.ITEM_MAX_HEIGHT])
             audio_icon.set_margin_start(20)
             audio_icon.set_margin_end(20)
-            self._grid.attach(audio_icon, 1, 1, 1, 2)
+            self._grid.attach(audio_icon, 1, 0, 1, 2)
             # Center the icon within its allocated space
             audio_icon.set_halign(Gtk.Align.CENTER)
             audio_icon.set_valign(Gtk.Align.CENTER)
