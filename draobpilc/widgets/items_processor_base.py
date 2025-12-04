@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2016 Ivan awamper@gmail.com
+# Copyright 2016-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,55 +15,59 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
+from __future__ import annotations
+
+from typing import List, Optional
+
+from gi.repository import Gtk  # type: ignore
+
+from draobpilc.history_item import HistoryItem
 
 
 class ItemsProcessorPriority():
 
-    LOWEST = 0
-    LOW = 1
-    NORMAL = 2
-    HIGH = 3
-    HIGHEST = 4
+    LOWEST: int = 0
+    LOW: int = 1
+    NORMAL: int = 2
+    HIGH: int = 3
+    HIGHEST: int = 4
 
 
 class ItemsProcessorBase(Gtk.Bin):
 
-    MARGIN = 10
+    MARGIN: int = 10
 
-    def __init__(self, title, priority=ItemsProcessorPriority.NORMAL, default=False):
+    def __init__(self, title: str, priority: int = ItemsProcessorPriority.NORMAL, default: bool = False) -> None:
         super().__init__()
-
-        self.items = []
-        self.priority = priority
-        self.default = default
-
         self.set_valign(Gtk.Align.FILL)
         self.set_halign(Gtk.Align.FILL)
         self.set_hexpand(True)
         self.set_vexpand(True)
 
-        self.title = title
-
-        self.grid = Gtk.Grid()
+        self.title: str = title
+        self.items: List[HistoryItem] = []
+        self.priority: int = priority
+        self.default: bool = default
+        self.grid: Gtk.Grid = Gtk.Grid()
 
         self.add(self.grid)
         self.show_all()
 
-    def set_items(self, items):
+    def set_items(self, items: List[HistoryItem]) -> None:
         self.items = items
 
-    def clear(self):
+    def clear(self) -> None:
         self.items.clear()
 
-    def can_process(self, items):
-        return True
+    def can_process(self, items: List[HistoryItem]) -> bool:
+        result = True
+        return result
 
-    def reload(self):
+    def reload(self) -> None:
         if self.items: self.set_items(self.items)
 
     @property
-    def item(self):
+    def item(self) -> Optional[HistoryItem]:
         item = None
 
         try:
@@ -72,3 +76,4 @@ class ItemsProcessorBase(Gtk.Bin):
             pass
 
         return item
+

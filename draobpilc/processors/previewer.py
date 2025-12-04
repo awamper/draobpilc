@@ -15,12 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
-import humanize
+from __future__ import annotations
 
-from gi.repository import Gtk
-from gi.repository import Gio
-from gi.repository import Gdk
+import humanize
+import os
+from typing import Any, List, Optional, TYPE_CHECKING
+
+from gi.repository import Gtk  # type: ignore
+from gi.repository import Gio  # type: ignore
+from gi.repository import Gdk  # type: ignore
 
 from draobpilc import common
 from draobpilc.history_item_kind import HistoryItemKind
@@ -32,10 +35,14 @@ from draobpilc.widgets.items_processor_base import (
 )
 from draobpilc.widgets.file_link_widget import FileLinkWidget
 from draobpilc.lib.utils import is_editable_text_file
+from draobpilc.history_item import HistoryItem
+
+if TYPE_CHECKING:
+    _ = lambda s: s
 
 
 class PreviewMessageWidget(Gtk.Box):
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=10)
         self.set_valign(Gtk.Align.CENTER)
         self.set_halign(Gtk.Align.CENTER)
@@ -43,39 +50,38 @@ class PreviewMessageWidget(Gtk.Box):
         self.set_hexpand(True)
         self.set_opacity(0.6)
 
-        icon = Gtk.Image.new_from_icon_name('dialog-warning', Gtk.IconSize.DIALOG)
+        icon: Gtk.Image = Gtk.Image.new_from_icon_name('dialog-warning', Gtk.IconSize.DIALOG)
         self.add(icon)
 
-        self._main_label = Gtk.Label()
+        self._main_label: Gtk.Label = Gtk.Label()
         self.add(self._main_label)
 
-        self._details_label = Gtk.Label()
+        self._details_label: Gtk.Label = Gtk.Label()
         self.add(self._details_label)
 
-    def set_message(self, title, message=None):
+    def set_message(self, title: str, message: Optional[str] = None) -> None:
         if title:
             self._main_label.set_markup(f'<span font-size="xx-large">{title}</span>')
         if message:
             self._details_label.set_markup(f'<span font-size="large">{message}</span>')
 
-    def clear(self):
+    def clear(self) -> None:
         self._main_label.set_markup('')
         self._details_label.set_markup('')
 
 
-
 class Previewer(ItemsProcessorBase):
 
-    THUMB_MAX_WIDTH = 200
-    THUMB_MAX_HEIGHT = 200
+    THUMB_MAX_WIDTH: int = 200
+    THUMB_MAX_HEIGHT: int = 200
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(_('Preview'), ItemsProcessorPriority.HIGH)
 
-        self._thumb_max_width = Previewer.THUMB_MAX_WIDTH
-        self._thumb_max_height = Previewer.THUMB_MAX_HEIGHT
+        self._thumb_max_width: int = Previewer.THUMB_MAX_WIDTH
+        self._thumb_max_height: int = Previewer.THUMB_MAX_HEIGHT
 
-        self._thumb = ItemThumb()
+        self._thumb: ItemThumb = ItemThumb()
         self._thumb.set_vexpand(True)
         self._thumb.set_hexpand(True)
         self._thumb.set_valign(Gtk.Align.CENTER)
@@ -83,7 +89,7 @@ class Previewer(ItemsProcessorBase):
         self._thumb.props.margin = ItemsProcessorBase.MARGIN
         self._thumb.show()
 
-        self._thumb_eventbox = Gtk.EventBox()
+        self._thumb_eventbox: Gtk.EventBox = Gtk.EventBox()
         self._thumb_eventbox.set_no_show_all(True)
         self._thumb_eventbox.add(self._thumb)
         self._thumb_eventbox.connect(
@@ -99,7 +105,7 @@ class Previewer(ItemsProcessorBase):
         )
         self._thumb_eventbox.hide()
 
-        self._path_entry = Gtk.Entry()
+        self._path_entry: Gtk.Entry = Gtk.Entry()
         self._path_entry.set_editable(False)
         self._path_entry.set_hexpand(True)
         self._path_entry.set_icon_from_icon_name(
@@ -113,18 +119,18 @@ class Previewer(ItemsProcessorBase):
         self._path_entry.props.margin = ItemsProcessorBase.MARGIN
         self._path_entry.connect('icon-release', self._on_path_entry_icon_release)
 
-        self._text_window = TextWindow()
+        self._text_window: TextWindow = TextWindow()
         self._text_window.set_no_show_all(True)
         self._text_window.textview.set_name('EditorTextView')
         self._text_window.textview.set_editable(False)
         self._text_window.hide()
 
-        self._message_widget = PreviewMessageWidget()
+        self._message_widget: PreviewMessageWidget = PreviewMessageWidget()
 
-        self._files_list = Gtk.ListBox()
+        self._files_list: Gtk.ListBox = Gtk.ListBox()
         self._files_list.set_selection_mode(Gtk.SelectionMode.NONE)
 
-        self._files_list_view = Gtk.ScrolledWindow()
+        self._files_list_view: Gtk.ScrolledWindow = Gtk.ScrolledWindow()
         self._files_list_view.set_vexpand(True)
         self._files_list_view.set_hexpand(True)
         self._files_list_view.add(self._files_list)
@@ -138,27 +144,28 @@ class Previewer(ItemsProcessorBase):
         self.grid.attach(self._message_widget, 0, 1, 2, 1)
         self.grid.attach(self._files_list_view, 0, 1, 2, 1)
 
-    def _change_cursor(self, sender):
-        window = sender.get_window()
+    def _change_cursor(self, sender: Gtk.EventBox) -> None:
+        window: Optional[Gdk.Window] = sender.get_window()
         if not window: return
 
-        display = Gdk.Display.get_default()
-        cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.HAND2)
-        window.set_cursor(cursor)
+        display: Optional[Gdk.Display] = Gdk.Display.get_default()
+        if display:
+            cursor: Gdk.Cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.HAND2)
+            window.set_cursor(cursor)
 
-    def _on_thumb_button_release(self, event_box, event):
+    def _on_thumb_button_release(self, event_box: Gtk.EventBox, event: Gdk.EventButton) -> None:
         self._open_file_location()
 
-    def _open_file_location(self):
-        app_info = Gio.AppInfo.get_default_for_type('inode/directory', True)
+    def _open_file_location(self) -> None:
+        app_info: Optional[Gio.AppInfo] = Gio.AppInfo.get_default_for_type('inode/directory', True)
         if not app_info: return
         app_info.launch_uris(['file://%s' % self._path_entry.get_text()], None)
         common.APPLICATION.hide()
 
-    def _on_path_entry_icon_release(self, entry, icon_pos, event):
+    def _on_path_entry_icon_release(self, entry: Gtk.Entry, icon_pos: Gtk.EntryIconPosition, event: Gdk.EventButton) -> None:
         self._open_file_location()
 
-    def _preview_supported(self, item):
+    def _preview_supported(self, item: HistoryItem) -> bool:
         result = True
 
         if (
@@ -168,6 +175,7 @@ class Previewer(ItemsProcessorBase):
             result = True
         elif (
             not item or
+            not item.raw or
             not os.path.exists(item.raw) or
             not common.SETTINGS[common.PREVIEW_TEXT_FILES] or
             not is_editable_text_file(item.content_type)
@@ -178,31 +186,32 @@ class Previewer(ItemsProcessorBase):
 
         return result
 
-    def _preview_text_file(self, file_path):
+    def _preview_text_file(self, file_path: str) -> None:
         self._message_widget.hide()
         self._path_entry.show()
 
-        file_size = os.path.getsize(file_path)
-        max_size_bytes = common.SETTINGS[common.PREVIEW_TEXT_MAX_SIZE_BYTES]
+        file_size: int = os.path.getsize(file_path)
+        max_size_bytes: int = common.SETTINGS[common.PREVIEW_TEXT_MAX_SIZE_BYTES]
 
         if max_size_bytes > 0 and file_size > max_size_bytes:
-            human_file_size = humanize.naturalsize(file_size, binary=True)
-            human_max_size = humanize.naturalsize(max_size_bytes, binary=True)
+            human_file_size: str = humanize.naturalsize(file_size, binary=True)
+            human_max_size: str = humanize.naturalsize(max_size_bytes, binary=True)
             
-            title = _("File is too large to preview")
-            message = _(f"File size ({human_file_size}) exceeds the preview limit ({human_max_size})")
+            title: str = _("File is too large to preview")
+            message: str = _(f"File size ({human_file_size}) exceeds the preview limit ({human_max_size})")
             
             self._message_widget.set_message(title, message)
             self._message_widget.show()
             return
 
         self._text_window.show()
-        with open(self.item.raw, 'r') as fp:
-            contents = fp.read()
-            self._text_window.set_filename(self.item.raw)
-            self._text_window.buffer.set_text(contents)
+        if self.item and self.item.raw:
+            with open(self.item.raw, 'r') as fp:
+                contents: str = fp.read()
+                self._text_window.set_filename(self.item.raw)
+                self._text_window.buffer.set_text(contents)
 
-    def clear(self):
+    def clear(self) -> None:
         super().clear()
 
         self._path_entry.set_text('')
@@ -211,11 +220,11 @@ class Previewer(ItemsProcessorBase):
         self._message_widget.clear()
         self._files_list_view.hide()
 
-    def set_max_size(self, width, height):
+    def set_max_size(self, width: int, height: int) -> None:
         self._thumb_max_width = width or Previewer.THUMB_MAX_WIDTH
         self._thumb_max_height = height or Previewer.THUMB_MAX_HEIGHT
 
-    def set_items(self, items):
+    def set_items(self, items: List[HistoryItem]) -> None:
         self.items = items
 
         self._thumb_eventbox.hide()
@@ -226,20 +235,29 @@ class Previewer(ItemsProcessorBase):
         for child in self._files_list.get_children():
             self._files_list.remove(child)
 
-        self._path_entry.set_text(self.item.raw)
-        exists = os.path.exists(self.item.raw)
+        if not self.item:
+            self._path_entry.set_text('')
+            return
+
+        exists: bool = self.item.raw is not None and os.path.exists(self.item.raw)
+        if self.item.raw:
+            self._path_entry.set_text(self.item.raw)
+        else:
+            self._path_entry.set_text('')
 
         if self.item.image_path:
             self._thumb.change_image(
                 self.item.image_path,
-                self._thumb_max_width * 0.8,
-                self._thumb_max_height * 0.8
+                int(self._thumb_max_width * 0.8),
+                int(self._thumb_max_height * 0.8)
             )
             self._thumb_eventbox.show()
             self._path_entry.show()
         elif (
             self.item.kind == HistoryItemKind.FILE and
-            self.item.n_lines > 1
+            self.item.n_lines is not None and
+            self.item.n_lines > 1 and
+            self.item.raw is not None
         ):
             self._path_entry.hide()
             for path in self.item.raw.strip().split('\n'):
@@ -257,14 +275,15 @@ class Previewer(ItemsProcessorBase):
         elif (
             exists and
             self._preview_supported(self.item) and
-            is_editable_text_file(self.item.content_type)
+            is_editable_text_file(self.item.content_type) and
+            self.item.raw is not None
         ):
             self._preview_text_file(self.item.raw)
         elif self.item.thumb_path:
             self._thumb.change_image(
                 self.item.thumb_path,
-                self._thumb_max_width * 0.8,
-                self._thumb_max_height * 0.8
+                int(self._thumb_max_width * 0.8),
+                int(self._thumb_max_height * 0.8)
             )
             self._thumb_eventbox.show()
             self._path_entry.show()
@@ -275,7 +294,9 @@ class Previewer(ItemsProcessorBase):
             self._text_window.buffer.set_text(self.item.raw)
             self._text_window.set_filename(None)
 
-    def can_process(self, items):
+    def can_process(self, items: List[HistoryItem]) -> bool:
+        result: bool = False
+
         if (
             len(items) == 1 and (
                 self._preview_supported(items[0]) or
@@ -283,6 +304,7 @@ class Previewer(ItemsProcessorBase):
                 items[0].image_path
             )
         ):
-            return True
-        else:
-            return False
+            result = True
+
+        return result
+

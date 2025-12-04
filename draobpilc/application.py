@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,10 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import threading
+from __future__ import annotations
 
-from dbus.exceptions import DBusException
-from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk
+import argparse
+import logging
+import threading
+from typing import Any, Callable, List, Optional, TYPE_CHECKING
+
+from dbus.exceptions import DBusException  # type: ignore
+from gi.repository import Gdk, GdkPixbuf, Gio, GLib, Gtk  # type: ignore
 
 from draobpilc import common, get_data_path, version
 from draobpilc.history_item import HistoryItem
@@ -36,27 +41,31 @@ from draobpilc.widgets.preferences import show_preferences
 from draobpilc.widgets.search_box import SearchBox
 from draobpilc.widgets.window import Window
 
+if TYPE_CHECKING:
+    _ = lambda s: s
+
 
 class Application(Gtk.Application):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.set_application_id(version.APP_ID)
         self.set_flags(Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
 
-        self._window = None
-        self._editor = None
-        self._previewer = None
-        self._merger = None
-        self._items_processors = None
-        self._main_toolbox = None
-        self._history_items = None
-        self._search_box = None
-        self._items_view = None
-        self._deletion_progress_bar = None
+        self.args: Optional[argparse.Namespace] = None
+        self._window: Optional[Window] = None
+        self._editor: Optional[editor.Editor] = None
+        self._previewer: Optional[previewer.Previewer] = None
+        self._merger: Optional[merger.Merger] = None
+        self._items_processors: Optional[ItemsProcessors] = None
+        self._main_toolbox: Optional[MainToolbox] = None
+        self._history_items: Optional[HistoryItems] = None
+        self._search_box: Optional[SearchBox] = None
+        self._items_view: Optional[ItemsView] = None
+        self._deletion_progress_bar: Optional[Gtk.ProgressBar] = None
 
-    def _resize(self, window, event):
+    def _resize(self, window: Window, event: Any) -> None:
         size = window.get_size()
 
         list_width = round(
@@ -71,69 +80,84 @@ class Application(Gtk.Application):
             size[1] / 100 * common.SETTINGS[common.PROCESSOR_HEIGHT_PERCENTS]
         )
 
-        self._items_view.set_size_request(list_width, -1)
-        self._items_processors.set_size_request(
-            processors_width,
-            processors_height
-        )
-        self._previewer.set_max_size(processors_width, processors_height)
+        if self._items_view:
+            self._items_view.set_size_request(list_width, -1)
+        if self._items_processors:
+            self._items_processors.set_size_request(
+                processors_width,
+                processors_height
+            )
+        if self._previewer:
+            self._previewer.set_max_size(processors_width, processors_height)
 
-    def _on_search_changed(self, search_box, search_index=None):
-        self._history_items.filter(
-            term=self._search_box.search_text,
-            kinds=self._search_box.flags,
-            index=search_index
-        )
+    def _on_search_changed(self, search_box: SearchBox, search_index: Optional[int] = None) -> None:
+        if self._history_items and self._search_box:
+            self._history_items.filter(
+                term=self._search_box.search_text,
+                kinds=self._search_box.flags,
+                index=search_index
+            )
 
-    def _on_entry_activated(self, entry):
-        items = self._items_view.get_selected()
-        if items: self._on_item_activated(self._items_view, items[0])
+    def _on_entry_activated(self, entry: Gtk.Entry) -> bool:
+        if self._items_view:
+            items = self._items_view.get_selected()
+            if items:
+                self._on_item_activated(self._items_view, items[0])
+
         return True
 
-    def _on_search_entry_key_press(self, widget, event):
-        if event.keyval == Gdk.KEY_Down:
+    def _on_search_entry_key_press(self, widget: Gtk.Widget, event: Any) -> bool:
+        if event.keyval == Gdk.KEY_Down and self._items_view:
             self._items_view.select_first(grab_focus=True)
             return True
         return False
 
-    def _on_items_view_focus_search(self, items_view, event):
-        self._search_box.entry.grab_focus()
-        if event.string:
-            self._search_box.entry.event(event)
+    def _on_items_view_focus_search(self, items_view: ItemsView, event: Any) -> None:
+        if self._search_box and self._search_box.entry:
+            self._search_box.entry.grab_focus()
+            if event.string:
+                self._search_box.entry.event(event)
 
-    def _on_item_activated(self, items_view, history_item):
-        gpaste_client.select(history_item.uuid)
-        self._search_box.entry.set_text('')
+    def _on_item_activated(self, items_view: ItemsView, history_item: HistoryItem) -> None:
+        if history_item.uuid:
+            gpaste_client.select(history_item.uuid)
+        if self._search_box and self._search_box.entry:
+            self._search_box.entry.set_text('')
         self.hide()
 
-    def _on_item_entered(self, items_view, item):
-        if self._items_view.n_selected != 1: return
+    def _on_item_entered(self, items_view: ItemsView, item: HistoryItem) -> None:
+        if not self._items_view or self._items_view.n_selected != 1: return
 
-        self._items_processors.set_items(
-            [item],
-            timeout=common.SETTINGS[common.SET_ITEMS_TIMEOUT]
-        )
+        if self._items_processors:
+            self._items_processors.set_items(
+                [item],
+                timeout=common.SETTINGS[common.SET_ITEMS_TIMEOUT]
+            )
 
-    def _on_delete_action(self, action, param):
-        selected_items = self._items_view.get_selected()
-        if not selected_items: return
+    def _on_delete_action(self, action: Gio.SimpleAction, param: Any) -> None:
+        if self._items_view:
+            selected_items = self._items_view.get_selected()
+            if not selected_items: return
 
-        self.delete_items(selected_items)
+            self.delete_items(selected_items)
 
-    def _on_open_item(self, action, param):
+    def _on_open_item(self, action: Gio.SimpleAction, param: Any) -> None:
+        if not self._items_view:
+            return
+
         selected_items = self._items_view.get_selected()
         if not selected_items: return
         item = selected_items[0]
-        if not item.app_info: return
+        if not item.app_info or not item.raw: return
 
         uri = item.raw.strip()
         if item.kind != HistoryItemKind.LINK:
-            uri = 'file://%s' % item.raw
+            uri = 'file://%s' % uri
 
         item.app_info.launch_uris([uri])
         self.hide()
 
-    def _restart_daemon(self, button):
+    def _restart_daemon(self, button: Gtk.Button) -> None:
         try:
             gpaste_client.reexecute()
         except DBusException:
@@ -141,22 +165,22 @@ class Application(Gtk.Application):
 
         utils.restart_app()
 
-    def _on_editor_wrap_action(self, action, param):
-        if common.SETTINGS[common.EDITOR_WRAP_TEXT]:
-            common.SETTINGS[common.EDITOR_WRAP_TEXT] = False
-        else:
-            common.SETTINGS[common.EDITOR_WRAP_TEXT] = True
+    def _on_editor_wrap_action(self, action: Gio.SimpleAction, param: Any) -> None:
+        common.SETTINGS[common.EDITOR_WRAP_TEXT] = not common.SETTINGS[common.EDITOR_WRAP_TEXT]
 
-    def _on_backup_history(self, action, param):
+    def _on_backup_history(self, action: Gio.SimpleAction, param: Any) -> None:
         dialog = BackupHistoryDialog(self._window)
         dialog.run()
 
-    def _on_reset_search_action(self, action, param):
-        self._search_box.reset()
-        self._search_box.entry.grab_focus()
+    def _on_reset_search_action(self, action: Gio.SimpleAction, param: Any) -> None:
+        if self._search_box:
+            self._search_box.reset()
 
-    def _on_key_press(self, window, event):
-        if not common.SETTINGS[common.ENABLE_ACTIVATE_NUMBER_KB]: return
+            if self._search_box.entry:
+                self._search_box.entry.grab_focus()
+
+    def _on_key_press(self, window: Window, event: Any) -> None:
+        if not common.SETTINGS[common.ENABLE_ACTIVATE_NUMBER_KB] or not self._items_view: return
 
         result, keyval = event.get_keyval()
         is_control = bool(event.get_state() & Gdk.ModifierType.CONTROL_MASK)
@@ -180,18 +204,19 @@ class Application(Gtk.Application):
                 item = self._items_view.get_for_shortcut(
                     number_keyvals.index(keyval)
                 )
-                if item: self._items_view.activate_item(item)
+                if item and self._items_view:
+                    self._items_view.activate_item(item)
 
-    def _on_key_release(self, window, event):
-        if not common.SETTINGS[common.ENABLE_ACTIVATE_NUMBER_KB]: return
+    def _on_key_release(self, window: Window, event: Any) -> None:
+        if not common.SETTINGS[common.ENABLE_ACTIVATE_NUMBER_KB] or not self._items_view: return
 
         result, keyval = event.get_keyval()
 
         if keyval == Gdk.KEY_Control_L:
             self._items_view.show_shortcut_hints(False)
 
-    def _bind_action(self, name, target, settings_key, callback):
-        def on_settings_change(settings, key, target):
+    def _bind_action(self, name: str, target: str, settings_key: str, callback: Callable[..., Any]) -> None:
+        def on_settings_change(settings: Any, key: str, target: str) -> None:
             self.set_accels_for_action(target, [settings[key]])
 
         action = Gio.SimpleAction.new(name, None)
@@ -208,69 +233,87 @@ class Application(Gtk.Application):
             target
         )
 
-    def _update_deletion_progress(self, fraction, text):
-        self._deletion_progress_bar.set_fraction(fraction)
-        self._deletion_progress_bar.set_text(text)
+    def _update_deletion_progress(self, fraction: float, text: str) -> bool:
+        if self._deletion_progress_bar:
+            self._deletion_progress_bar.set_fraction(fraction)
+            self._deletion_progress_bar.set_text(text)
+
         return False
 
-    def _threaded_delete(self, items_to_delete, resume_selection):
+    def _threaded_delete(self, items_to_delete: List[HistoryItem], resume_selection: bool) -> None:
         total_items = len(items_to_delete)
-        delete_indexes = [(item.index, item.uuid) for item in items_to_delete]
-        delete_indexes = sorted(delete_indexes)
+        delete_indexes = sorted([(item.index, item.uuid) for item in items_to_delete])
 
-        for i, index in enumerate(delete_indexes):
-            delete_index = index[0] - i
-            if delete_index < 0: continue
-            try:
-                gpaste_client.delete(index[1])
-                fraction = (i + 1) / total_items
-                text = f"Deleting {i+1} of {total_items} items..."
-                GLib.idle_add(self._update_deletion_progress, fraction, text)
-            except DBusException as e:
-                print(f'Error deleting item {index[1]}: {e}')
+        for i, index_tuple in enumerate(delete_indexes):
+            item_uuid = index_tuple[1]
+            if item_uuid:
+                try:
+                    gpaste_client.delete(item_uuid)
+                    fraction = (i + 1) / total_items
+                    text = f"Deleting {i+1} of {total_items} items..."
+                    GLib.idle_add(self._update_deletion_progress, fraction, text)
+                except DBusException as e:
+                    logging.warning(f'Error deleting item {item_uuid}: {e}')
 
         GLib.idle_add(self._on_delete_finished, resume_selection)
 
-    def _on_delete_finished(self, resume_selection):
-        self._deletion_progress_bar.hide()
-        self._deletion_progress_bar.set_fraction(0)
-        self._items_view.set_sensitive(True)
-        self._items_processors.set_sensitive(True)
+    def _on_delete_finished(self, resume_selection: bool) -> bool:
+        if self._deletion_progress_bar:
+            self._deletion_progress_bar.hide()
+            self._deletion_progress_bar.set_fraction(0)
+        if self._items_view:
+            self._items_view.set_sensitive(True)
+        if self._items_processors:
+            self._items_processors.set_sensitive(True)
 
-        filter_active = self._search_box.search_text or self._search_box.flags
-        self._history_items.freeze(False)
-        self._history_items.reload_history(emit_signal=not filter_active)
+        filter_active: bool = bool(self._search_box and (
+            self._search_box.search_text
+            or self._search_box.flags
+        ))
 
-        if filter_active:
+        if self._history_items:
+            self._history_items.freeze(False)
+            self._history_items.reload_history(emit_signal=not filter_active)
+
+        if filter_active and self._search_box:
             self._on_search_changed(self._search_box)
 
-        if resume_selection:
+        if resume_selection and self._items_view:
             self._items_view.resume_selection()
-        
+
         return False
 
-    def delete_items(self, items, resume_selection=True):
-        self._deletion_progress_bar.show()
-        self._items_view.set_sensitive(False)
-        self._items_processors.set_sensitive(False)
-        
-        self._history_items.freeze(True)
-        if resume_selection:
+    def delete_items(self, items: List[HistoryItem], resume_selection: bool = True) -> None:
+        if self._deletion_progress_bar:
+            self._deletion_progress_bar.show()
+        if self._items_view:
+            self._items_view.set_sensitive(False)
+        if self._items_processors:
+            self._items_processors.set_sensitive(False)
+
+        if self._history_items:
+            self._history_items.freeze(True)
+        if resume_selection and self._items_view:
             self._items_view.save_selection()
 
         thread = threading.Thread(target=self._threaded_delete, args=(items, resume_selection))
         thread.daemon = True
         thread.start()
 
+    def selection_changed(self) -> None:
+        if not self._items_view or not self._items_processors:
+            return
 
-    def selection_changed(self):
         selected = self._items_view.get_selected()
         self._items_processors.set_items(
             selected,
             timeout=common.SETTINGS[common.SET_ITEMS_TIMEOUT]
         )
 
-    def merge_items(self, merger, items, delete_merged):
+    def merge_items(self, merger: merger.Merger, items: List[HistoryItem], delete_merged: bool) -> None:
+        if not self._merger or not self._merger.buffer:
+            return
+
         merged_text = self._merger.buffer.props.text
         if not merged_text: return
 
@@ -278,10 +321,10 @@ class Application(Gtk.Application):
         gpaste_client.add(merged_text)
         self.hide()
 
-    def _on_merger_delete(self, merger, items):
+    def _on_merger_delete(self, merger: merger.Merger, items: List[HistoryItem]) -> None:
         self.delete_items(items, resume_selection=True)
 
-    def do_command_line(self, command_line):
+    def do_command_line(self, command_line: Gio.ApplicationCommandLine) -> int:
         Gtk.Application.do_command_line(self, command_line)
 
         arguments = command_line.get_arguments()
@@ -297,25 +340,28 @@ class Application(Gtk.Application):
 
         return 0
 
-    def do_activate(self, show_preferences_dialog=False):
+    def do_activate(self, show_preferences_dialog: bool = False) -> None:
 
-
-        def resize_progress_bar(widget, allocation):
-            parent_width = allocation.width
-            target_width = int(parent_width * 0.60)
-            self._deletion_progress_bar.set_size_request(target_width, -1)
-
+        def resize_progress_bar(widget: Any, allocation: Any) -> None:
+            if self._deletion_progress_bar:
+                parent_width = allocation.width
+                target_width = int(parent_width * 0.60)
+                self._deletion_progress_bar.set_size_request(target_width, -1)
 
         if self._window:
-            if show_preferences_dialog: show_preferences()
-            else: self.show()
+            if show_preferences_dialog:
+                show_preferences()
+            else:
+                self.show()
             return None
 
         right_box = Gtk.Box()
         right_box.set_name('RightBox')
         right_box.set_orientation(Gtk.Orientation.VERTICAL)
-        right_box.add(self._search_box)
-        right_box.add(self._items_view)
+        if self._search_box:
+            right_box.add(self._search_box)
+        if self._items_view:
+            right_box.add(self._items_view)
         right_box.connect('size-allocate', resize_progress_bar)
 
         self._deletion_progress_bar = Gtk.ProgressBar()
@@ -330,7 +376,8 @@ class Application(Gtk.Application):
 
         right_overlay = Gtk.Overlay()
         right_overlay.add(right_box)
-        right_overlay.add_overlay(self._deletion_progress_bar)
+        if self._deletion_progress_bar:
+            right_overlay.add_overlay(self._deletion_progress_bar)
 
         self._window = Window(self)
         self._window.connect('configure-event', self._resize)
@@ -338,15 +385,18 @@ class Application(Gtk.Application):
         self._window.connect('key-release-event', self._on_key_release)
         self._window.connect(
             'focus-out-event',
-            lambda _, __: self._items_view.show_shortcut_hints(False)
+            lambda _, __: self._items_view.show_shortcut_hints(False) if self._items_view else None
         )
-        self._window.grid.attach(self._items_processors, 0, 0, 1, 1)
-        self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
+        if self._items_processors:
+            self._window.grid.attach(self._items_processors, 0, 0, 1, 1)
+        if self._main_toolbox:
+            self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
         self._window.grid.attach(right_overlay, 1, 0, 1, 2)
 
-        if show_preferences_dialog: show_preferences()
+        if self.args and self.args.show_preferences:
+            show_preferences()
 
-    def do_startup(self):
+    def do_startup(self) -> None:
         Gtk.Application.do_startup(self)
 
         screen = Gdk.Screen.get_default()
@@ -443,11 +493,11 @@ class Application(Gtk.Application):
 
         gpaste_client.connect('ShowHistory', self.toggle)
         gpaste_client.connect('Tracking',
-            lambda t: self._main_toolbox.track_btn.set_active(t)
+            lambda t: self._main_toolbox.track_btn.set_active(t) if self._main_toolbox and self._main_toolbox.track_btn else None
         )
         common.APPLICATION = self
         
-        actions = [
+        actions: List[List[Any]] = [
             [
                 'delete',
                 'app.delete',
@@ -526,47 +576,46 @@ class Application(Gtk.Application):
             self._bind_action(name, target, key, callback)
 
         if common.SETTINGS[common.STARTUP_NOTIFICATION]:
-            utils.notify(body=_(
-                '%s is now running.' % (
-                    version.APP_NAME
-                )
-            ))
+            utils.notify(body=_(f'{version.APP_NAME} is now running.'))
 
-    def toggle(self):
+    def toggle(self) -> None:
         if self._window and self._window.props.visible:
             self.hide()
         else:
-            if not self._window:
-                self.activate()
-            else:
-                self.show()
+            self.activate()
 
-    def show_histories_manager(self, action, param):
-        self._items_view.histories_manager.show()
+    def show_histories_manager(self, action: Gio.SimpleAction, param: Any) -> None:
+        if self._items_view:
+            self._items_view.histories_manager.show()
 
-    def show_prefs(self):
+    def show_prefs(self) -> None:
         show_preferences()
         self.hide()
 
-    def show_about(self):
+    def show_about(self) -> None:
         about_dialog = AboutDialog()
         about_dialog.set_transient_for(self._window)
         about_dialog.show()
 
-    def show(self):
-        self._window.show_all()
-        self._window.maximize()
-        self._window.get_window().focus(Gdk.CURRENT_TIME)
-        self._window.present_with_time(Gdk.CURRENT_TIME)
+    def show(self) -> None:
+        if self._window:
+            self._window.show_all()
+            self._window.maximize()
+            self._window.get_window().focus(Gdk.CURRENT_TIME)
+            self._window.present_with_time(Gdk.CURRENT_TIME)
 
         grab_focus = True
 
-        if self._search_box.entry.get_text():
+        if self._search_box and self._search_box.entry and self._search_box.entry.get_text():
             self._search_box.entry.grab_focus()
             grab_focus = False
 
-        self._items_view.select_first(grab_focus=grab_focus)
+        if self._items_view:
+            self._items_view.select_first(grab_focus=grab_focus)
 
-    def hide(self, reset_search=True):
-        self._window.hide()
-        if reset_search: self._search_box.reset()
+    def hide(self, reset_search: bool = True) -> None:
+        if self._window:
+            self._window.hide()
+        if reset_search and self._search_box:
+            self._search_box.reset()
+

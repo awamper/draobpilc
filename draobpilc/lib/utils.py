@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,17 +15,20 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import os
 import re
 import sys
 import subprocess
+from typing import Any, Callable, List, Optional, Tuple
 
-import gi
+import gi  # type: ignore
 gi.require_version('Notify', '0.7')
-from gi.repository import Gio
-from gi.repository import Gdk
-from gi.repository import Notify
-from gi.repository import GdkPixbuf
+from gi.repository import Gio  # type: ignore
+from gi.repository import Gdk  # type: ignore
+from gi.repository import Notify  # type: ignore
+from gi.repository import GdkPixbuf  # type: ignore
 from draobpilc import get_data_path
 from draobpilc.version import APP_NAME
 
@@ -44,10 +47,10 @@ class SettingsSchemaNotFound(Exception):
 
 class NotifyAction():
 
-    def __init__(self, id_, label, user_data=None, callback=None):
+    def __init__(self, id_: str, label: str, user_data: Any = None, callback: Optional[Callable[..., Any]] = None) -> None:
         if not isinstance(id_, str):
             raise ValueError('id_ must be a string')
-        if not callable(callback):
+        if callback and not callable(callback):
             raise ValueError('callback must be a function')
 
         self._id_ = id_
@@ -56,31 +59,31 @@ class NotifyAction():
         self._user_data = user_data
 
     @property
-    def id_(self):
+    def id_(self) -> str:
         return self._id_
 
     @property
-    def label(self):
+    def label(self) -> str:
         return self._label
     
     @property
-    def callback(self):
+    def callback(self) -> Optional[Callable[..., Any]]:
         return self._callback
     
     @property
-    def user_data(self):
+    def user_data(self) -> Any:
         return self._user_data
 
 
 # FixMe: actions dont work
 def notify(
-    summary=APP_NAME,
-    body=None,
-    timeout=Notify.EXPIRES_DEFAULT,
-    urgency=Notify.Urgency.NORMAL,
-    icon_name_or_path=get_data_path('draobpilc.png'),
-    actions=None
-):
+    summary: str = APP_NAME,
+    body: Optional[str] = None,
+    timeout: int = Notify.EXPIRES_DEFAULT,
+    urgency: Any = Notify.Urgency.NORMAL,
+    icon_name_or_path: str = get_data_path('draobpilc.png'),
+    actions: Optional[List[NotifyAction]] = None
+) -> Any:
     notification = Notify.Notification.new(summary, body, icon_name_or_path)
     notification.set_timeout(timeout)
     notification.set_urgency(urgency)
@@ -100,14 +103,14 @@ def notify(
     return notification
 
 
-def restart_app():
+def restart_app() -> None:
     from draobpilc.common import APPLICATION
     APPLICATION.quit()
     subprocess.Popen('draobpilc')
     sys.exit()
 
 
-def get_settings(schema_id, schema_dir=None):
+def get_settings(schema_id: str, schema_dir: Optional[str] = None) -> Any:
     if not schema_dir:
         schema_source = Gio.SettingsSchemaSource.get_default()
     else:
@@ -127,7 +130,7 @@ def get_settings(schema_id, schema_dir=None):
     return Gio.Settings(settings_schema=settings)
 
 
-def is_url(string):
+def is_url(string: str) -> bool:
     result = False
     urls = extract_urls(string)
 
@@ -138,8 +141,8 @@ def is_url(string):
 
 
 # adopted from django
-def extract_urls(text):
-    def unescape(text, trail):
+def extract_urls(text: str) -> List[str]:
+    def unescape(text: str, trail: str) -> Tuple[str, str, str]:
         """
         If input URL is HTML-escaped, unescape it so as we can safely feed it to
         smart_urlquote. For example:
@@ -168,7 +171,7 @@ def extract_urls(text):
         ('\'', '\'')
     ]
     word_split_re = re.compile(r'''([\s<>"']+)''')
-    result = []
+    result: List[str] = []
     words = word_split_re.split(text)
 
     for i, word in enumerate(words):
@@ -208,7 +211,7 @@ def extract_urls(text):
     return result
 
 
-def is_pointer_inside_widget(widget, x=None, y=None):
+def is_pointer_inside_widget(widget: Any, x: Optional[int] = None, y: Optional[int] = None) -> bool:
     result = False
     window = widget.get_window()
     allocation = widget.get_allocation()
@@ -229,7 +232,7 @@ def is_pointer_inside_widget(widget, x=None, y=None):
     return result
 
 
-def get_widget_screenshot(widget):
+def get_widget_screenshot(widget: Any) -> Optional[Any]:
     window = widget.get_window()
     if not window: return None
 
@@ -248,7 +251,7 @@ def get_widget_screenshot(widget):
         return pixbuf
 
 
-def is_visible_on_scroll(adjustment, widget):
+def is_visible_on_scroll(adjustment: Any, widget: Any) -> bool:
     allocation_box = widget.get_allocation()
 
     return (
@@ -260,7 +263,7 @@ def is_visible_on_scroll(adjustment, widget):
     )
 
 
-def is_editable_text_file(content_type):
+def is_editable_text_file(content_type: Optional[str]) -> bool:
     EDITABLE_TEXT_TYPES = [
         'text/plain',
         'text/html',

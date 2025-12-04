@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,7 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
+from typing import Optional, TYPE_CHECKING
+
+from gi.repository import Gtk  # type: ignore
+
+from draobpilc.history_items import HistoryItems
+
+
+if TYPE_CHECKING:
+    _ = lambda s: s
 
 LABEL_TEMPLATE = _('<b>%i</b> items')
 LABEL_FILTER_TEMPLATE = _('Showing <b>%i</b> out of <b>%i</b>')
@@ -23,29 +31,29 @@ LABEL_FILTER_TEMPLATE = _('Showing <b>%i</b> out of <b>%i</b>')
 
 class ItemsCounter(Gtk.Label):
 
-    def __init__(self, list_box, history_items=None):
+    def __init__(self, list_box: Gtk.ListBox, history_items: Optional[HistoryItems] = None) -> None:
         super().__init__()
 
         self.set_vexpand(False)
         self.set_hexpand(False)
 
-        self._list_box = None
-        self._history_items = None
+        self._list_box: Optional[Gtk.ListBox] = None
+        self._history_items: Optional[HistoryItems] = history_items
 
         self.bind(list_box)
         self.show()
         self.update()
 
-    def set_history_items(self, items):
+    def set_history_items(self, items: HistoryItems) -> None:
         self._history_items = items
 
-    def bind(self, list_box):
+    def bind(self, list_box: Gtk.ListBox) -> None:
         if isinstance(list_box, Gtk.ListBox):
             self._list_box = list_box
-            list_box.connect('add', lambda _, __: self.update())
-            list_box.connect('remove', lambda _, __: self.update())
+            list_box.connect('add', lambda *_: self.update())
+            list_box.connect('remove', lambda *_: self.update())
 
-    def update(self):
+    def update(self) -> None:
         if not self._list_box or not self._history_items:
             self.set_markup(LABEL_TEMPLATE % 0)
             return
@@ -64,3 +72,4 @@ class ItemsCounter(Gtk.Label):
             label = LABEL_TEMPLATE % self._history_items.n_total
 
         self.set_markup(label)
+

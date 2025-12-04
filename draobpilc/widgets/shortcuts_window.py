@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2016 Ivan awamper@gmail.com
+# Copyright 2016-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,28 +15,35 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
+from __future__ import annotations
+
+from typing import Any, List, Tuple, TYPE_CHECKING
+
+from gi.repository import Gtk  # type: ignore
 
 from draobpilc import common
 
-SHORTCUTS_LIST = []
-SHORTCUTS = [
+if TYPE_CHECKING:
+    _ = lambda s: s
+
+SHORTCUTS_LIST: List[Tuple[str, str]] = []
+SHORTCUTS: List[Tuple[str, List[Tuple[str, str]]]] = [
     (_('All Shortcuts'), SHORTCUTS_LIST),
 ]
 
 for key, value in common.SHORTCUTS_KEYS.items():
     SHORTCUTS_LIST.append((common.SETTINGS[key], value))
 
-NUMBERS_LIST = []
+NUMBERS_LIST: List[Tuple[str, str]] = []
 SHORTCUTS.append(
     (_('Activate item'), NUMBERS_LIST),
 )
 
 for i in range(1, 10):
-    NUMBERS_LIST.append(('<Ctrl>%s' % i, 'Activate item #%i' % i))
+    NUMBERS_LIST.append((_(f'<Ctrl>{i}'), _(f'Activate item #{i}')))
 
 
-def _build_shortcut_window(data):
+def _build_shortcut_window(data: List[Tuple[str, List[Tuple[str, str]]]]) -> Gtk.ShortcutsWindow:
     window = Gtk.ShortcutsWindow()
     section = Gtk.ShortcutsSection()
     section.show()
@@ -59,11 +66,11 @@ def _build_shortcut_window(data):
     return window
 
 
-def is_supported():
+def is_supported() -> bool:
     return hasattr(Gtk, 'ShortcutsWindow')
 
 
-def show_or_false(parent):
+def show_or_false(parent: Gtk.Window) -> bool:
     if is_supported():
         window = _build_shortcut_window(SHORTCUTS)
         window.set_transient_for(parent)
@@ -73,3 +80,4 @@ def show_or_false(parent):
         return True
     else:
         return False
+

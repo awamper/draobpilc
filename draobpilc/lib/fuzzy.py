@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,12 +15,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import re
+from typing import Callable, Optional
 
 
 class Result():
 
-    def __init__(self, term, original, score, start, end):
+    def __init__(self, term: str, original: str, score: int, start: int, end: int) -> None:
         self.term = term
         self.original = original
         self.score = score
@@ -29,10 +32,10 @@ class Result():
 
     def get_highlighted(
         self,
-        escape_func=None,
-        max_precede_chars=30,
-        highlight_template='%s'
-    ):
+        escape_func: Optional[Callable[[str], str]] = None,
+        max_precede_chars: int = 30,
+        highlight_template: str = '%s'
+    ) -> str:
         matched_string = self.original[self.start : self.end]
         new_string = ''
 
@@ -73,16 +76,16 @@ class Result():
     
 
 # based on https://github.com/amjith/fuzzyfinder
-def match(term, text, max_distance=30):
+def match(term: str, text: str, max_distance: int = 30) -> Optional[Result]:
     result = None
     term = str(term)
     pattern = '.{0,%i}' % max_distance
     pattern = pattern.join(map(re.escape, term))
     regex = re.compile(pattern, re.I)
-    match = regex.search(text)
+    match_obj = regex.search(text)
 
-    if match:
-        score = len(match.group()) + match.start()
-        result = Result(term, text, score, match.start(), score)
+    if match_obj:
+        score = len(match_obj.group()) + match_obj.start()
+        result = Result(term, text, score, match_obj.start(), score)
 
     return result

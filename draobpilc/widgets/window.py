@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,16 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
-from gi.repository import Gdk
+from __future__ import annotations
+
+from typing import Any, TYPE_CHECKING
+
+from gi.repository import Gtk, Gdk  # type: ignore
 
 from draobpilc import common
 from draobpilc import version
 
+if TYPE_CHECKING:
+    from draobpilc.application import Application
+
 
 class Window(Gtk.ApplicationWindow):
 
-    def __init__(self, app):
+    def __init__(self, app: Application) -> None:
         super().__init__()
 
         self.set_application(app)
@@ -42,14 +48,16 @@ class Window(Gtk.ApplicationWindow):
         self.stick()
         self.maximize()
 
-        screen = self.get_screen()
-        visual = screen.get_rgba_visual()
-        self.set_visual(visual)
+        screen: Gdk.Screen = self.get_screen()
+        visual: Gdk.Visual = screen.get_rgba_visual()
+        if visual is not None:
+            self.set_visual(visual)
 
-        self.grid = Gtk.Grid()
+        self.grid: Gtk.Grid = Gtk.Grid()
         self.grid.set_valign(Gtk.Align.FILL)
         self.grid.set_halign(Gtk.Align.FILL)
         self.grid.set_vexpand(True)
         self.grid.set_hexpand(True)
 
         self.add(self.grid)
+

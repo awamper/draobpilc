@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,17 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import os
 import locale
 import gettext
+from typing import Optional, TYPE_CHECKING
 
 from draobpilc import version
+
+if TYPE_CHECKING:
+    _ = lambda s: s
 
 locale.setlocale(locale.LC_ALL)
 gettext.install(version.APP_NAME, names=('gettext', 'ngettext'))
 
-_ROOT = os.path.abspath(os.path.dirname(__file__))
-def get_data_path(path=None):
+_ROOT: str = os.path.abspath(os.path.dirname(__file__))
+def get_data_path(path: Optional[str] = None) -> str:
     file_name = _ROOT
     if not path: return file_name
 

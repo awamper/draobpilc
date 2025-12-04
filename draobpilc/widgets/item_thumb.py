@@ -15,47 +15,48 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 import logging
+from typing import Optional
 
-import gi
-from gi.repository import Gtk
-from gi.repository import GdkPixbuf
+import gi  # type: ignore
+from gi.repository import Gtk  # type: ignore
+from gi.repository import GdkPixbuf  # type: ignore
 
 from draobpilc import common
 
 
-DEFAULT_WIDTH = common.SETTINGS[common.ITEM_MAX_HEIGHT]
-DEFAULT_HEIGHT = common.SETTINGS[common.ITEM_MAX_HEIGHT]
-DEFAULT_RATIO = True
+DEFAULT_WIDTH: int = common.SETTINGS[common.ITEM_MAX_HEIGHT]
+DEFAULT_HEIGHT: int = common.SETTINGS[common.ITEM_MAX_HEIGHT]
+DEFAULT_RATIO: bool = True
 
 
 class ItemThumb(Gtk.Box):
 
     def __init__(
         self,
-        file_path=None,
-        max_width=DEFAULT_WIDTH,
-        max_height=DEFAULT_HEIGHT,
-        ratio=DEFAULT_RATIO,
-        fallback_icon_name='image-missing'
-    ):
+        file_path: Optional[str] = None,
+        max_width: int = DEFAULT_WIDTH,
+        max_height: int = DEFAULT_HEIGHT,
+        ratio: bool = DEFAULT_RATIO,
+        fallback_icon_name: str = 'image-missing'
+    ) -> None:
         super().__init__()
         self.get_style_context().add_class('item-thumb')
 
         self._image = Gtk.Image()
         self.add(self._image)
 
-        self._file_path = file_path
-        self._max_width = max_width
-        self._max_height = max_height
-        self._ratio = ratio
-        self._fallback_icon_name = fallback_icon_name
+        self._file_path: Optional[str] = file_path
+        self._max_width: int = max_width
+        self._max_height: int = max_height
+        self._ratio: bool = ratio
+        self._fallback_icon_name: str = fallback_icon_name
 
         if self._file_path:
             self._try_set_image()
         else:
             self.set_default()
 
-    def _try_set_image(self):
+    def _try_set_image(self) -> bool:
         result = False
         if not self._max_width or not self._max_height:
             return result
@@ -69,7 +70,7 @@ class ItemThumb(Gtk.Box):
             )
             self._image.set_from_pixbuf(pixbuf)
             result = True
-        except gi.repository.GLib.GError as e:
+        except gi.repository.GLib.GError as e:  # type: ignore
             logging.error(e)
 
         if not result:
@@ -79,12 +80,12 @@ class ItemThumb(Gtk.Box):
 
         return result
 
-    def set_default(self):
+    def set_default(self) -> None:
         self.clear()
         self._image.set_from_icon_name(self._fallback_icon_name, Gtk.IconSize.DIALOG)
         self.show_all()
 
-    def clear(self):
+    def clear(self) -> None:
         self._file_path = None
         self._max_width = DEFAULT_WIDTH
         self._max_height = DEFAULT_HEIGHT
@@ -94,7 +95,7 @@ class ItemThumb(Gtk.Box):
             self._image.clear()
             self._image.hide()
 
-    def change_image(self, file_path, max_width=None, max_height=None):
+    def change_image(self, file_path: Optional[str], max_width: Optional[int] = None, max_height: Optional[int] = None) -> bool:
         self.clear()
         result = False
 
@@ -108,7 +109,7 @@ class ItemThumb(Gtk.Box):
         result = self._try_set_image()
         return result
 
-    def resize(self, width, height, ratio=DEFAULT_RATIO):
+    def resize(self, width: int, height: int, ratio: bool = DEFAULT_RATIO) -> bool:
         result = False
 
         if self._file_path and width and height:
@@ -119,3 +120,4 @@ class ItemThumb(Gtk.Box):
             result = True
 
         return result
+

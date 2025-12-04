@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,16 +15,23 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
-from gi.repository import GdkPixbuf
+from __future__ import annotations
+
+from typing import List, TYPE_CHECKING
+
+from gi.repository import GdkPixbuf  # type: ignore
+from gi.repository import Gtk  # type: ignore
 
 from draobpilc import common
 from draobpilc import version
 
+if TYPE_CHECKING:
+    _ = lambda s: s
+
 
 class AboutDialog(Gtk.AboutDialog):
 
-    def __init__(self):
+    def __init__(self) -> None:
         Gtk.AboutDialog.__init__(self)
         self.connect('response', lambda w, r: self.destroy())
 
@@ -40,7 +47,7 @@ class AboutDialog(Gtk.AboutDialog):
         self.set_website_label(_('Homepage'))
         self.set_license_type(Gtk.License.GPL_3_0)
 
-        authors = [
+        authors: List[str] = [
             '{author} <{author_email}>'.format(
                 author=version.AUTHOR,
                 author_email=version.AUTHOR_EMAIL
@@ -52,3 +59,8 @@ class AboutDialog(Gtk.AboutDialog):
 
         logo_pixbuf = GdkPixbuf.Pixbuf.new_from_file(common.ICON_PATH)
         self.set_logo(logo_pixbuf)
+
+    def show(self) -> None:
+        self.run()
+        self.destroy()
+

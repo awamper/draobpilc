@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -16,18 +16,22 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import json
+from typing import List, Tuple, Any, Optional, TYPE_CHECKING
 
-from gi.repository import Gtk
+from gi.repository import Gtk  # type: ignore
 
 from draobpilc import common
 
-ITEM_MARGIN = 5
-FRAME_MARGIN = 10
+if TYPE_CHECKING:
+    _ = lambda s: s
+
+ITEM_MARGIN: int = 5
+FRAME_MARGIN: int = 10
 
 
 class MergerDataItem(Gtk.Box):
 
-    def __init__(self, name, value, escape=True):
+    def __init__(self, name: str, value: str, escape: bool = True) -> None:
         super().__init__()
 
         self.set_orientation(Gtk.Orientation.HORIZONTAL)
@@ -45,15 +49,15 @@ class MergerDataItem(Gtk.Box):
             except UnicodeDecodeError:
                 pass
 
-        self.name_entry = Gtk.Entry()
+        self.name_entry: Gtk.Entry = Gtk.Entry()
         self.name_entry.props.margin = ITEM_MARGIN
         self.name_entry.set_text(name)
 
-        self.value_entry = Gtk.Entry()
+        self.value_entry: Gtk.Entry = Gtk.Entry()
         self.value_entry.props.margin = ITEM_MARGIN
         self.value_entry.set_text(value)
 
-        self.delete_btn = Gtk.Button.new_from_icon_name(
+        self.delete_btn: Gtk.Button = Gtk.Button.new_from_icon_name(
             'edit-delete-symbolic',
             Gtk.IconSize.SMALL_TOOLBAR
         )
@@ -68,7 +72,7 @@ class MergerDataItem(Gtk.Box):
 
 class MergerDataManager(Gtk.Dialog):
 
-    def __init__(self, label, key, transient_for=None):
+    def __init__(self, label: str, key: str, transient_for: Optional[Gtk.Window] = None) -> None:
         super().__init__()
 
         self.set_title(label)
@@ -87,70 +91,70 @@ class MergerDataManager(Gtk.Dialog):
                 height = round(height * 0.7)
                 toplevel.set_size_request(width, height)
 
-        self._key = key
+        self._key: str = key
 
-        self._name_entry = Gtk.Entry()
+        self._name_entry: Gtk.Entry = Gtk.Entry()
         self._name_entry.set_placeholder_text(_('Name'))
         self._name_entry.props.margin = ITEM_MARGIN
         self._name_entry.connect('activate', self._add_new)
 
-        self._value_entry = Gtk.Entry()
+        self._value_entry: Gtk.Entry = Gtk.Entry()
         self._value_entry.set_placeholder_text(_('Value'))
         self._value_entry.props.margin = ITEM_MARGIN
         self._value_entry.connect('activate', self._add_new)
 
-        self._add_btn = Gtk.Button.new_from_icon_name(
+        self._add_btn: Gtk.Button = Gtk.Button.new_from_icon_name(
             'list-add-symbolic',
             Gtk.IconSize.SMALL_TOOLBAR
         )
         self._add_btn.props.margin = ITEM_MARGIN
         self._add_btn.connect('clicked', self._add_new)
 
-        self._grid = Gtk.Grid()
+        self._grid: Gtk.Grid = Gtk.Grid()
         self._grid.attach(self._name_entry, 0, 0, 1, 1)
         self._grid.attach(self._value_entry, 1, 0, 1, 1)
         self._grid.attach(self._add_btn, 2, 0, 1, 1)
         self._grid.set_halign(Gtk.Align.CENTER)
 
-        frame = Gtk.Frame()
+        frame: Gtk.Frame = Gtk.Frame()
         frame.set_label(_('Add new (name, value)'))
         frame.add(self._grid)
         frame.props.margin = FRAME_MARGIN
 
-        self._items_box = Gtk.Box()
+        self._items_box: Gtk.Box = Gtk.Box()
         self._items_box.set_orientation(Gtk.Orientation.VERTICAL)
         self._items_box.set_hexpand(True)
         self._items_box.set_vexpand(True)
         self._items_box.set_halign(Gtk.Align.CENTER)
 
-        scrolled_window = Gtk.ScrolledWindow()
+        scrolled_window: Gtk.ScrolledWindow = Gtk.ScrolledWindow()
         scrolled_window.set_hexpand(True)
         scrolled_window.set_vexpand(True)
         scrolled_window.set_valign(Gtk.Align.FILL)
         scrolled_window.set_halign(Gtk.Align.FILL)
         scrolled_window.add(self._items_box)
 
-        items_frame = Gtk.Frame()
+        items_frame: Gtk.Frame = Gtk.Frame()
         items_frame.set_label(_('Edit'))
         items_frame.add(scrolled_window)
         items_frame.props.margin = FRAME_MARGIN
 
-        content_area = self.get_content_area()
+        content_area: Gtk.Box = self.get_content_area()
         content_area.add(frame)
         content_area.add(items_frame)
         content_area.show_all()
 
         self._update()
 
-    def _update(self):
-        items = sorted(json.loads(common.SETTINGS[self._key]))
+    def _update(self) -> None:
+        items: List[List[str]] = json.loads(common.SETTINGS[self._key])
 
         for name, value in items:
             self._add_item(name, value)
 
-    def _add_new(self, button):
-        name = self._name_entry.get_text()
-        value = self._value_entry.get_text()
+    def _add_new(self, button: Gtk.Button) -> None:
+        name: str = self._name_entry.get_text()
+        value: str = self._value_entry.get_text()
         self._add_item(name, value, False)
         self._save_changes()
 
@@ -158,11 +162,12 @@ class MergerDataManager(Gtk.Dialog):
         self._value_entry.set_text('')
         self._name_entry.grab_focus()
 
-    def _add_item(self, name, value, escape=True):
+    def _add_item(self, name: str, value: str, escape: bool = True) -> bool:
         name = name.strip()
-        if not name: return False
+        if not name:
+            return False
 
-        item = MergerDataItem(name, value, escape)
+        item: MergerDataItem = MergerDataItem(name, value, escape)
         item.name_entry.props.buffer.connect(
             'notify::text',
             self._save_changes
@@ -177,32 +182,38 @@ class MergerDataManager(Gtk.Dialog):
             item
         )
         self._items_box.add(item)
+        item.show_all()
 
         return True
 
-    def _delete_item(self, button, item):
+    def _delete_item(self, button: Gtk.Button, item: MergerDataItem) -> None:
         item.destroy()
         self._save_changes()
 
-    def _save_changes(self, *args, **kwargs):
-        items = []
+    def _save_changes(self, *args: Any, **kwargs: Any) -> None:
+        items: List[List[str]] = []
 
-        for item in self._items_box.get_children():
-            name = item.name_entry.get_text()
+        for item_widget in self._items_box.get_children():
+            if not isinstance(item_widget, MergerDataItem):
+                continue
+
+            name: str = item_widget.name_entry.get_text()
             try:
                 name = name.encode('utf8').decode('unicode-escape')
             except UnicodeDecodeError:
                 pass
 
-            value = item.value_entry.get_text()
+            value: str = item_widget.value_entry.get_text()
             try:
                 value = value.encode('utf8').decode('unicode-escape')
             except UnicodeDecodeError:
                 pass
 
-            if not name or not value: continue
+            if not name or not value:
+                continue
 
             items.append([name, value])
 
-        json_string = json.dumps(items)
+        json_string: str = json.dumps(items)
         common.SETTINGS[self._key] = json_string
+

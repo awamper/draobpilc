@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,26 +15,33 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import json
 
-import gi
+import gi  # type: ignore
 gi.require_version('GPaste', '2')
-from gi.repository import Gtk
-from gi.repository import Gio
-from gi.repository import Gdk
-from gi.repository import GLib
-from gi.repository import GPaste
+from gi.repository import Gtk  # type: ignore
+from gi.repository import Gio  # type: ignore
+from gi.repository import Gdk  # type: ignore
+from gi.repository import GLib  # type: ignore
+from gi.repository import GPaste  # type: ignore
+
+from typing import Any, Callable, List, Optional, Tuple, Type, Union, TYPE_CHECKING
 
 from draobpilc import common
 from draobpilc import version
 from draobpilc.lib import utils
 from draobpilc.widgets.merger_data_manager import MergerDataManager
 
+if TYPE_CHECKING:
+    _ = lambda s: s
+
 _window = None
 
 
-def show_preferences():
-    def on_destroy(window):
+def show_preferences() -> None:
+    def on_destroy(window: Gtk.Window) -> None:
         global _window
         _window = None
 
@@ -57,7 +64,7 @@ class KeybindingsWidget(Gtk.Box):
         MODS = 2
         KEY = 3
 
-    def __init__(self, keybindings):
+    def __init__(self, keybindings: dict) -> None:
         super().__init__()
 
         self.set_orientation(Gtk.Orientation.VERTICAL)
@@ -108,18 +115,18 @@ class KeybindingsWidget(Gtk.Box):
 
         self._refresh()
 
-    def _on_accel_edited(self, renderer, iter_, key, mods, *args):
-        iterator = self._store.get_iter_from_string(iter_)
+    def _on_accel_edited(self, renderer: Gtk.CellRendererAccel, path: str, accel_key: int, accel_mods: Gdk.ModifierType) -> None:
+        iterator = self._store.get_iter_from_string(path)
         if not iterator:
             self._show_message(version.APP_NAME, _('Can\'t change hotkey.'))
             return
 
-        accel_name = Gtk.accelerator_name(key, mods)
+        accel_name = Gtk.accelerator_name(accel_key, accel_mods)
         settings_key = self._store.get_value(
             iterator,
             KeybindingsWidget.Columns.SETTINGS_KEY
         )
-        ex_key, ex_name = self._get_existed(key, mods)
+        ex_key, ex_name = self._get_existed(accel_key, accel_mods)
 
         if ex_key:
             msg = _('"{accel_name}" already taken for "{action_name}"')
@@ -131,11 +138,11 @@ class KeybindingsWidget(Gtk.Box):
             KeybindingsWidget.Columns.MODS,
             KeybindingsWidget.Columns.KEY
         ]
-        self._store.set(iterator, columns, [mods, key])
+        self._store.set(iterator, columns, [accel_mods, accel_key])
         common.SETTINGS[settings_key] = accel_name
 
-    def _get_existed(self, key, mods):
-        result = [None, None]
+    def _get_existed(self, key: int, mods: Gdk.ModifierType) -> List[Optional[str]]:
+        result: List[Optional[str]] = [None, None]
 
         for settings_key in self._keybindings:
             ex_key, ex_mods = Gtk.accelerator_parse(
@@ -147,7 +154,7 @@ class KeybindingsWidget(Gtk.Box):
 
         return result
 
-    def _show_message(self, title, msg):
+    def _show_message(self, title: str, msg: str) -> None:
             message_dialog = Gtk.MessageDialog(
                 self.get_toplevel(),
                 Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -159,11 +166,11 @@ class KeybindingsWidget(Gtk.Box):
             message_dialog.run()
             message_dialog.destroy()
 
-    def _refresh(self):
+    def _refresh(self) -> None:
         self._store.clear()
         sorted_keybindings = [(k, self._keybindings[k]) for k in sorted(
             self._keybindings,
-            key=self._keybindings.get,
+            key=lambda k_val: self._keybindings[k_val],
             reverse=False
         )]
 
@@ -182,7 +189,7 @@ class KeybindingsWidget(Gtk.Box):
 
 class PrefsGrid(Gtk.Grid):
 
-    def __init__(self, settings):
+    def __init__(self, settings: Gio.Settings) -> None:
         super().__init__()
 
         self.set_row_spacing(10)
@@ -191,7 +198,7 @@ class PrefsGrid(Gtk.Grid):
         self._settings = settings
         self._rownum = 0
 
-    def add_entry(self, text, key):
+    def add_entry(self, text: str, key: str) -> Gtk.Entry:
         item = Gtk.Entry()
         item.set_hexpand(False)
         item.set_text(self._settings[key])
@@ -199,7 +206,7 @@ class PrefsGrid(Gtk.Grid):
 
         return self.add_row(text, item)
 
-    def add_boolean(self, text, key):
+    def add_boolean(self, text: str, key: str) -> Gtk.Switch:
         item = Gtk.Switch()
         item.set_halign(Gtk.Align.END)
         item.set_active(self._settings[key])
@@ -207,8 +214,8 @@ class PrefsGrid(Gtk.Grid):
 
         return self.add_row(text, item)
 
-    def add_combo(self, text, key, entries_list, type_):
-        def on_changed(combo):
+    def add_combo(self, text: str, key: str, entries_list: List[dict], type_: Type) -> Gtk.ComboBoxText:
+        def on_changed(combo: Gtk.ComboBoxText) -> None:
             value = combo.props.active_id
             if value is None: return
             self._settings[key] = type_(value)
@@ -223,9 +230,9 @@ class PrefsGrid(Gtk.Grid):
 
         return self.add_row(text, item)
 
-    def add_spin(self, label, key, adjust_props={}, spin_props={}, type_=int):
-        def on_changed(spin):
-            value = None
+    def add_spin(self, label: str, key: str, adjust_props: dict = {}, spin_props: dict = {}, type_: Type = int) -> Gtk.SpinButton:
+        def on_changed(spin: Gtk.SpinButton) -> None:
+            value: Optional[Union[int, float]] = None
 
             if type_ is int:
                 value = spin.get_value_as_int()
@@ -263,13 +270,13 @@ class PrefsGrid(Gtk.Grid):
 
         return self.add_row(label, spin_button, True)
 
-    def add_label(self, label):
+    def add_label(self, label: str) -> Gtk.Label:
         item = Gtk.Label()
         item.set_label(label)
 
         return self.add_item(item)
 
-    def add_row(self, text, widget, wrap=False):
+    def add_row(self, text: str, widget: Gtk.Widget, wrap: bool = False) -> Gtk.Widget:
         label = Gtk.Label()
         label.set_text(text)
         label.set_hexpand(True)
@@ -282,14 +289,14 @@ class PrefsGrid(Gtk.Grid):
 
         return widget
 
-    def add_item(self, widget, col=0, colspan=2, rowspan=1):
+    def add_item(self, widget: Gtk.Widget, col: int = 0, colspan: int = 2, rowspan: int = 1) -> Gtk.Widget:
         self.attach(widget, col, self._rownum, colspan, rowspan)
         self._rownum += 1
 
         return widget
 
-    def add_range(self, label, key, range_props):
-        def on_changed(slider):
+    def add_range(self, label: str, key: str, range_props: dict) -> Gtk.Scale:
+        def on_changed(slider: Gtk.Scale) -> None:
             self._settings[key] = slider.get_value()
 
         range_props_default = {
@@ -309,7 +316,7 @@ class PrefsGrid(Gtk.Grid):
             range_props.get('step', range_props_default['step'])
         )
         range_.set_value(self._settings.get_int(key))
-        range_.set_draw_value(range_props.draw_value)
+        range_.set_draw_value(range_props.get('draw_value', range_props_default['draw_value']))
         size = range_props.get('size', range_props_default['size'])
         range_.set_size_request(size, -1)
 
@@ -324,7 +331,7 @@ class PrefsGrid(Gtk.Grid):
 
         return self.add_row(label, range_, True)
 
-    def add_separator(self):
+    def add_separator(self) -> Gtk.Separator:
         separator = Gtk.Separator()
         separator.set_orientation(Gtk.Orientation.HORIZONTAL)
 
@@ -333,7 +340,7 @@ class PrefsGrid(Gtk.Grid):
 
 class Preferences(Gtk.Window):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.set_title(_('Preferences'))
@@ -418,7 +425,7 @@ class Preferences(Gtk.Window):
             lambda s, k: self._update_merge_data()
         )
 
-    def _on_destroy(self, window):
+    def _on_destroy(self, window: Gtk.Window) -> None:
         if not self._need_restart: return
 
         self._need_restart = False
@@ -441,7 +448,7 @@ class Preferences(Gtk.Window):
         if response == Gtk.ResponseType.YES:
             utils.restart_app()
 
-    def _on_button_clicked(self, button):
+    def _on_button_clicked(self, button: Gtk.Button) -> None:
         try:
             bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
             bus.call_sync(
@@ -458,10 +465,10 @@ class Preferences(Gtk.Window):
         except GLib.Error as e:
             print(f"Error launching GPaste Preferences: {e}")
 
-    def _on_settings_changed(self, settings, param):
+    def _on_settings_changed(self, settings: Gio.Settings, param: str) -> None:
         self._need_restart = True
 
-    def _update_merge_data(self):
+    def _update_merge_data(self) -> None:
         self._decorators_combo.remove_all()
         self._separators_combo.remove_all()
 
@@ -501,12 +508,12 @@ class Preferences(Gtk.Window):
             common.SETTINGS[common.MERGE_DEFAULT_SEPARATOR]
         )
 
-    def _show_merger_manager(self, label, key):
+    def _show_merger_manager(self, label: str, key: str) -> None:
         dialog = MergerDataManager(label, key, self)
         dialog.run()
         dialog.destroy()
 
-    def _get_main_page(self):
+    def _get_main_page(self) -> dict:
         name = _('Main')
         page = PrefsGrid(common.SETTINGS)
 
@@ -542,10 +549,10 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 500
         spin_props['step_increment'] = 50
         page.add_spin(
-            _('Search timeout'),
-            common.SEARCH_TIMEOUT,
-            spin_props,
-            int
+            label=_('Search timeout'),
+            key=common.SEARCH_TIMEOUT,
+            adjust_props=spin_props,
+            type_=int
         )
 
         page.add_separator()
@@ -559,7 +566,7 @@ class Preferences(Gtk.Window):
         result = dict(page=page, name=name)
         return result
 
-    def _get_items_page(self):
+    def _get_items_page(self) -> dict:
         name = _('Items')
         page = PrefsGrid(common.SETTINGS)     
 
@@ -569,19 +576,19 @@ class Preferences(Gtk.Window):
         spin_props['step_increment'] = 5
         
         page.add_spin(
-            _('Maximum displayed items (0 = unlimited)'),
-            common.ITEMS_VIEW_LIMIT,
-            spin_props,
-            int
+            label=_('Maximum displayed items (0 = unlimited)'),
+            key=common.ITEMS_VIEW_LIMIT,
+            adjust_props=spin_props,
+            type_=int
         )
         spin_props['lower'] = 5
         spin_props['upper'] = 100
         spin_props['step_increment'] = 5
         page.add_spin(
-            _('Max filter results'),
-            common.MAX_FILTER_RESULTS,
-            spin_props,
-            int
+            label=_('Max filter results'),
+            key=common.MAX_FILTER_RESULTS,
+            adjust_props=spin_props,
+            type_=int
         )
 
         page.add_separator()
@@ -590,30 +597,30 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 60
         spin_props['step_increment'] = 5
         page.add_spin(
-            _('Item width (%)'),
-            common.WIDTH_PERCENTS,
-            spin_props,
-            int
+            label=_('Item width (%)'),
+            key=common.WIDTH_PERCENTS,
+            adjust_props=spin_props,
+            type_=int
         )
 
         spin_props['lower'] = 1
         spin_props['upper'] = 10
         spin_props['step_increment'] = 1
         page.add_spin(
-            _('Max lines per item'),
-            common.ITEM_MAX_LINES,
-            spin_props,
-            int
+            label=_('Max lines per item'),
+            key=common.ITEM_MAX_LINES,
+            adjust_props=spin_props,
+            type_=int
         )
 
         spin_props['lower'] = 50
         spin_props['upper'] = 150
         spin_props['step_increment'] = 5
         page.add_spin(
-            _('Max height per item (px)'),
-            common.ITEM_MAX_HEIGHT,
-            spin_props,
-            int
+            label=_('Max height per item (px)'),
+            key=common.ITEM_MAX_HEIGHT,
+            adjust_props=spin_props,
+            type_=int
         )
 
         page.add_separator()
@@ -622,10 +629,10 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 1000
         spin_props['step_increment'] = 50
         page.add_spin(
-            _('Max display text characters'),
-            common.ITEM_MAX_DISPLAY_TEXT_CHARS,
-            spin_props,
-            int
+            label=_('Max display text characters'),
+            key=common.ITEM_MAX_DISPLAY_TEXT_CHARS,
+            adjust_props=spin_props,
+            type_=int
         )
 
         page.add_separator()
@@ -634,16 +641,16 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 10
         spin_props['step_increment'] = 1
         page.add_spin(
-            _('Item type indicator width (px)'),
-            common.KIND_INDICATOR_WIDTH,
-            spin_props,
-            int
+            label=_('Item type indicator width (px)'),
+            key=common.KIND_INDICATOR_WIDTH,
+            adjust_props=spin_props,
+            type_=int
         )
 
         result = dict(page=page, name=name)
         return result
 
-    def _get_editor_page(self):
+    def _get_editor_page(self) -> dict:
         name = _('Editor')
         page = PrefsGrid(common.SETTINGS)
 
@@ -652,10 +659,10 @@ class Preferences(Gtk.Window):
         spin_props['upper'] = 1000
         spin_props['step_increment'] = 100
         page.add_spin(
-            _('Save changes timeout(ms)'),
-            common.EDIT_TIMEOUT_MS,
-            spin_props,
-            int
+            label=_('Save changes timeout(ms)'),
+            key=common.EDIT_TIMEOUT_MS,
+            adjust_props=spin_props,
+            type_=int
         )
 
         page.add_separator()
@@ -706,7 +713,7 @@ class Preferences(Gtk.Window):
         result = dict(page=page, name=name)
         return result
 
-    def _get_gpaste_page(self):
+    def _get_gpaste_page(self) -> dict:
         name = _('GPaste')
         page = PrefsGrid(common.SETTINGS)
 
@@ -716,7 +723,7 @@ class Preferences(Gtk.Window):
         result = dict(page=page, name=name)
         return result
 
-    def _get_keybindings_page(self):
+    def _get_keybindings_page(self) -> dict:
         name = _('Shortcuts')
         page = PrefsGrid(common.SETTINGS)
         keybindings_widget = KeybindingsWidget(common.SHORTCUTS_KEYS)
@@ -724,3 +731,4 @@ class Preferences(Gtk.Window):
 
         result = dict(page=page, name=name)
         return result
+

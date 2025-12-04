@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,24 +15,32 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import annotations
+
 import argparse
 import logging
 import os
 import signal
 import sys
+from types import TracebackType
+from typing import Any, List, TYPE_CHECKING
+
 from packaging.version import Version
 
-import gi
+import gi  # type: ignore
 gi.require_version('Gtk', '3.0')
 
-from dbus.exceptions import DBusException
-from gi.repository import Gtk
+from dbus.exceptions import DBusException  # type: ignore
+from gi.repository import Gtk  # type: ignore
 
 from draobpilc import common, version
 from draobpilc.lib import utils
 
+if TYPE_CHECKING:
+    _ = lambda s: s
 
-def check_gpaste_version():
+
+def check_gpaste_version() -> None:
     result = True
 
     try:
@@ -64,14 +72,14 @@ def check_gpaste_version():
                current_version
            )
         utils.notify(version.APP_NAME, msg)
-        sys.exit(msg)
+        sys.exit(1)
 
 
-def install_excepthook():
+def install_excepthook() -> None:
     """ Make sure we exit when an unhandled exception occurs. """
     old_hook = sys.excepthook
 
-    def new_hook(etype, evalue, etb):
+    def new_hook(etype: type[BaseException], evalue: BaseException, etb: TracebackType | None) -> None:
         old_hook(etype, evalue, etb)
 
         while Gtk.main_level():
@@ -82,7 +90,7 @@ def install_excepthook():
     sys.excepthook = new_hook
 
 
-def run():
+def run() -> int:
     check_gpaste_version()
     from draobpilc.application import Application
     install_excepthook()
@@ -135,9 +143,12 @@ def run():
 
     signal.signal(signal.SIGINT, signal.SIG_DFL)
     app = Application()
-    exit_status = app.run(sys.argv)
-    sys.exit(exit_status)
+    return app.run(sys.argv)
+
+def main() -> None:
+    """Main entry point."""
+    sys.exit(run())
 
 
 if __name__ == '__main__':
-    run()
+    main()

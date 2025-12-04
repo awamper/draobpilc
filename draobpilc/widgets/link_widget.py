@@ -16,18 +16,21 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import urllib.parse
+from typing import Optional, TYPE_CHECKING
 
-from gi.repository import Gtk
-from gi.repository import Gio
-from gi.repository import GLib
+from gi.repository import Gtk, Gio, GLib  # type: ignore
 
 from draobpilc.lib import gpaste_client
 from draobpilc import common
 from draobpilc.widgets.base_link_widget import BaseLinkWidget
 
 
+if TYPE_CHECKING:
+    _ = lambda s: s
+
+
 class LinkWidget(BaseLinkWidget):
-    def __init__(self, link):
+    def __init__(self, link: str) -> None:
         super().__init__(link)
 
         copy_button = Gtk.Button.new_from_icon_name('edit-copy', Gtk.IconSize.BUTTON)
@@ -36,7 +39,7 @@ class LinkWidget(BaseLinkWidget):
         copy_button.connect('clicked', self._on_copy_clicked)
         self._action_box.pack_start(copy_button, False, False, 0)
 
-    def _get_icon(self, app_info):
+    def _get_icon(self, app_info: Optional[Gio.AppInfo]) -> Gtk.Image:
         # Get default browser icon
         browser_icon = Gtk.Image.new_from_icon_name(
             'web-browser',
@@ -60,26 +63,28 @@ class LinkWidget(BaseLinkWidget):
 
         return browser_icon
 
-    def _get_app_info(self, uri):
+    def _get_app_info(self, uri: str) -> Optional[Gio.AppInfo]:
         parsed_uri = urllib.parse.urlparse(uri)
         scheme = parsed_uri.scheme
-        if not scheme: scheme = 'http'
+        if not scheme:
+            scheme = 'http'
         app_info = Gio.AppInfo.get_default_for_uri_scheme(scheme)
         return app_info
 
-    def _on_link_clicked(self, button):
-        self._app_info.launch_uris([self._link])
+    def _on_link_clicked(self, button: Gtk.Button) -> bool:
+        if self._app_info:
+            self._app_info.launch_uris([self._link])
         common.APPLICATION.hide()
         return True
 
-    def _on_copy_clicked(self, button):
+    def _on_copy_clicked(self, button: Gtk.Button) -> bool:
         gpaste_client.add(self._link)
         common.APPLICATION.hide()
         return True
 
-    def _on_query_tooltip(self, widget, x, y, keyboard_mode, tooltip):
+    def _on_query_tooltip(self, widget: Gtk.Widget, x: int, y: int, keyboard_mode: bool, tooltip: Gtk.Tooltip) -> bool:
         header_text = _('Open url')
-        app_name = self._app_info.get_display_name()
+        app_name = self._app_info.get_display_name() if self._app_info else None
         if app_name:
             app_name = GLib.markup_escape_text(app_name, -1)
             header_text += _(f' with {app_name}')
@@ -89,3 +94,4 @@ class LinkWidget(BaseLinkWidget):
         tooltip.set_markup(f'<b>{header_text}</b>\n<i>{link}</i>')
 
         return True
+

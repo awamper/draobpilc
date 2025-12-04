@@ -15,16 +15,25 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
-from gi.repository import Gdk
-from gi.repository import GLib
-from gi.repository import GObject
+from __future__ import annotations
+
+from typing import Any, List, Optional, Iterator, TYPE_CHECKING, Callable, cast
+
+from gi.repository import Gtk  # type: ignore
+from gi.repository import Gdk  # type: ignore
+from gi.repository import GLib  # type: ignore
+from gi.repository import GObject  # type: ignore
 
 from draobpilc import common
+from draobpilc.history_item import HistoryItem
+from draobpilc.history_items import HistoryItems
 from draobpilc.lib import utils
 from draobpilc.lib import fuzzy
 from draobpilc.widgets.histories_manager import HistoriesManager
 from draobpilc.widgets.items_counter import ItemsCounter
+
+if TYPE_CHECKING:
+    _ = lambda s: s
 
 
 class AlreadyBound(Exception):
@@ -33,19 +42,19 @@ class AlreadyBound(Exception):
 
 class ItemsView(Gtk.Box):
 
-    AUTOSCROLL_BORDER_OFFSET = 100
-    AUTOSCROLL_TIMEOUT_MS = 50
-    AUTOSCROLL_STEP = 10
+    AUTOSCROLL_BORDER_OFFSET: int = 100
+    AUTOSCROLL_TIMEOUT_MS: int = 50
+    AUTOSCROLL_STEP: int = 10
 
     __gsignals__ = {
-        'item-activated': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        'item-selected': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        'item-entered': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
-        'item-left': (GObject.SIGNAL_RUN_FIRST, None, (object,)),
+        'item-activated': (GObject.SIGNAL_RUN_FIRST, None, (HistoryItem,)),
+        'item-selected': (GObject.SIGNAL_RUN_FIRST, None, (HistoryItem,)),
+        'item-entered': (GObject.SIGNAL_RUN_FIRST, None, (HistoryItem,)),
+        'item-left': (GObject.SIGNAL_RUN_FIRST, None, (HistoryItem,)),
         'focus-search-requested': (GObject.SIGNAL_RUN_FIRST, None, (GObject.TYPE_PYOBJECT,)),
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.set_orientation(Gtk.Orientation.VERTICAL)
@@ -55,21 +64,21 @@ class ItemsView(Gtk.Box):
         self.set_hexpand(True)
         self.set_name('ItemsViewBox')
 
-        self._bound_history = None
-        self._last_entered_item = None
-        self._last_selected_index = None
-        self._show_index = None
-        self._autoscroll_timeout_id = 0
+        self._bound_history: Optional[HistoryItems] = None
+        self._last_entered_item: Optional[HistoryItem] = None
+        self._last_selected_index: Optional[int] = None
+        self._show_index: Optional[int] = None
+        self._autoscroll_timeout_id: int = 0
 
-        self._histories_manager = HistoriesManager()
+        self._histories_manager: HistoriesManager = HistoriesManager()
 
-        placeholder = Gtk.Label()
+        placeholder: Gtk.Label = Gtk.Label()
         placeholder.set_markup(
             '<span font-size="xx-large">%s</span>' % _('Nothing')
         )
         placeholder.show()
 
-        self._listbox = Gtk.ListBox()
+        self._listbox: Gtk.ListBox = Gtk.ListBox()
         self._listbox.set_name('ItemsViewList')
         self._listbox.set_selection_mode(Gtk.SelectionMode.MULTIPLE)
         self._listbox.set_activate_on_single_click(False)
@@ -82,9 +91,9 @@ class ItemsView(Gtk.Box):
         self._listbox.connect('button-release-event', self._on_button_release_event)
         self._listbox.connect('key-press-event', self._on_key_press)
 
-        self._items_counter = ItemsCounter(self._listbox)
-        self._load_rest_btn = Gtk.LinkButton()
-        self._load_rest_btn.set_label('load all history')
+        self._items_counter: ItemsCounter = ItemsCounter(self._listbox)
+        self._load_rest_btn: Gtk.LinkButton = Gtk.LinkButton()
+        self._load_rest_btn.set_label(_('load all history'))
         self._load_rest_btn.set_no_show_all(True)
         self._load_rest_btn.connect(
             'activate-link',
@@ -92,19 +101,19 @@ class ItemsView(Gtk.Box):
         )
         self._load_rest_btn.hide()
 
-        scrolled = Gtk.ScrolledWindow()
+        scrolled: Gtk.ScrolledWindow = Gtk.ScrolledWindow()
         scrolled.set_name('ItemsViewScrolledWindow')
         scrolled.set_vexpand(True)
         scrolled.set_hexpand(True)
         scrolled.add(self._listbox)
 
-        bottom_box = Gtk.Box()
+        bottom_box: Gtk.Box = Gtk.Box()
         bottom_box.set_orientation(Gtk.Orientation.HORIZONTAL)
         bottom_box.add(self._items_counter)
         bottom_box.add(self._load_rest_btn)
         bottom_box.add(self._histories_manager)
 
-        box = Gtk.Box()
+        box: Gtk.Box = Gtk.Box()
         box.set_orientation(Gtk.Orientation.VERTICAL)
         box.add(scrolled)
         box.add(bottom_box)
@@ -112,17 +121,17 @@ class ItemsView(Gtk.Box):
         self.add(box)
         self.show_all()
 
-    def __len__(self):
+    def __len__(self) -> int:
         return len(self._listbox.get_children())
 
-    def _on_leave_event(self, listbox, event):
+    def _on_leave_event(self, listbox: Gtk.ListBox, event: Gdk.Event) -> None:
         if self._last_entered_item:
             self.emit('item-left', self._last_entered_item)
             self._last_entered_item = None
 
-    def _on_motion_event(self, listbox, event):
+    def _on_motion_event(self, listbox: Gtk.ListBox, event: Gdk.Event) -> None:
 
-        def do_autoscroll_and_selection():
+        def do_autoscroll_and_selection() -> bool:
             adjustment = self._listbox.get_adjustment()
             new_value = adjustment.get_value() + ItemsView.AUTOSCROLL_STEP
             adjustment.set_value(new_value)
@@ -133,7 +142,7 @@ class ItemsView(Gtk.Box):
 
             return True
 
-        def maybe_toggle_selection(row):
+        def maybe_toggle_selection(row: Gtk.ListBoxRow) -> None:
             if event.state == Gdk.ModifierType.BUTTON3_MASK:
                 self.toggle_selection(row)
 
@@ -172,25 +181,25 @@ class ItemsView(Gtk.Box):
             self.emit('item-left', self._last_entered_item)
             self._last_entered_item = None
 
-    def _on_button_press_event(self, listbox, event):
+    def _on_button_press_event(self, listbox: Gtk.ListBox, event: Gdk.EventButton) -> None:
         row = self._listbox.get_row_at_y(event.y)
         if not row or event.button != 3: return
         self.toggle_selection(row)
 
-    def _on_button_release_event(self, listbox, event):
+    def _on_button_release_event(self, listbox: Gtk.ListBox, event: Gdk.EventButton) -> None:
         if self._autoscroll_timeout_id:
             GLib.source_remove(self._autoscroll_timeout_id)
             self._autoscroll_timeout_id = 0
 
-    def _on_row_selected(self, listbox, row):
+    def _on_row_selected(self, listbox: Gtk.ListBox, row: Gtk.ListBoxRow) -> None:
         if row: self.emit('item-selected', row.get_child().item)
 
-    def _on_row_activated(self, listbox, row):
+    def _on_row_activated(self, listbox: Gtk.ListBox, row: Gtk.ListBoxRow) -> None:
         if not row: return
         item = row.get_child().item
         if item: self.activate_item(item)
 
-    def _on_key_press(self, listbox, event):
+    def _on_key_press(self, listbox: Gtk.ListBox, event: Gdk.EventKey) -> bool:
         # Ignore modifiers
         if event.state & (Gdk.ModifierType.CONTROL_MASK | Gdk.ModifierType.MOD1_MASK | Gdk.ModifierType.SUPER_MASK):
             return False
@@ -210,12 +219,12 @@ class ItemsView(Gtk.Box):
 
         return False
 
-    def _on_changed(self, history_items):
+    def _on_changed(self, history_items: HistoryItems) -> None:
         self.show_items()
         self.resume_selection() or self.select_first()
         self._last_selected_index = 0
 
-    def _remove(self, history_items, item=None):
+    def _remove(self, history_items: HistoryItems, item: Optional[HistoryItem] = None) -> bool:
         self.save_selection()
         result = False
         if not item: return result
@@ -228,7 +237,7 @@ class ItemsView(Gtk.Box):
 
         return result
 
-    def _get_row_for_item(self, item):
+    def _get_row_for_item(self, item: HistoryItem) -> Optional[Gtk.ListBoxRow]:
         result = False
 
         for row in self._listbox.get_children():
@@ -238,9 +247,9 @@ class ItemsView(Gtk.Box):
 
         return result
 
-    def save_selection(self):
+    def save_selection(self) -> None:
 
-        def get_current_index(child):
+        def get_current_index(child: Gtk.ListBoxRow) -> Optional[int]:
             result = None
 
             for i, ch in enumerate(self._listbox.get_children()):
@@ -259,7 +268,7 @@ class ItemsView(Gtk.Box):
 
         self._last_selected_index = get_current_index(selected_row)
 
-    def resume_selection(self):
+    def resume_selection(self) -> bool:
         if not self._last_selected_index: return False
         children = self._listbox.get_children()
 
@@ -275,7 +284,7 @@ class ItemsView(Gtk.Box):
 
         return True
 
-    def bind(self, history_items):
+    def bind(self, history_items: HistoryItems) -> None:
         if self._bound_history:
             raise AlreadyBound()
 
@@ -287,16 +296,20 @@ class ItemsView(Gtk.Box):
 
         self.show_items()
 
-    def show_items(self):
-        limit = common.SETTINGS[common.ITEMS_VIEW_LIMIT]
-        items = self._bound_history
-        if limit: items = items[:limit]
+    def show_items(self) -> None:
+        if self._bound_history is None:
+            return
+
+        limit: int = common.SETTINGS[common.ITEMS_VIEW_LIMIT]
+        items: List[HistoryItem] = self._bound_history
+        if limit:
+            items = items[:limit]
         self.clear()
 
         for item in items:
             self._listbox.add(item.widget)
 
-        if len(items) < len(self._bound_history): 
+        if len(items) < len(self._bound_history):
             self._load_rest_btn.show()
         else:
             self._load_rest_btn.hide()
@@ -304,9 +317,13 @@ class ItemsView(Gtk.Box):
         self.set_active_item()
         self.show_all()
 
-    def load_rest_items(self):
-        limit = common.SETTINGS[common.ITEMS_VIEW_LIMIT]
-        if not limit: return
+    def load_rest_items(self) -> bool:
+        if self._bound_history is None:
+            return False
+
+        limit: int = common.SETTINGS[common.ITEMS_VIEW_LIMIT]
+        if not limit:
+            return False
 
         for item in self._bound_history[limit:]:
             self._listbox.add(item.widget)
@@ -315,9 +332,9 @@ class ItemsView(Gtk.Box):
         self.show_all()
         return True
 
-    def set_active_item(self):
+    def set_active_item(self) -> None:
 
-        def on_clipboard(clipboard, text):
+        def on_clipboard(clipboard: Gtk.Clipboard, text: Optional[str]) -> None:
             for row in self._listbox.get_children():
                 item_widget = row.get_child()
                 item = item_widget.item
@@ -335,7 +352,7 @@ class ItemsView(Gtk.Box):
         clipboard = Gtk.Clipboard.get_default(Gdk.Display.get_default())
         clipboard.request_text(on_clipboard)
 
-    def select_first(self, grab_focus=False):
+    def select_first(self, grab_focus: bool = False) -> bool:
         self._listbox.unselect_all()
         self.set_active_item()
 
@@ -344,11 +361,13 @@ class ItemsView(Gtk.Box):
 
             self._listbox.select_row(row)
             if grab_focus: row.grab_focus()
-            break
+            self.reset_scroll()
+            return True # Successfully selected an item
 
         self.reset_scroll()
+        return False
 
-    def get_selected(self):
+    def get_selected(self) -> List[HistoryItem]:
         result = []
         rows = self._listbox.get_selected_rows()
 
@@ -357,7 +376,7 @@ class ItemsView(Gtk.Box):
 
         return result
 
-    def clear(self):
+    def clear(self) -> None:
         self._listbox.unselect_all()
 
         if self._autoscroll_timeout_id:
@@ -369,19 +388,19 @@ class ItemsView(Gtk.Box):
             if child: row.remove(child)
             row.destroy()
 
-    def reset_scroll(self):
+    def reset_scroll(self) -> None:
         adjustment = self._listbox.get_adjustment()
         lower = adjustment.get_lower()
         adjustment.set_value(lower)
 
-    def toggle_selection(self, row):
+    def toggle_selection(self, row: Gtk.ListBoxRow) -> None:
         if row.is_selected(): self._listbox.unselect_row(row)
         else: self._listbox.select_row(row) 
 
-    def activate_item(self, item):
+    def activate_item(self, item: HistoryItem) -> None:
         if item: self.emit('item-activated', item)
 
-    def get_for_shortcut(self, number):
+    def get_for_shortcut(self, number: int) -> Optional[HistoryItem]:
         result = None
         curr_index = None
         children = self._listbox.get_children()
@@ -406,7 +425,7 @@ class ItemsView(Gtk.Box):
 
         return result
 
-    def show_shortcut_hints(self, show):
+    def show_shortcut_hints(self, show: bool) -> None:
         curr_index = -1
         children = self._listbox.get_children()
 
@@ -432,14 +451,15 @@ class ItemsView(Gtk.Box):
                 row.get_child().show_shortcut_hint(None)
 
     @property
-    def histories_manager(self):
+    def histories_manager(self) -> HistoriesManager:
         return self._histories_manager
 
     @property
-    def listbox(self):
+    def listbox(self) -> Gtk.ListBox:
         return self._listbox
 
     @property
-    def n_selected(self):
+    def n_selected(self) -> int:
         selected = self.get_selected()
         return len(selected)
+

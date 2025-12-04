@@ -15,22 +15,29 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
-from gi.repository import Gdk
-from gi.repository import Pango
+from __future__ import annotations
 
+from typing import Any, Callable, List, Optional, Type, Union, TYPE_CHECKING
 
-
+from gi.repository import Gtk  # type: ignore
+from gi.repository import Gdk  # type: ignore
+from gi.repository import Pango # type: ignore
+from gi.repository import Gio  # type: ignore
 
 class BaseLinkWidget(Gtk.Box):
-    def __init__(self, link):
+    _link: str
+    _app_info: Optional[Gio.AppInfo]
+    _icon: Gtk.Image
+    _action_box: Gtk.Box
+
+    def __init__(self, link: str) -> None:
         super().__init__(orientation=Gtk.Orientation.HORIZONTAL)
         self.set_name('LinkWidget')
 
         self._link = link
         self._app_info = self._get_app_info(self._link)
         self._icon = self._get_icon(self._app_info)
-        link_button = self._get_link_button()
+        link_button: Gtk.Button = self._get_link_button()
         link_button.connect('query-tooltip', self._on_query_tooltip)
         link_button.connect('enter-notify-event', self._change_cursor)
         link_button.connect('leave-notify-event', self._restore_cursor)
@@ -38,53 +45,55 @@ class BaseLinkWidget(Gtk.Box):
 
         self._action_box = self._get_action_box()
         
-        self.grid = Gtk.Grid()
+        self.grid: Gtk.Grid = Gtk.Grid()
         self.grid.attach(self._icon, 0, 0, 1, 1)
         self.grid.attach(link_button, 1, 0, 1, 1)
         self.grid.attach(self._action_box, 2, 0, 1, 1)
         self.grid.set_column_spacing(3)
         self.add(self.grid)
 
-    def _change_cursor(self, widget, event):
-        window = widget.get_window()
+    def _change_cursor(self, widget: Gtk.Widget, event: Gdk.Event) -> bool:
+        window: Optional[Gdk.Window] = widget.get_window()
         if not window: return False
 
-        display = Gdk.Display.get_default()
-        cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.HAND2)
-        window.set_cursor(cursor)
+        display: Optional[Gdk.Display] = Gdk.Display.get_default()
+        if display:
+            cursor: Gdk.Cursor = Gdk.Cursor.new_for_display(display, Gdk.CursorType.HAND2)
+            window.set_cursor(cursor)
 
         return False
 
-    def _restore_cursor(self, widget, event):
-        window = widget.get_window()
-        if window: window.set_cursor(None)
+    def _restore_cursor(self, widget: Gtk.Widget, event: Gdk.Event) -> bool:
+        window: Optional[Gdk.Window] = widget.get_window()
+        if window:
+            window.set_cursor(None)
 
         return False
 
-    def _get_link_button(self):
-        link_button = Gtk.Button()
+    def _get_link_button(self) -> Gtk.Button:
+        link_button: Gtk.Button = Gtk.Button()
         link_button.set_name('LinkWidgetLink')
         link_button.set_label(self._link)
         link_button.set_has_tooltip(True)
         link_button.set_halign(Gtk.Align.START)
         link_button.set_hexpand(True)
         link_button.set_relief(Gtk.ReliefStyle.NONE)
-        link_style_context = link_button.get_style_context()
+        link_style_context: Gtk.StyleContext = link_button.get_style_context()
         link_style_context.add_class('link-widget-button')
         
-        link_label = link_button.get_child()
+        link_label: Optional[Gtk.Widget] = link_button.get_child()
         if isinstance(link_label, Gtk.Label):
             link_label.set_ellipsize(Pango.EllipsizeMode.END)
 
             link_label.set_single_line_mode(True)
 
-            label_style = link_label.get_style_context()
+            label_style: Gtk.StyleContext = link_label.get_style_context()
             label_style.add_class('link-widget-button-label')
 
         return link_button
 
-    def _get_action_box(self):
-        action_box = Gtk.Box(
+    def _get_action_box(self) -> Gtk.Box:
+        action_box: Gtk.Box = Gtk.Box(
             orientation=Gtk.Orientation.HORIZONTAL
         )
         action_box.set_halign(Gtk.Align.END)
@@ -92,14 +101,14 @@ class BaseLinkWidget(Gtk.Box):
         return action_box
 
     # Abstract methods to be implemented by subclasses
-    def _get_icon(self, app_info):
+    def _get_icon(self, app_info: Optional[Gio.AppInfo]) -> Gtk.Image:
         raise NotImplementedError
 
-    def _get_app_info(self, link):
+    def _get_app_info(self, link: str) -> Optional[Gio.AppInfo]:
         raise NotImplementedError
 
-    def _on_link_clicked(self, button):
+    def _on_link_clicked(self, button: Gtk.Button) -> bool:
         raise NotImplementedError
 
-    def _on_query_tooltip(self, widget, x, y, keyboard_mode, tooltip):
+    def _on_query_tooltip(self, widget: Gtk.Widget, x: int, y: int, keyboard_mode: bool, tooltip: Gtk.Tooltip) -> bool:
         raise NotImplementedError

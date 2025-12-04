@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,36 +15,43 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+from gi.repository import Gtk  # type: ignore
 
 from draobpilc import common
 from draobpilc.lib import gpaste_client
 from draobpilc.widgets import shortcuts_window
 
+if TYPE_CHECKING:
+    _ = lambda s: s
+
 
 class MainToolbox(Gtk.Box):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.set_orientation(Gtk.Orientation.HORIZONTAL)
         self.set_opacity(0.6)
 
-        self.prefs_btn = Gtk.Button.new_from_icon_name(
+        self.prefs_btn: Gtk.Button = Gtk.Button.new_from_icon_name(
             'preferences-system-symbolic',
             Gtk.IconSize.LARGE_TOOLBAR
         )
         self.prefs_btn.set_relief(Gtk.ReliefStyle.NONE)
         self.prefs_btn.set_tooltip_text(_('Preferences'))
 
-        self.about_btn = Gtk.Button.new_from_icon_name(
+        self.about_btn: Gtk.Button = Gtk.Button.new_from_icon_name(
             'help-about-symbolic',
             Gtk.IconSize.LARGE_TOOLBAR
         )
         self.about_btn.set_relief(Gtk.ReliefStyle.NONE)
         self.about_btn.set_tooltip_text(_('About'))
 
-        self.quit_btn = Gtk.Button.new_from_icon_name(
+        self.quit_btn: Gtk.Button = Gtk.Button.new_from_icon_name(
             'application-exit-symbolic',
             Gtk.IconSize.LARGE_TOOLBAR
         )
@@ -52,26 +59,26 @@ class MainToolbox(Gtk.Box):
         self.quit_btn.set_relief(Gtk.ReliefStyle.NONE)
         self.quit_btn.set_tooltip_text(_('Quit'))
 
-        self._track_img = Gtk.Image.new_from_icon_name(
+        self._track_img: Gtk.Image = Gtk.Image.new_from_icon_name(
             'view-refresh-symbolic',
             Gtk.IconSize.LARGE_TOOLBAR
         )
         self._track_img.set_name('TrackImg')
-        self.track_btn = Gtk.ToggleButton()
+        self.track_btn: Gtk.ToggleButton = Gtk.ToggleButton()
         self.track_btn.set_name('TrackButton')
         self.track_btn.set_image(self._track_img)
         self.track_btn.set_relief(Gtk.ReliefStyle.NONE)
         self.track_btn.set_tooltip_text(_('Track clipboard changes'))
         self.track_btn.connect('toggled', self._on_toggled)
 
-        self.restart_btn = Gtk.Button.new_from_icon_name(
+        self.restart_btn: Gtk.Button = Gtk.Button.new_from_icon_name(
             'system-reboot-symbolic',
             Gtk.IconSize.LARGE_TOOLBAR
         )
         self.restart_btn.set_relief(Gtk.ReliefStyle.NONE)
         self.restart_btn.set_tooltip_text(_('Restart the daemon'))
 
-        self.close_btn = Gtk.Button.new_from_icon_name(
+        self.close_btn: Gtk.Button = Gtk.Button.new_from_icon_name(
             'window-close-symbolic',
             Gtk.IconSize.LARGE_TOOLBAR
         )
@@ -82,7 +89,7 @@ class MainToolbox(Gtk.Box):
             ))
         )
 
-        self.help_btn = Gtk.Button.new_from_icon_name(
+        self.help_btn: Gtk.Button = Gtk.Button.new_from_icon_name(
             'preferences-desktop-keyboard-shortcuts-symbolic',
             Gtk.IconSize.LARGE_TOOLBAR
         )
@@ -108,10 +115,11 @@ class MainToolbox(Gtk.Box):
 
         self.show_all()
 
-    def _on_toggled(self, button):
-        style_context = self._track_img.get_style_context()
+    def _on_toggled(self, button: Gtk.ToggleButton) -> None:
+        style_context: Gtk.StyleContext = self._track_img.get_style_context()
 
         if button.get_active():
             style_context.add_class('active')
         else:
             style_context.remove_class('active')
+

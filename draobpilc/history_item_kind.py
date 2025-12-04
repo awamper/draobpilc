@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2016 Ivan awamper@gmail.com
+# Copyright 2016-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,8 +15,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from enum import Enum
 
-class HistoryItemKind():
+
+class HistoryItemKind(Enum):
     TEXT = 'Text'
     IMAGE = 'Image'
     FILE = 'Uris'

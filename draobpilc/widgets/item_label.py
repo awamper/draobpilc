@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015-2025 Ivan awamper@gmail.com
+# Copyright 2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,16 +15,22 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import annotations
+from gi.repository import Gtk, Pango  # type: ignore
 
-GPASTE_VERSION: str = '3.38'
+from draobpilc import common
 
-APP_VERSION: float = 0.5
-APP_NAME: str = 'Draobpilc'
-APP_VERSION_STRING: str = '%s %s' % (APP_NAME, APP_VERSION)
-APP_ID: str = 'org.Draobpilc'
-APP_URL: str = 'https://github.com/awamper/draobpilc'
-APP_DESCRIPTION: str = 'GPaste GUI'
 
-AUTHOR: str = 'awamper'
-AUTHOR_EMAIL: str = 'awamper@gmail.com'
+class ItemLabel(Gtk.Label):
+
+    def __init__(self) -> None:
+        super().__init__()
+
+        self.set_name('HistoryItemLabel')
+        self.set_halign(Gtk.Align.START)
+        self.set_hexpand(True)
+        self.set_valign(Gtk.Align.CENTER)
+        self.set_vexpand(True)
+        self.set_ellipsize(Pango.EllipsizeMode.END)
+        self.set_line_wrap(True)
+        self.set_line_wrap_mode(Pango.WrapMode.CHAR)
+        self.set_lines(common.SETTINGS[common.ITEM_MAX_LINES])

@@ -30,6 +30,11 @@ Homepage = "https://github.com/awamper/draobpilc"
 [project.gui-scripts]
 draobpilc = "draobpilc.main:run"
 
+[project.optional-dependencies]
+dev = [
+    "mypy",
+]
+
 [tool.setuptools.packages.find]
 where = ["."]
 
@@ -41,3 +46,13 @@ draobpilc = [
     "data/style.css",
     "data/schemas/gschemas.compiled",
 ]
+
+[tool.mypy]
+
+python_version = "3.9"
+
+warn_unused_configs = true
+
+disallow_untyped_defs = true
+
+follow_imports = "silent"

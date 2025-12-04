@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,11 +15,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
-from gi.repository import GObject
+from __future__ import annotations
+
+from typing import Any, Callable, List, Optional, Tuple, TYPE_CHECKING
+
+from gi.repository import Gtk, GObject  # type: ignore
 
 from draobpilc.lib import gpaste_client
 from draobpilc.widgets.backup_history_dialog import BackupHistoryDialog
+
+if TYPE_CHECKING:
+    _ = lambda s: s # Dummy for gettext
 
 ITEM_BUTTON_SIZE = 14
 NAME_TEMPLATE = '%s (%i)'
@@ -35,7 +41,7 @@ class ItemAction():
 
 class ItemButton(Gtk.Button):
 
-    def __init__(self, icon_name, icon_size, tooltip, expand=False):
+    def __init__(self, icon_name: str, icon_size: int, tooltip: str, expand: bool = False) -> None:
         super().__init__()
 
         icon_theme = Gtk.IconTheme.get_default()
@@ -59,7 +65,7 @@ class ItemButton(Gtk.Button):
 
 class ItemConfirmation(Gtk.Revealer):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.set_reveal_child(False)
@@ -100,12 +106,12 @@ class HistoriesManagerItem(Gtk.Box):
         'action-request': (GObject.SIGNAL_RUN_FIRST, None, (int,))
     }
 
-    def __init__(self, name):
+    def __init__(self, name: str) -> None:
         super().__init__()
 
         self.set_orientation(Gtk.Orientation.VERTICAL)
 
-        self._wait_for_confirm = None
+        self._wait_for_confirm: Optional[int] = None
         self.name = name
         self.size = gpaste_client.get_history_size(self.name)
 
@@ -173,7 +179,7 @@ class HistoriesManagerItem(Gtk.Box):
 
         self.set_active(False)
 
-    def _hide_confirm_dialog(self):
+    def _hide_confirm_dialog(self) -> None:
         self._confirmation_revealer.set_transition_type(
             Gtk.RevealerTransitionType.SLIDE_UP
         )
@@ -183,7 +189,7 @@ class HistoriesManagerItem(Gtk.Box):
         self._revealer.show_all()
         self._revealer.set_reveal_child(True)
 
-    def _show_confirm_dialog(self):
+    def _show_confirm_dialog(self) -> None:
         self._revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
         self._revealer.set_reveal_child(False)
 
@@ -195,28 +201,28 @@ class HistoriesManagerItem(Gtk.Box):
 
         self._confirmation_revealer.no_btn.grab_focus()
 
-    def _confirm(self, yes_btn):
+    def _confirm(self, yes_btn: Gtk.Button) -> None:
         if not self._wait_for_confirm: return
 
         self.emit('action-request', self._wait_for_confirm)
         self._wait_for_confirm = None
         self._hide_confirm_dialog()
 
-    def _cancel(self, no_btn):
+    def _cancel(self, no_btn: Gtk.Button) -> None:
         self._wait_for_confirm = None
         self._hide_confirm_dialog()
 
-    def _request_confirmation(self, button, action):
+    def _request_confirmation(self, button: Gtk.Button, action: int) -> None:
         self._wait_for_confirm = action
         self._show_confirm_dialog()
 
-    def set_active(self, active=False):
+    def set_active(self, active: bool = False) -> None:
         self.link.set_sensitive(not active)
 
 
 class HistoriesManager(Gtk.Box):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.set_name('HistoriesManagerBox')
@@ -253,21 +259,21 @@ class HistoriesManager(Gtk.Box):
         gpaste_client.connect('DeleteHistory', self.update)
         self.update()
 
-    def _on_entry_activate(self, entry):
+    def _on_entry_activate(self, entry: Gtk.Entry) -> None:
         history_name = self._entry.get_text().strip()
         if history_name: self._switch_history(history_name)
         self._entry.set_text('')
         self.update()
 
-    def _on_activate_link(self, link):
+    def _on_activate_link(self, link: Gtk.LinkButton) -> bool:
         self.show()
         return True
 
-    def _on_histories_manager_item(self, link, histories_manager_item):
+    def _on_histories_manager_item(self, link: Gtk.LinkButton, histories_manager_item: HistoriesManagerItem) -> bool:
         self._switch_history(histories_manager_item.name)
         return True
 
-    def _on_item_action(self, histories_manager_item, action):
+    def _on_item_action(self, histories_manager_item: HistoriesManagerItem, action: ItemAction) -> None:
         if action == ItemAction.EMPTY:
             gpaste_client.empty_history(histories_manager_item.name)
             self.update()
@@ -282,18 +288,18 @@ class HistoriesManager(Gtk.Box):
         else:
             pass
 
-    def _set_active(self, name):
+    def _set_active(self, name: str) -> None:
         self.link.set_label(name)
 
-    def _clear(self):
+    def _clear(self) -> None:
         for child in self._box:
             if child != self._entry: child.destroy()
 
-    def _switch_history(self, name):
+    def _switch_history(self, name: str) -> None:
         gpaste_client.switch_history(name)
         self.popover.hide()
 
-    def update(self, *args, **kwargs):
+    def update(self, *args: Any, **kwargs: Any) -> None:
         self._clear()
         self.link.set_sensitive(True)
         histories = gpaste_client.list_histories()
@@ -318,5 +324,6 @@ class HistoriesManager(Gtk.Box):
 
         self._box.show_all()
 
-    def show(self):
+    def show(self) -> None:
         self.popover.show()
+

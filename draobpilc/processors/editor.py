@@ -15,9 +15,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import os
+from __future__ import annotations
 
-from gi.repository import Gtk
+import os
+from typing import Any, List, TYPE_CHECKING
+
+from gi.repository import Gtk  # type: ignore
 
 from draobpilc.history_item_kind import HistoryItemKind
 from draobpilc.lib import gpaste_client
@@ -25,50 +28,57 @@ from draobpilc.processors.processor_textwindow import TextWindow
 from draobpilc.widgets.items_processor_base import (ItemsProcessorBase,
                                                     ItemsProcessorPriority)
 
+if TYPE_CHECKING:
+    _ = lambda s: s
+
 
 class Editor(ItemsProcessorBase):
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(
             _('Edit'),
             priority=ItemsProcessorPriority.NORMAL,
             default=True
         )
 
-        self._text_window = TextWindow()
+        self._text_window: TextWindow = TextWindow()
         self._text_window.connect('changed', self._edit_item)
         self._text_window.textview.set_name('EditorTextView')
 
         self.grid.set_name('EditorGrid')
         self.grid.attach(self._text_window, 0, 0, 1, 1)
 
-    def _edit_item(self, text_window, buffer):
+    def _edit_item(self, text_window: TextWindow, buffer: Any) -> None:
         if not self.item: return
 
         contents = self._text_window.buffer.props.text
 
-        if contents and contents != self.item.raw:
+        if contents and self.item.uuid and contents != self.item.raw:
             gpaste_client.replace(self.item.uuid, contents)
 
-    def clear(self):
+    def clear(self) -> None:
         super().clear()
 
         self._text_window.buffer.set_text('')
         self._text_window.set_sensitive(False)
 
-    def set_items(self, items):
+    def set_items(self, items: List[Any]) -> None:
         self.items = items
         self._text_window.set_sensitive(True)
-        self._text_window.buffer.set_text(self.item.raw)
+
+        if self.item:
+            self._text_window.buffer.set_text(self.item.raw)
+
         self._text_window.set_filename(None)
 
-    def can_process(self, items):
+    def can_process(self, items: List[Any]) -> bool:
+        result = False
         if (
             len(items) == 1 and (
                 items[0].kind == HistoryItemKind.TEXT or
                 items[0].kind == HistoryItemKind.LINK
             )
         ):
-            return True
-        else:
-            return False
+            result = True
+        
+        return result

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2016 Ivan awamper@gmail.com
+# Copyright 2016-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,17 +15,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
-from gi.repository import GLib
+from typing import List, Optional, Iterator
+
+from gi.repository import Gtk, GLib  # type: ignore
 
 from draobpilc.widgets.items_processor_base import ItemsProcessorBase
+from draobpilc.history_item import HistoryItem
 
 
 class ItemsProcessors(Gtk.Box):
 
-    MARGIN = 10
+    MARGIN: int = 10
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.set_name('ProcessorBox')
@@ -35,12 +37,12 @@ class ItemsProcessors(Gtk.Box):
         self.set_vexpand(True)
         self.set_orientation(Gtk.Orientation.VERTICAL)
 
-        self._stack = Gtk.Stack()
+        self._stack: Gtk.Stack = Gtk.Stack()
         self._stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
         self._stack.set_transition_duration(300)
         self._stack.props.margin = ItemsProcessors.MARGIN
 
-        self._switcher = Gtk.StackSwitcher()
+        self._switcher: Gtk.StackSwitcher = Gtk.StackSwitcher()
         self._switcher.set_no_show_all(True)
         self._switcher.set_stack(self._stack)
         self._switcher.set_halign(Gtk.Align.CENTER)
@@ -51,18 +53,19 @@ class ItemsProcessors(Gtk.Box):
         self.add(self._stack)
         self.show_all()
 
-        self._items = []
-        self._timeout_id = 0
-        self._show_switcher = True
+        self._items: List[HistoryItem] = []
+        self._timeout_id: int = 0
+        self._show_switcher: bool = True
 
-    def __iter__(self):
+    def __iter__(self) -> Iterator[ItemsProcessorBase]:
         return iter(self.processors)
 
-    def _get_for_items(self, items):
-        result = None
+    def _get_for_items(self, items: List[HistoryItem]) -> Optional[ItemsProcessorBase]:
+        result: Optional[ItemsProcessorBase] = None
 
         for processor in self:
-            if not processor.can_process(items): continue
+            if not processor.can_process(items):
+                continue
 
             if result and processor.priority > result.priority:
                 result = processor
@@ -71,8 +74,8 @@ class ItemsProcessors(Gtk.Box):
 
         return result
 
-    def _get_for_title(self, title):
-        result = None
+    def _get_for_title(self, title: str) -> Optional[ItemsProcessorBase]:
+        result: Optional[ItemsProcessorBase] = None
 
         for processor in self:
             if processor.title == title:
@@ -81,18 +84,21 @@ class ItemsProcessors(Gtk.Box):
 
         return result
 
-    def _update_switcher(self):
+    def _update_switcher(self) -> None:
         for button in self._switcher.get_children():
-            if not isinstance(button, Gtk.RadioButton): continue
+            if not isinstance(button, Gtk.RadioButton):
+                continue
 
             for label in button.get_children():
-                if not isinstance(label, Gtk.Label): continue
-                processor = self._get_for_title(label.get_text())
-                if not processor: continue
+                if not isinstance(label, Gtk.Label):
+                    continue
+                processor: Optional[ItemsProcessorBase] = self._get_for_title(label.get_text())
+                if not processor:
+                    continue
 
                 button.set_sensitive(processor.get_sensitive())
 
-    def add_processor(self, processor):
+    def add_processor(self, processor: ItemsProcessorBase) -> None:
         if not isinstance(processor, ItemsProcessorBase):
             raise ValueError(
                 '"processor" must be instance of ItemsProcessorBase'
@@ -105,9 +111,9 @@ class ItemsProcessors(Gtk.Box):
                 processor.title
             )
 
-    def set_items(self, items, timeout=0):
+    def set_items(self, items: Optional[List[HistoryItem]], timeout: int = 0) -> None:
 
-        def on_timeout():
+        def on_timeout() -> None:
             self._timeout_id = 0
 
             if not items:
@@ -115,23 +121,23 @@ class ItemsProcessors(Gtk.Box):
             else:
                 self._items = items
 
-            for processor in self:
+            for proc in self:
                 if items is None:
-                    processor.clear()
-                    processor.set_sensitive(False)
+                    proc.clear()
+                    proc.set_sensitive(False)
                 else:
-                    if processor.can_process(items):
-                        processor.set_sensitive(True)
-                        processor.set_items(items)
+                    if proc.can_process(items):
+                        proc.set_sensitive(True)
+                        proc.set_items(items)
                     else:
-                        processor.set_sensitive(False)
-                        processor.clear()
+                        proc.set_sensitive(False)
+                        proc.clear()
 
-            processor = self._get_for_items(self._items)
+            active_processor: Optional[ItemsProcessorBase] = self._get_for_items(self._items)
 
-            if processor:
-                self._stack.set_visible_child(processor)
-            else:
+            if active_processor:
+                self._stack.set_visible_child(active_processor)
+            elif self.default:
                 self._stack.set_visible_child(self.default)
 
             self._update_switcher()
@@ -139,7 +145,8 @@ class ItemsProcessors(Gtk.Box):
         if self._timeout_id:
             GLib.source_remove(self._timeout_id)
             self._timeout_id = 0
-        if self._items == items: return
+        if self._items == items:
+            return
 
         if timeout:
             self._timeout_id = GLib.timeout_add(timeout, on_timeout)
@@ -147,15 +154,16 @@ class ItemsProcessors(Gtk.Box):
             on_timeout()
 
     @property
-    def processors(self):
+    def processors(self) -> List[ItemsProcessorBase]:
         return self._stack.get_children()
 
     @property
-    def default(self):
-        result = None
+    def default(self) -> Optional[ItemsProcessorBase]:
+        result: Optional[ItemsProcessorBase] = None
 
         for processor in self:
-            if not processor.default: continue
+            if not processor.default:
+                continue
 
             if result and processor.priority > result.priority:
                 result = processor
@@ -165,11 +173,11 @@ class ItemsProcessors(Gtk.Box):
         return result
 
     @property
-    def show_switcher(self):
+    def show_switcher(self) -> bool:
         return self._show_switcher
 
     @show_switcher.setter
-    def show_switcher(self, value):
+    def show_switcher(self, value: bool) -> None:
         if value:
             self._show_switcher = True
             self._switcher.show()
@@ -177,3 +185,4 @@ class ItemsProcessors(Gtk.Box):
             self._show_switcher = False
             self._switcher.hide()
             self._stack.hide()
+

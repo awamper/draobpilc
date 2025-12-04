@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015-2025 Ivan awamper@gmail.com
+# Copyright 2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,16 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from __future__ import annotations
+from gi.repository import Gtk  # type: ignore
 
-GPASTE_VERSION: str = '3.38'
+from draobpilc import common
+from draobpilc.widgets.indicator_base import IndicatorBase
+from draobpilc.history_item_kind import HistoryItemKind
 
-APP_VERSION: float = 0.5
-APP_NAME: str = 'Draobpilc'
-APP_VERSION_STRING: str = '%s %s' % (APP_NAME, APP_VERSION)
-APP_ID: str = 'org.Draobpilc'
-APP_URL: str = 'https://github.com/awamper/draobpilc'
-APP_DESCRIPTION: str = 'GPaste GUI'
 
-AUTHOR: str = 'awamper'
-AUTHOR_EMAIL: str = 'awamper@gmail.com'
+class ItemKindIndicator(IndicatorBase):
+
+    def __init__(self, kind: HistoryItemKind) -> None:
+        super().__init__()
+
+        self.set_name('HistoryItemKindIndicator')
+        self.set_halign(Gtk.Align.START)
+        self.set_hexpand(False)
+        self.set_size_request(common.SETTINGS[common.KIND_INDICATOR_WIDTH], -1)
+        self.set_kind(kind)
+        self.show()

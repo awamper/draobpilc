@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,14 +15,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from gi.repository import Gtk
+from __future__ import annotations
+
+from typing import Any, Callable, Optional, TYPE_CHECKING
+
+from gi.repository import Gtk, GObject  # type: ignore
 
 from draobpilc.lib import gpaste_client
+
+if TYPE_CHECKING:
+    _ = lambda s: s
 
 
 class BackupHistoryDialog(Gtk.Dialog):
 
-    def __init__(self, transient_for=None, current_name=None):
+    def __init__(self, transient_for: Optional[Gtk.Window] = None, current_name: Optional[str] = None) -> None:
         super().__init__(use_header_bar=True)
 
         self.set_title(_('Backup history'))
@@ -59,9 +66,7 @@ class BackupHistoryDialog(Gtk.Dialog):
         self._entry.props.margin = 10
         self._entry.set_text(backup_name)
         self._entry.connect('activate', self._on_entry_activate)
-        self._entry.props.buffer.connect('notify::text',
-            lambda b, p: self._hide_error()
-        )
+        self._entry.props.buffer.connect('notify::text', self._on_buffer_text_changed)
 
         content_area = self.get_content_area()
         content_area.add(label_overlay)
@@ -70,24 +75,27 @@ class BackupHistoryDialog(Gtk.Dialog):
 
         self.connect('response', self._on_response)
 
-    def _on_entry_activate(self, entry):
+    def _on_buffer_text_changed(self, buffer: Gtk.EntryBuffer, pspec: GObject.ParamSpec) -> None:
+        self._hide_error()
+
+    def _on_entry_activate(self, entry: Gtk.Entry) -> None:
         self._backup_history(self._entry.get_text()) and self.destroy()
 
-    def _on_response(self, dialog, response_id):
+    def _on_response(self, dialog: Gtk.Dialog, response_id: Gtk.ResponseType) -> None:
         if response_id == Gtk.ResponseType.OK:
             self._backup_history(self._entry.get_text()) and self.destroy()
         else:
             self.destroy()
 
-    def _hide_error(self):
+    def _hide_error(self) -> None:
         self._error_label.hide()
         self._label.set_opacity(1)
 
-    def _show_error(self):
+    def _show_error(self) -> None:
         self._label.set_opacity(0)
         self._error_label.show()
 
-    def _backup_history(self, name):
+    def _backup_history(self, name: str) -> bool:
         histories = gpaste_client.list_histories()
 
         if name in histories:
@@ -99,3 +107,4 @@ class BackupHistoryDialog(Gtk.Dialog):
         gpaste_client.backup_history(self._current_name, name)
 
         return True
+

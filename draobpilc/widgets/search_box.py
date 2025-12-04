@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Copyright 2015 Ivan awamper@gmail.com
+# Copyright 2015-2025 Ivan awamper@gmail.com
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -15,18 +15,24 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-import re
+from __future__ import annotations
 
-from gi.repository import Gtk
-from gi.repository import GLib
-from gi.repository import GObject
+import re
+from typing import Any, List, Pattern, TYPE_CHECKING
+
+from gi.repository import Gtk  # type: ignore
+from gi.repository import GLib  # type: ignore
+from gi.repository import GObject  # type: ignore
 
 from draobpilc import common
 from draobpilc.history_item_kind import HistoryItemKind
 
-ENTRY_PLACE_HOLDER = _('Type to filter or %s to focus search') % common.SETTINGS[common.FOCUS_SEARCH]
-SEARCH_INDEX_RE = re.compile(r'^#([0-9]+)$')
-FLAGS_RE = re.compile(r'^(.*?)\-([lfit]+)$')
+if TYPE_CHECKING:
+    _ = lambda s: s
+
+ENTRY_PLACE_HOLDER: str = _('Type to filter or %s to focus search') % common.SETTINGS[common.FOCUS_SEARCH]
+SEARCH_INDEX_RE: Pattern[str] = re.compile(r'^#([0-9]+)$')
+FLAGS_RE: Pattern[str] = re.compile(r'^(.*?)\-([lfit]+)$')
 
 
 class SearchBox(Gtk.Box):
@@ -36,7 +42,7 @@ class SearchBox(Gtk.Box):
         'search-index': (GObject.SIGNAL_RUN_FIRST, None, (int,))
     }
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
 
         self.set_name('SearchBox')
@@ -46,14 +52,14 @@ class SearchBox(Gtk.Box):
         self.set_hexpand(True)
         self.set_orientation(Gtk.Orientation.HORIZONTAL)
 
-        self.entry = Gtk.Entry()
+        self.entry: Gtk.Entry = Gtk.Entry()
         self.entry.set_hexpand(True)
         self.entry.set_halign(Gtk.Align.FILL)
         self.entry.set_valign(Gtk.Align.START)
         self.entry.set_placeholder_text(ENTRY_PLACE_HOLDER)
         self.entry.connect(
             'icon-release',
-            lambda *a, **kw: self.reset()
+            lambda entry, pos: self.reset()
         )
         self.entry.set_tooltip_text(
             _('You can add "-{flags}" at the end to search for types.') +
@@ -61,7 +67,7 @@ class SearchBox(Gtk.Box):
             _('\n\nUse #{number} to filter by index number')
         )
 
-        self.spinner = Gtk.Spinner()
+        self.spinner: Gtk.Spinner = Gtk.Spinner()
         self.spinner.set_halign(Gtk.Align.END)
         self.spinner.set_valign(Gtk.Align.CENTER)
         self.spinner.set_margin_right(10)
@@ -72,15 +78,15 @@ class SearchBox(Gtk.Box):
 
         self.buffer.connect('notify::text', self._on_text_changed)
 
-        self._timeout_id = 0
-        self.flags = []
+        self._timeout_id: int = 0
+        self.flags: List[HistoryItemKind] = []
 
         self.add(overlay)
         self.show_all()
         self._update_icon()
 
-    def _on_text_changed(self, buffer, *a, **kw):
-        def on_timeout():
+    def _on_text_changed(self, buffer: Gtk.EntryBuffer, pspec: GObject.ParamSpec) -> None:
+        def on_timeout() -> bool:
             self._update_flags()
             self._timeout_id = 0
             match = SEARCH_INDEX_RE.findall(self.search_text)
@@ -97,22 +103,23 @@ class SearchBox(Gtk.Box):
             self._timeout_id = 0
 
         self._update_icon()
-        search_timeout = common.SETTINGS[common.SEARCH_TIMEOUT]
+        search_timeout: int = common.SETTINGS[common.SEARCH_TIMEOUT]
         self._timeout_id = GLib.timeout_add(search_timeout, on_timeout)
 
-    def _update_flags(self):
-        flags = FLAGS_RE.findall(self.entry.get_text())
+    def _update_flags(self) -> None:
+        flags_match = FLAGS_RE.findall(self.entry.get_text())
         self.flags.clear()
 
-        if not flags: return
-        else: flags = flags[0][1]
+        if not flags_match: return
+        
+        flags_str: str = flags_match[0][1]
 
-        if 'l' in flags: self.flags.append(HistoryItemKind.LINK)
-        if 'f' in flags: self.flags.append(HistoryItemKind.FILE)
-        if 'i' in flags: self.flags.append(HistoryItemKind.IMAGE)
-        if 't' in flags: self.flags.append(HistoryItemKind.TEXT)
+        if 'l' in flags_str: self.flags.append(HistoryItemKind.LINK)
+        if 'f' in flags_str: self.flags.append(HistoryItemKind.FILE)
+        if 'i' in flags_str: self.flags.append(HistoryItemKind.IMAGE)
+        if 't' in flags_str: self.flags.append(HistoryItemKind.TEXT)
 
-    def _update_icon(self):
+    def _update_icon(self) -> None:
         if self.entry.get_text():
             self.entry.set_icon_from_icon_name(
                 Gtk.EntryIconPosition.PRIMARY,
@@ -132,15 +139,16 @@ class SearchBox(Gtk.Box):
                 False
             )
 
-    def reset(self):
+    def reset(self) -> None:
         self.entry.set_text('')
 
     @property
-    def buffer(self):
+    def buffer(self) -> Gtk.EntryBuffer:
         return self.entry.props.buffer
 
     @property
-    def search_text(self):
-        text = self.entry.get_text().strip()
+    def search_text(self) -> str:
+        text: str = self.entry.get_text().strip()
         text = FLAGS_RE.sub(r'\1', text)
         return text
+
