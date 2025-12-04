@@ -19,10 +19,14 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
 
-from gi.repository import Gtk, Gdk  # type: ignore
+from gi.repository import Gtk, Gdk
 
 from draobpilc import common
 from draobpilc import version
+from draobpilc.widgets.items_processors import ItemsProcessors
+from draobpilc.widgets.items_view import ItemsView
+from draobpilc.widgets.main_toolbox import MainToolbox
+from draobpilc.widgets.search_box import SearchBox
 
 if TYPE_CHECKING:
     from draobpilc.application import Application
@@ -30,7 +34,8 @@ if TYPE_CHECKING:
 
 class Window(Gtk.ApplicationWindow):
 
-    def __init__(self, app: Application) -> None:
+    def __init__(self, app: Application, items_processors: ItemsProcessors, main_toolbox: MainToolbox,
+                 search_box: SearchBox, items_view: ItemsView, deletion_progress_bar: Gtk.ProgressBar) -> None:
         super().__init__()
 
         self.set_application(app)
@@ -61,3 +66,22 @@ class Window(Gtk.ApplicationWindow):
 
         self.add(self.grid)
 
+        def resize_progress_bar(widget: Any, allocation: Any) -> None:
+            parent_width = allocation.width
+            target_width = int(parent_width * 0.60)
+            deletion_progress_bar.set_size_request(target_width, -1)
+
+        right_box = Gtk.Box()
+        right_box.set_name('RightBox')
+        right_box.set_orientation(Gtk.Orientation.VERTICAL)
+        right_box.add(search_box)
+        right_box.add(items_view)
+        right_box.connect('size-allocate', resize_progress_bar)
+
+        right_overlay = Gtk.Overlay()
+        right_overlay.add(right_box)
+        right_overlay.add_overlay(deletion_progress_bar)
+
+        self.grid.attach(items_processors, 0, 0, 1, 1)
+        self.grid.attach(main_toolbox, 0, 1, 1, 1)
+        self.grid.attach(right_overlay, 1, 0, 1, 2)

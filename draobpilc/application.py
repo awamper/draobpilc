@@ -342,12 +342,6 @@ class Application(Gtk.Application):
 
     def do_activate(self, show_preferences_dialog: bool = False) -> None:
 
-        def resize_progress_bar(widget: Any, allocation: Any) -> None:
-            if self._deletion_progress_bar:
-                parent_width = allocation.width
-                target_width = int(parent_width * 0.60)
-                self._deletion_progress_bar.set_size_request(target_width, -1)
-
         if self._window:
             if show_preferences_dialog:
                 show_preferences()
@@ -355,31 +349,14 @@ class Application(Gtk.Application):
                 self.show()
             return None
 
-        right_box = Gtk.Box()
-        right_box.set_name('RightBox')
-        right_box.set_orientation(Gtk.Orientation.VERTICAL)
-        if self._search_box:
-            right_box.add(self._search_box)
-        if self._items_view:
-            right_box.add(self._items_view)
-        right_box.connect('size-allocate', resize_progress_bar)
-
-        self._deletion_progress_bar = Gtk.ProgressBar()
-        self._deletion_progress_bar.set_name('DeletionProgressBar')
-        self._deletion_progress_bar.set_halign(Gtk.Align.CENTER)
-        self._deletion_progress_bar.set_valign(Gtk.Align.CENTER)
-        self._deletion_progress_bar.set_hexpand(True)
-        self._deletion_progress_bar.set_text('Progress')
-        self._deletion_progress_bar.set_show_text(True)
-        self._deletion_progress_bar.set_no_show_all(True)
-        self._deletion_progress_bar.hide()
-
-        right_overlay = Gtk.Overlay()
-        right_overlay.add(right_box)
-        if self._deletion_progress_bar:
-            right_overlay.add_overlay(self._deletion_progress_bar)
-
-        self._window = Window(self)
+        self._window = Window(
+            self,
+            items_processors=self._items_processors,
+            main_toolbox=self._main_toolbox,
+            search_box=self._search_box,
+            items_view=self._items_view,
+            deletion_progress_bar=self._deletion_progress_bar
+        )
         self._window.connect('configure-event', self._resize)
         self._window.connect('key-press-event', self._on_key_press)
         self._window.connect('key-release-event', self._on_key_release)
@@ -387,11 +364,6 @@ class Application(Gtk.Application):
             'focus-out-event',
             lambda _, __: self._items_view.show_shortcut_hints(False) if self._items_view else None
         )
-        if self._items_processors:
-            self._window.grid.attach(self._items_processors, 0, 0, 1, 1)
-        if self._main_toolbox:
-            self._window.grid.attach(self._main_toolbox, 0, 1, 1, 1)
-        self._window.grid.attach(right_overlay, 1, 0, 1, 2)
 
         if self.args and self.args.show_preferences:
             show_preferences()
@@ -490,6 +462,16 @@ class Application(Gtk.Application):
             'focus-search-requested',
             self._on_items_view_focus_search
         )
+
+        self._deletion_progress_bar = Gtk.ProgressBar()
+        self._deletion_progress_bar.set_name('DeletionProgressBar')
+        self._deletion_progress_bar.set_halign(Gtk.Align.CENTER)
+        self._deletion_progress_bar.set_valign(Gtk.Align.CENTER)
+        self._deletion_progress_bar.set_hexpand(True)
+        self._deletion_progress_bar.set_text('Progress')
+        self._deletion_progress_bar.set_show_text(True)
+        self._deletion_progress_bar.set_no_show_all(True)
+        self._deletion_progress_bar.hide()
 
         gpaste_client.connect('ShowHistory', self.toggle)
         gpaste_client.connect('Tracking',
