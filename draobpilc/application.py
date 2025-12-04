@@ -347,7 +347,13 @@ class Application(Gtk.Application):
                 show_preferences()
             else:
                 self.show()
-            return None
+            return
+
+        assert self._items_processors is not None
+        assert self._main_toolbox is not None
+        assert self._search_box is not None
+        assert self._items_view is not None
+        assert self._deletion_progress_bar is not None
 
         self._window = Window(
             self,

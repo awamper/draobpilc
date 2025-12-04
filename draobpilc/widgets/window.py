@@ -19,7 +19,7 @@ from __future__ import annotations
 
 from typing import Any, TYPE_CHECKING
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk  # type: ignore
 
 from draobpilc import common
 from draobpilc import version
