@@ -349,27 +349,7 @@ class Application(Gtk.Application):
                 self.show()
             return
 
-        assert self._items_processors is not None
-        assert self._main_toolbox is not None
-        assert self._search_box is not None
-        assert self._items_view is not None
-        assert self._deletion_progress_bar is not None
-
-        self._window = Window(
-            self,
-            items_processors=self._items_processors,
-            main_toolbox=self._main_toolbox,
-            search_box=self._search_box,
-            items_view=self._items_view,
-            deletion_progress_bar=self._deletion_progress_bar
-        )
-        self._window.connect('configure-event', self._resize)
-        self._window.connect('key-press-event', self._on_key_press)
-        self._window.connect('key-release-event', self._on_key_release)
-        self._window.connect(
-            'focus-out-event',
-            lambda _, __: self._items_view.show_shortcut_hints(False) if self._items_view else None
-        )
+        self._build_ui()
 
         if self.args and self.args.show_preferences:
             show_preferences()
@@ -390,99 +370,7 @@ class Application(Gtk.Application):
         gtk_settings = Gtk.Settings.get_default()
         gtk_settings.props.gtk_application_prefer_dark_theme = True
 
-        self._editor = editor.Editor()
-        self._previewer = previewer.Previewer()
-        self._merger = merger.Merger()
-        self._merger.connect('merge', self.merge_items)
-        self._merger.connect('delete', self._on_merger_delete)
-        self._items_processors = ItemsProcessors()
-        self._items_processors.add_processor(self._editor)
-        self._items_processors.add_processor(self._previewer)
-        self._items_processors.add_processor(self._merger)
-
-        self._main_toolbox = MainToolbox()
-        self._main_toolbox.prefs_btn.connect('clicked',
-            lambda b: self.show_prefs()
-        )
-        self._main_toolbox.about_btn.connect('clicked',
-            lambda b: self.show_about()
-        )
-        self._main_toolbox.quit_btn.connect('clicked',
-            lambda b: self.quit()
-        )
-        self._main_toolbox.restart_btn.connect(
-            'clicked',
-            self._restart_daemon
-        )
-        self._main_toolbox.close_btn.connect(
-            'clicked',
-            lambda b: self.hide(reset_search=True)
-        )
-        self._main_toolbox.track_btn.connect('clicked',
-            lambda b: gpaste_client.track(b.get_active())
-        )
-        self._main_toolbox.track_btn.set_active(
-            gpaste_client.get_prop('Active')
-        )
-        self._main_toolbox.help_btn.connect(
-            'clicked',
-            lambda b: shortcuts_window.show_or_false(self._window)
-        )
-
-        self._history_items = HistoryItems()
-
-        self._search_box = SearchBox()
-        self._search_box.connect('search-changed',
-            self._on_search_changed
-        )
-        self._search_box.connect('search-index',
-            lambda sb, i: self._on_search_changed(sb, search_index=i)
-        )
-        self._search_box.entry.connect('activate',
-            self._on_entry_activated
-        )
-        self._search_box.entry.connect(
-            'key-press-event',
-            self._on_search_entry_key_press
-        )
-
-        self._items_view = ItemsView()
-        self._items_view.connect(
-            'item-activated',
-            self._on_item_activated
-        )
-        self._items_view.connect(
-            'item-entered',
-            self._on_item_entered
-        )
-        self._items_view.connect(
-            'item-left',
-            lambda iv, i: self.selection_changed()
-        )
-        self._items_view.listbox.connect(
-            'selected-rows-changed',
-            lambda iv: self.selection_changed()
-        )
-        self._items_view.bind(self._history_items)
-        self._items_view.connect(
-            'focus-search-requested',
-            self._on_items_view_focus_search
-        )
-
-        self._deletion_progress_bar = Gtk.ProgressBar()
-        self._deletion_progress_bar.set_name('DeletionProgressBar')
-        self._deletion_progress_bar.set_halign(Gtk.Align.CENTER)
-        self._deletion_progress_bar.set_valign(Gtk.Align.CENTER)
-        self._deletion_progress_bar.set_hexpand(True)
-        self._deletion_progress_bar.set_text('Progress')
-        self._deletion_progress_bar.set_show_text(True)
-        self._deletion_progress_bar.set_no_show_all(True)
-        self._deletion_progress_bar.hide()
-
         gpaste_client.connect('ShowHistory', self.toggle)
-        gpaste_client.connect('Tracking',
-            lambda t: self._main_toolbox.track_btn.set_active(t) if self._main_toolbox and self._main_toolbox.track_btn else None
-        )
         common.APPLICATION = self
         
         actions: List[List[Any]] = [
@@ -565,6 +453,115 @@ class Application(Gtk.Application):
 
         if common.SETTINGS[common.STARTUP_NOTIFICATION]:
             utils.notify(body=_(f'{version.APP_NAME} is now running.'))
+
+    def _build_ui(self) -> None:
+        self._editor = editor.Editor()
+        self._previewer = previewer.Previewer()
+        self._merger = merger.Merger()
+        self._merger.connect('merge', self.merge_items)
+        self._merger.connect('delete', self._on_merger_delete)
+        self._items_processors = ItemsProcessors()
+        self._items_processors.add_processor(self._editor)
+        self._items_processors.add_processor(self._previewer)
+        self._items_processors.add_processor(self._merger)
+
+        self._main_toolbox = MainToolbox()
+        self._main_toolbox.prefs_btn.connect('clicked',
+            lambda b: self.show_prefs()
+        )
+        self._main_toolbox.about_btn.connect('clicked',
+            lambda b: self.show_about()
+        )
+        self._main_toolbox.quit_btn.connect('clicked',
+            lambda b: self.quit()
+        )
+        self._main_toolbox.restart_btn.connect(
+            'clicked',
+            self._restart_daemon
+        )
+        self._main_toolbox.close_btn.connect(
+            'clicked',
+            lambda b: self.hide(reset_search=True)
+        )
+        self._main_toolbox.track_btn.connect('clicked',
+            lambda b: gpaste_client.track(b.get_active())
+        )
+        self._main_toolbox.track_btn.set_active(
+            gpaste_client.get_prop('Active')
+        )
+        self._main_toolbox.help_btn.connect(
+            'clicked',
+            lambda b: shortcuts_window.show_or_false(self._window)
+        )
+
+        gpaste_client.connect('Tracking',
+            lambda t: self._main_toolbox.track_btn.set_active(t) if self._main_toolbox and self._main_toolbox.track_btn else None
+        )
+
+        self._history_items = HistoryItems()
+
+        self._search_box = SearchBox()
+        self._search_box.connect('search-changed',
+            self._on_search_changed
+        )
+        self._search_box.connect('search-index',
+            lambda sb, i: self._on_search_changed(sb, search_index=i)
+        )
+        self._search_box.entry.connect('activate',
+            self._on_entry_activated
+        )
+        self._search_box.entry.connect(
+            'key-press-event',
+            self._on_search_entry_key_press
+        )
+
+        self._items_view = ItemsView()
+        self._items_view.connect(
+            'item-activated',
+            self._on_item_activated
+        )
+        self._items_view.connect(
+            'item-entered',
+            self._on_item_entered
+        )
+        self._items_view.connect(
+            'item-left',
+            lambda iv, i: self.selection_changed()
+        )
+        self._items_view.listbox.connect(
+            'selected-rows-changed',
+            lambda iv: self.selection_changed()
+        )
+        self._items_view.bind(self._history_items)
+        self._items_view.connect(
+            'focus-search-requested',
+            self._on_items_view_focus_search
+        )
+
+        self._deletion_progress_bar = Gtk.ProgressBar()
+        self._deletion_progress_bar.set_name('DeletionProgressBar')
+        self._deletion_progress_bar.set_halign(Gtk.Align.CENTER)
+        self._deletion_progress_bar.set_valign(Gtk.Align.CENTER)
+        self._deletion_progress_bar.set_hexpand(True)
+        self._deletion_progress_bar.set_text('Progress')
+        self._deletion_progress_bar.set_show_text(True)
+        self._deletion_progress_bar.hide()
+
+        self._window = Window(
+            self,
+            items_processors=self._items_processors,
+            main_toolbox=self._main_toolbox,
+            search_box=self._search_box,
+            items_view=self._items_view,
+            deletion_progress_bar=self._deletion_progress_bar
+        )
+        self._window.connect('configure-event', self._resize)
+        self._window.connect('key-press-event', self._on_key_press)
+        self._window.connect('key-release-event', self._on_key_release)
+        self._window.connect(
+            'focus-out-event',
+            lambda _, __: self._items_view.show_shortcut_hints(False) if self._items_view else None
+        )
 
     def toggle(self) -> None:
         if self._window and self._window.props.visible:
