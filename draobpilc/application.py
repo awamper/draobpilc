@@ -65,7 +65,7 @@ class Application(Gtk.Application):
         self._items_view: Optional[ItemsView] = None
         self._deletion_progress_bar: Optional[Gtk.ProgressBar] = None
 
-    def _resize(self, window: Window, event: Any) -> None:
+    def _resize(self, window: Window, event: Gdk.Event) -> None:
         size = window.get_size()
 
         list_width = round(
@@ -106,13 +106,13 @@ class Application(Gtk.Application):
 
         return True
 
-    def _on_search_entry_key_press(self, widget: Gtk.Widget, event: Any) -> bool:
+    def _on_search_entry_key_press(self, widget: Gtk.Widget, event: Gdk.Event) -> bool:
         if event.keyval == Gdk.KEY_Down and self._items_view:
             self._items_view.select_first(grab_focus=True)
             return True
         return False
 
-    def _on_items_view_focus_search(self, items_view: ItemsView, event: Any) -> None:
+    def _on_items_view_focus_search(self, items_view: ItemsView, event: Gdk.Event) -> None:
         if self._search_box and self._search_box.entry:
             self._search_box.entry.grab_focus()
             if event.string:
@@ -134,14 +134,14 @@ class Application(Gtk.Application):
                 timeout=common.SETTINGS[common.SET_ITEMS_TIMEOUT]
             )
 
-    def _on_delete_action(self, action: Gio.SimpleAction, param: Any) -> None:
+    def _on_delete_action(self, action: Gio.SimpleAction, param: None) -> None:
         if self._items_view:
             selected_items = self._items_view.get_selected()
             if not selected_items: return
 
             self.delete_items(selected_items)
 
-    def _on_open_item(self, action: Gio.SimpleAction, param: Any) -> None:
+    def _on_open_item(self, action: Gio.SimpleAction, param: None) -> None:
         if not self._items_view:
             return
 
@@ -165,21 +165,21 @@ class Application(Gtk.Application):
 
         utils.restart_app()
 
-    def _on_editor_wrap_action(self, action: Gio.SimpleAction, param: Any) -> None:
+    def _on_editor_wrap_action(self, action: Gio.SimpleAction, param: None) -> None:
         common.SETTINGS[common.EDITOR_WRAP_TEXT] = not common.SETTINGS[common.EDITOR_WRAP_TEXT]
 
-    def _on_backup_history(self, action: Gio.SimpleAction, param: Any) -> None:
+    def _on_backup_history(self, action: Gio.SimpleAction, param: None) -> None:
         dialog = BackupHistoryDialog(self._window)
         dialog.run()
 
-    def _on_reset_search_action(self, action: Gio.SimpleAction, param: Any) -> None:
+    def _on_reset_search_action(self, action: Gio.SimpleAction, param: None) -> None:
         if self._search_box:
             self._search_box.reset()
 
             if self._search_box.entry:
                 self._search_box.entry.grab_focus()
 
-    def _on_key_press(self, window: Window, event: Any) -> None:
+    def _on_key_press(self, window: Window, event: Gdk.Event) -> None:
         if not common.SETTINGS[common.ENABLE_ACTIVATE_NUMBER_KB] or not self._items_view: return
 
         result, keyval = event.get_keyval()
@@ -207,7 +207,7 @@ class Application(Gtk.Application):
                 if item and self._items_view:
                     self._items_view.activate_item(item)
 
-    def _on_key_release(self, window: Window, event: Any) -> None:
+    def _on_key_release(self, window: Window, event: Gdk.Event) -> None:
         if not common.SETTINGS[common.ENABLE_ACTIVATE_NUMBER_KB] or not self._items_view: return
 
         result, keyval = event.get_keyval()
@@ -216,7 +216,7 @@ class Application(Gtk.Application):
             self._items_view.show_shortcut_hints(False)
 
     def _bind_action(self, name: str, target: str, settings_key: str, callback: Callable[..., Any]) -> None:
-        def on_settings_change(settings: Any, key: str, target: str) -> None:
+        def on_settings_change(settings: Gio.Settings, key: str, target: str) -> None:
             self.set_accels_for_action(target, [settings[key]])
 
         action = Gio.SimpleAction.new(name, None)
@@ -572,7 +572,7 @@ class Application(Gtk.Application):
         else:
             self.activate()
 
-    def show_histories_manager(self, action: Gio.SimpleAction, param: Any) -> None:
+    def show_histories_manager(self, action: Gio.SimpleAction, param: None) -> None:
         if self._items_view:
             self._items_view.histories_manager.show()
 
